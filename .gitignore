@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+venv/
+.venv/
+env/
+
+# Environment
+.env
+*.env
+
+# Output files (optional - remove if you want to sync outputs)
+output/*.json
+output/*.csv
+output/*.xlsx
+
+# Data files (PDFs, large files)
+data/**/*.pdf
+data/**/*.dwg
+data/**/*.ifc
+*.pdf
+*.dwg
+*.ifc
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

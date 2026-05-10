@@ -1,0 +1,17 @@
+{
+  "abbreviations": {
+    "COL": "Column",
+    "BM": "Beam",
+    "PL": "Plate",
+    "UB": "Universal Beam",
+    "UC": "Universal Column",
+    "RHS": "Rectangular Hollow Section",
+    "SHS": "Square Hollow Section",
+    "CHS": "Circular Hollow Section",
+    "FB": "Flat Bar"
+  },
+  "material_grades": {
+    "default_steel": "S275"
+  },
+  "notes": "Using standard defaults"
+}

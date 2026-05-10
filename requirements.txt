@@ -1,0 +1,27 @@
+# PDF to SketchUp LOD 300 — Multi-Agent Pipeline
+# Install: pip install -r requirements.txt
+
+# --- PDF Processing ---
+PyMuPDF>=1.23.0           # fitz: PDF rendering at DPI 300, text extraction
+pdfplumber>=0.10.3         # Table extraction fallback
+
+# --- AI / LLM ---
+google-generativeai>=0.8.0    # Gemini 2.5 Flash (DO NOT DOWNGRADE MODEL)
+langchain>=0.2.0              # Agent orchestration, prompt templates
+langchain-google-genai>=1.0.0 # LangChain x Gemini integration
+
+# --- Data & Validation ---
+pydantic>=2.5.0           # Structured output schemas
+python-dotenv>=1.0.0      # .env loading for API key rotation
+
+# --- Computer Vision (Auto-Segmentation) ---
+opencv-python>=4.9.0      # Contour detection for multi-drawing pages
+numpy>=1.26.0             # Required by OpenCV
+
+# --- Web UI ---
+streamlit>=1.35.0         # Web app interface (run: streamlit run app.py)
+
+# --- Utilities ---
+Pillow>=10.0.0            # Image processing
+rich>=13.0.0              # Coloured terminal output across agents
+tqdm>=4.66.0              # Progress bars

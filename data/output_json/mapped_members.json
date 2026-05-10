@@ -1,0 +1,1676 @@
+{
+  "mapped_members": [
+    {
+      "mark": "LINTEL",
+      "section": "75x100x6",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "1N12",
+      "section": "N12",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "N12-200 'Z' BAR",
+      "section": "N12",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "SL92",
+      "section": "SL92",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AEB1",
+      "section": null,
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AIB1",
+      "section": null,
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AIB2",
+      "section": null,
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "APF2",
+      "section": null,
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ASF1",
+      "section": null,
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AMW1",
+      "section": null,
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ARB1",
+      "section": null,
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AWT2",
+      "section": null,
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "APFR1",
+      "section": "310UB40.4",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ADR1",
+      "section": "89x5.0 SHS",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ARB2",
+      "section": "250UB25.7",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ARB3",
+      "section": "250UB31.4",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": -9999
+      },
+      "rotation_degrees": 0,
+      "grid_ref": null,
+      "level_ref": null,
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ABR1",
+      "section": "Ø20 ROD",
+      "type": "brace",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BWS1",
+      "section": "89x5.0 SHS",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BRB2",
+      "section": "250UB25.7",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BGC2",
+      "section": "150x5.0 SHS",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "RAFT SLAB",
+      "section": "100mm THICK",
+      "type": "slab",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "WOR1",
+      "section": "SHS100x5.0",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BWB1",
+      "section": "89x5.0 SHS",
+      "type": "brace",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "WPF1",
+      "section": "600 x 900",
+      "type": "slab",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BRB1",
+      "section": "200PFC",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ARB11",
+      "section": "150x100x6.0 RHS",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BPF2",
+      "section": "600 x 800 x 800",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AWH1",
+      "section": "89x5.0 SHS",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BIB1",
+      "section": "500 x 300",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "CSRB1",
+      "section": "200UB25.4",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BS1",
+      "section": "114.3x3.6 CHS",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AWT1",
+      "section": "150x6.0 SHS",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AP1",
+      "section": "C15019",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BRTR1",
+      "section": "-",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AS1",
+      "section": "114.3x3.6 CHS",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BGM2",
+      "section": "75x5.0 SHS",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AP4",
+      "section": "C20015",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BGTR1",
+      "section": "-",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ARB4",
+      "section": "180UB18.1",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BGC3",
+      "section": "100x4.0 SHS",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "CSP1",
+      "section": "Z15012",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "WP1",
+      "section": "C15015",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "PPF1",
+      "section": "600 x 900 x 900",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BOR1",
+      "section": "150x5.0 SHS",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BPF1",
+      "section": "500 x 1000 x 1000",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BP2",
+      "section": "C15012",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BIB2",
+      "section": "200 x 500",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AGTR1",
+      "section": "-",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BGC1",
+      "section": "89x5.0 SHS",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ARB12",
+      "section": "200x100x5.0 RHS",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ARB5",
+      "section": "310UB32.0",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AOW1",
+      "section": "150UC23.4",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BP1",
+      "section": "Z20019",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BFB1",
+      "section": "180PFC",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BDH1",
+      "section": "360UB50.7",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "WRB1",
+      "section": "RHS150x100x4.0",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ARB6",
+      "section": "250UB31.4",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "CSS1",
+      "section": "76.1x4.5 CHS",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BPF3",
+      "section": "500 x 800 x 800",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AS10",
+      "section": "101.6x3.2 CHS",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AWS1",
+      "section": "89x5.0 SHS",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AS2",
+      "section": "200x100x4.0 RHS",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AFB1",
+      "section": "180PFC",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ACP1",
+      "section": "C15012",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "PC1",
+      "section": "150x5.0 SHS",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BRB6",
+      "section": "200PFC",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AP3",
+      "section": "C15024",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BFB2",
+      "section": "250PFC",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BDS1",
+      "section": "-",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BGC4",
+      "section": "100x9.0 SHS",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AWB1",
+      "section": "90 x 5 M.S FLAT PLATE",
+      "type": "brace",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AWB2",
+      "section": "89x5.0 SHS",
+      "type": "brace",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ARTR1",
+      "section": "-",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BWT1",
+      "section": "150x6.0 SHS",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BRB3",
+      "section": "250UB37.3",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "WPFR1",
+      "section": "RHS150x100x5.0",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "AP2",
+      "section": "Z15019",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BEB1",
+      "section": "500 x 300",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "ARB10",
+      "section": "150PFC",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "WPFC1",
+      "section": "RHS150x100x5.0",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BGM1",
+      "section": "89x5.0 SHS",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BBR1",
+      "section": "Ø20 ROD",
+      "type": "brace",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "CSBR1",
+      "section": "Ø16 ROD",
+      "type": "brace",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BRB4",
+      "section": "250PFC",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "WS1",
+      "section": "SHS75x4.0",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "BGC5",
+      "section": "100x6.0 SHS",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "PB1",
+      "section": "150x5.0 SHS",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    },
+    {
+      "mark": "PP1",
+      "section": "150x50x3.0 RHS",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped"
+    }
+  ]
+}
