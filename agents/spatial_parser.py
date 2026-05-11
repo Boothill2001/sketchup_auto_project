@@ -9,12 +9,13 @@ Output: data/output_json/spatial_data.json
 """
 
 import json
+import re
 from pathlib import Path
 from rich import print as rprint
 
 from config import SPATIAL_OUTPUT_FILE
 from core.llm_wrapper import call_llm_json
-from core.pdf_utils import render_page_as_image_part, segment_page_regions
+from core.pdf_utils import render_page_as_image_part, segment_page_regions, extract_text_from_page
 
 
 PLAN_PROMPT = """You are a Senior Structural Detailer. This is a STRUCTURAL PLAN VIEW drawing.
@@ -79,6 +80,32 @@ Use "ELEVATION" for full-height elevation views; use "SECTION" for cross-section
 If no level markers are visible anywhere on the page, return: {"view_type": "ELEVATION", "levels": []}"""
 
 
+def _score_page(pdf_path: str, page: int) -> int:
+    try:
+        text = extract_text_from_page(pdf_path, page)
+        return len(re.findall(
+            r'\b[A-H]\b|\b[1-9]\b|GRID|LEVEL|RL\s*[\d.]|FL\d|EL[\d.]',
+            text, re.IGNORECASE,
+        ))
+    except Exception:
+        return 0
+
+
+def select_best_page(pages: list[int], pdf_path: str) -> int:
+    """Return the single most information-rich page from a list of same-role pages."""
+    if len(pages) == 1:
+        return pages[0]
+    return max(pages, key=lambda p: _score_page(pdf_path, p))
+
+
+def select_top_pages(pages: list[int], pdf_path: str, max_n: int = 2) -> list[int]:
+    """Return up to max_n pages ranked by structural grid/level reference density."""
+    if len(pages) <= max_n:
+        return list(pages)
+    scored = sorted(pages, key=lambda p: _score_page(pdf_path, p), reverse=True)
+    return scored[:max_n]
+
+
 def _merge_spatial_results(all_results: list[dict]) -> dict:
     """Merge multiple plan/elevation extractions into one unified spatial dataset."""
     merged = {
@@ -126,31 +153,45 @@ def parse_spatial_pages(
 ) -> dict:
     all_results = []
 
-    for page_num in plan_pages:
-        rprint(f"[bold green]Spatial Parser:[/] Plan page {page_num + 1}...")
-        regions = segment_page_regions(pdf_path, page_num)
-        for img_part in regions:
+    # ── Plan pages: up to 2 best pages, 1 API call each ──────────────────────
+    if plan_pages:
+        top_plans = select_top_pages(plan_pages, pdf_path, max_n=2)
+        rprint(
+            f"[bold green]Spatial Parser:[/] Plan pages {[p+1 for p in top_plans]} "
+            f"(top {len(top_plans)} of {len(plan_pages)})..."
+        )
+        for pg in top_plans:
+            regions = segment_page_regions(pdf_path, pg)
             try:
-                raw = call_llm_json(PLAN_PROMPT, image_parts=[img_part])
+                raw    = call_llm_json(PLAN_PROMPT, image_parts=[regions[0]])
                 parsed = json.loads(raw)
                 if parsed.get("grids_x") or parsed.get("grids_y"):
                     all_results.append(parsed)
-                    rprint(f"  [green]Grid X:{len(parsed.get('grids_x',[]))} Y:{len(parsed.get('grids_y',[]))}[/]")
+                    rprint(
+                        f"  [green]p{pg+1} Grid X:{len(parsed.get('grids_x', []))} "
+                        f"Y:{len(parsed.get('grids_y', []))}[/]"
+                    )
             except Exception as e:
-                rprint(f"  [red]Plan parse error: {e}[/]")
+                rprint(f"  [red]Plan parse error p{pg+1}: {e}[/]")
 
-    for page_num in elevation_pages:
-        rprint(f"[bold green]Spatial Parser:[/] Elevation page {page_num + 1}...")
-        regions = segment_page_regions(pdf_path, page_num)
-        for img_part in regions:
+    # ── Elevation pages: up to 2 best pages, 1 API call each ─────────────────
+    # elevation_pages already contains section_view pages (see get_pages_by_role)
+    if elevation_pages:
+        top_elevs = select_top_pages(elevation_pages, pdf_path, max_n=2)
+        rprint(
+            f"[bold green]Spatial Parser:[/] Elevation pages {[p+1 for p in top_elevs]} "
+            f"(top {len(top_elevs)} of {len(elevation_pages)})..."
+        )
+        for pg in top_elevs:
+            regions = segment_page_regions(pdf_path, pg)
             try:
-                raw = call_llm_json(ELEVATION_PROMPT, image_parts=[img_part])
+                raw    = call_llm_json(ELEVATION_PROMPT, image_parts=[regions[0]])
                 parsed = json.loads(raw)
                 if parsed.get("levels"):
                     all_results.append(parsed)
-                    rprint(f"  [green]Levels: {[l['name'] for l in parsed.get('levels', [])]}[/]")
+                    rprint(f"  [green]p{pg+1} Levels: {[l['name'] for l in parsed.get('levels', [])]}[/]")
             except Exception as e:
-                rprint(f"  [red]Elevation parse error: {e}[/]")
+                rprint(f"  [red]Elevation parse error p{pg+1}: {e}[/]")
 
     spatial = _merge_spatial_results(all_results)
 

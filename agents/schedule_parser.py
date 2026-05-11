@@ -10,9 +10,9 @@ import json
 from pathlib import Path
 from rich import print as rprint
 
-from config import SCHEDULE_OUTPUT_FILE, GLOSSARY_OUTPUT_FILE
+from config import SCHEDULE_OUTPUT_FILE, GLOSSARY_OUTPUT_FILE, USE_TEXT_EXTRACTION_FIRST
 from core.llm_wrapper import call_llm_json
-from core.pdf_utils import render_page_as_image_part, segment_page_regions, get_page_count
+from core.pdf_utils import render_page_as_image_part, segment_page_regions, get_page_count, extract_tables_pdfplumber
 
 
 EXTRACT_PROMPT_TEMPLATE = """You are a Senior Structural Detailer extracting data from a structural steel schedule.
@@ -67,16 +67,22 @@ def parse_schedule_pages(pdf_path: str, schedule_pages: list[int]) -> list[dict]
 
     for page_num in schedule_pages:
         rprint(f"[bold magenta]Schedule Parser:[/] Extracting page {page_num + 1}...")
-        regions = segment_page_regions(pdf_path, page_num)
-        prompt = EXTRACT_PROMPT_TEMPLATE.replace("{glossary_json}", glossary_summary)
+        base_prompt = EXTRACT_PROMPT_TEMPLATE.replace("{glossary_json}", glossary_summary)
 
-        for region_idx, image_part in enumerate(regions):
-            label = f"page {page_num+1}" + (f" region {region_idx+1}" if len(regions) > 1 else "")
+        # ── Text-first path ──────────────────────────────────────────────────
+        text_data = extract_tables_pdfplumber(pdf_path, page_num) if USE_TEXT_EXTRACTION_FIRST else None
+
+        if text_data:
+            rprint(f"  [dim]Using text extraction for page {page_num+1} (saved 1 vision call)[/]")
+            text_prompt = (
+                base_prompt
+                + f"\n\nSTEEL SCHEDULE TABLE (CSV from PDF text layer, page {page_num+1}):\n"
+                + text_data
+            )
             try:
-                raw = call_llm_json(prompt, image_parts=[image_part])
+                raw = call_llm_json(text_prompt)  # no image_parts — text only
                 parsed = json.loads(raw)
                 members = parsed.get("members", [])
-
                 new_members = []
                 for m in members:
                     mark = m.get("mark", "").strip()
@@ -86,7 +92,30 @@ def parse_schedule_pages(pdf_path: str, schedule_pages: list[int]) -> list[dict]
                         new_members.append(m)
                     elif mark in seen_marks:
                         rprint(f"  [dim]Skipping duplicate mark: {mark}[/]")
+                all_members.extend(new_members)
+                rprint(f"  [green]+{len(new_members)} members[/] from page {page_num+1} (text-extracted)")
+                continue  # skip vision extraction for this page
+            except Exception as e:
+                rprint(f"  [yellow]Text extraction failed ({e}), falling back to vision...[/]")
 
+        # ── Vision fallback ──────────────────────────────────────────────────
+        rprint(f"  [dim]Page {page_num+1} is scanned image, using vision extraction[/]")
+        regions = segment_page_regions(pdf_path, page_num)
+        for region_idx, image_part in enumerate(regions):
+            label = f"page {page_num+1}" + (f" region {region_idx+1}" if len(regions) > 1 else "")
+            try:
+                raw = call_llm_json(base_prompt, image_parts=[image_part])
+                parsed = json.loads(raw)
+                members = parsed.get("members", [])
+                new_members = []
+                for m in members:
+                    mark = m.get("mark", "").strip()
+                    if mark and mark not in seen_marks:
+                        seen_marks.add(mark)
+                        m["page_source"] = page_num
+                        new_members.append(m)
+                    elif mark in seen_marks:
+                        rprint(f"  [dim]Skipping duplicate mark: {mark}[/]")
                 all_members.extend(new_members)
                 rprint(f"  [green]+{len(new_members)} members[/] from {label}")
             except Exception as e:

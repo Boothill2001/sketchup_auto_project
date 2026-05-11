@@ -46,6 +46,7 @@ SCHEDULE_OUTPUT_FILE       = os.path.join(OUTPUT_JSON_DIR, "steel_schedule.json"
 SPATIAL_OUTPUT_FILE        = os.path.join(OUTPUT_JSON_DIR, "spatial_data.json")
 MAPPED_OUTPUT_FILE         = os.path.join(OUTPUT_JSON_DIR, "mapped_members.json")
 CODER_OUTPUT_FILE          = os.path.join(RUBY_OUTPUT_DIR, "lod300_model.rb")
+SKP_OUTPUT_FILE            = os.path.join(RUBY_OUTPUT_DIR, "lod300_model.skp")
 AUDITOR_REPORT_FILE        = os.path.join(OUTPUT_JSON_DIR, "audit_report.json")
 
 # ---- LLM GENERATION SETTINGS ----
@@ -72,3 +73,14 @@ LOD_LEVEL = 300
 
 # ---- AUDITOR RETRY SETTINGS ----
 MAX_AUDIT_RETRIES = 2  # How many times Coder re-runs if Auditor finds issues
+
+# ---- LLM RESPONSE CACHE ----
+LLM_CACHE_ENABLED = True   # set False to disable for debugging
+LLM_CACHE_DIR = Path(BASE_DIR) / "data" / "llm_cache"
+
+# ---- RPD QUOTA TRACKING ----
+RPD_LIMIT_PER_KEY = 18  # Use 18 of 20 free-tier daily limit to leave a 2-call buffer
+RPD_STATE_FILE = Path(BASE_DIR) / "data" / "output_json" / "key_quota_state.json"
+
+# ---- TEXT EXTRACTION ----
+USE_TEXT_EXTRACTION_FIRST = True  # Try pdfplumber before vision API for schedule pages

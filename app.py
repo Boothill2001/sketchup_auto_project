@@ -12,8 +12,12 @@ from datetime import datetime
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parent))
-from config import INPUT_PDF_DIR, CODER_OUTPUT_FILE
+from config import INPUT_PDF_DIR, CODER_OUTPUT_FILE, SKP_OUTPUT_FILE, RPD_LIMIT_PER_KEY
 from main import run_pipeline
+from core.llm_wrapper import (
+    get_cache_stats, clear_cache,
+    get_key_quota_status, any_key_available,
+)
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -78,9 +82,25 @@ with left:
         st.success(f"✅ **{uploaded_file.name}**\n\n{kb:.1f} KB")
 
     st.divider()
+    st.subheader("🔑 API Key Status")
+    for _ks in get_key_quota_status():
+        _used, _lim = _ks["rpd_used"], _ks["rpd_limit"]
+        _filled = min(10, int(_used / max(_lim, 1) * 10))
+        _bar    = "█" * _filled + "░" * (10 - _filled)
+        _label  = "**EXHAUSTED**" if _ks["exhausted"] else f"{_used}/{_lim} calls used"
+        st.caption(f"Key {_ks['index']}: `{_bar}` {_label}")
+
+    st.divider()
     st.subheader("⚙️ Options")
     auto_scroll_log = st.toggle("Auto-scroll terminal log", value=True)
     st.caption("Keep last 60 lines visible while pipeline runs.")
+    st.divider()
+    st.subheader("🗑️ Cache")
+    _stats_sidebar = get_cache_stats()
+    st.caption(f"Hits: {_stats_sidebar['hits']}  ·  Misses: {_stats_sidebar['misses']}")
+    if st.button("Clear LLM Cache", use_container_width=True):
+        n = clear_cache()
+        st.success(f"Cleared {n} cache file(s).")
     st.divider()
 
     run_disabled = uploaded_file is None
@@ -143,6 +163,30 @@ def _icon(line: str) -> str:
 
 
 if run_btn and uploaded_file:
+
+    # Pre-flight: check that at least one key has remaining RPD quota
+    if not any_key_available():
+        _kstatus   = get_key_quota_status()
+        _earliest  = min(
+            (s["rpd_reset_at"] for s in _kstatus if s["rpd_reset_at"]),
+            default="midnight UTC",
+        )
+        with tab_dash:
+            status_slot.error(
+                f"❌ **All API keys exhausted for today.**  \n"
+                f"Keys reset at `{_earliest}`.  \n"
+                "Add more keys in `.env` to continue, or wait until reset."
+            )
+        st.stop()
+
+    # Estimate API calls needed for user awareness
+    _pdf_bytes  = uploaded_file.getvalue()
+    _n_pages    = max(1, round(len(_pdf_bytes) / (80 * 1024)))  # ~80 KB per page heuristic
+    _est_calls  = _n_pages * 5
+    with tab_dash:
+        status_slot.info(
+            f"📄 This PDF (~{_n_pages} pages) will use ~{_est_calls} API calls. Starting pipeline…"
+        )
 
     # 1. Save PDF to disk
     Path(INPUT_PDF_DIR).mkdir(parents=True, exist_ok=True)
@@ -223,11 +267,12 @@ if run_btn and uploaded_file:
             # Metrics row
             with metrics_slot.container():
                 st.markdown("#### 📈 Extraction Summary")
-                c1, c2, c3, c4 = st.columns(4)
+                c1, c2, c3, c4, c5 = st.columns(5)
                 c1.metric("Total Members",  result_holder.get("members_total", 0))
                 c2.metric("3D Placed",       result_holder.get("placed", 0))
                 c3.metric("⚠️ Unmapped",     result_holder.get("unmapped", 0))
                 c4.metric("Audit",           "✅ Pass" if result_holder.get("audit_passed") else "⚠️ Warn")
+                c5.metric("API Calls Saved", get_cache_stats()["hits"])
 
             unmapped_marks = result_holder.get("unmapped_marks", [])
             if unmapped_marks:
@@ -238,13 +283,14 @@ if run_btn and uploaded_file:
                     unsafe_allow_html=True,
                 )
 
-        # Download button (always show if .rb exists, even on audit warn)
+        # Download buttons (always show if .rb exists, even on audit warn)
         if ruby_path and Path(ruby_path).exists():
             rb_bytes = Path(ruby_path).read_bytes()
             rb_name  = f"lod300_{uploaded_file.name.replace('.pdf', '')}.rb"
+            skp_path = Path(SKP_OUTPUT_FILE)
             with download_slot.container():
                 st.divider()
-                st.markdown("#### 📥 Download Ruby Script")
+                st.markdown("#### 📥 Download Output Files")
                 st.download_button(
                     label=f"⬇️  Download  {rb_name}",
                     data=rb_bytes,
@@ -256,6 +302,22 @@ if run_btn and uploaded_file:
                     f"SketchUp: **Extensions → Ruby Console** → `load 'path/to/{rb_name}'`  "
                     f"&nbsp;·&nbsp; {datetime.now().strftime('%Y-%m-%d %H:%M')}"
                 )
+                if skp_path.exists():
+                    skp_bytes = skp_path.read_bytes()
+                    skp_mb    = len(skp_bytes) / (1024 * 1024)
+                    st.download_button(
+                        label="⬇️  Download  lod300_model.skp",
+                        data=skp_bytes,
+                        file_name="lod300_model.skp",
+                        mime="application/octet-stream",
+                        use_container_width=True,
+                    )
+                    st.caption(f"SketchUp model · {skp_mb:.1f} MB · open directly in SketchUp Pro")
+                else:
+                    st.caption(
+                        "💡 **lod300_model.skp** will appear here after you run the .rb script in SketchUp "
+                        "(it auto-saves to the same folder)."
+                    )
 
     # ── Populate Terminal (Tab 2) ──────────────────────────────────────────
     full_log = "\n".join(log_lines)

@@ -6,7 +6,7 @@ PyMuPDF>=1.23.0           # fitz: PDF rendering at DPI 300, text extraction
 pdfplumber>=0.10.3         # Table extraction fallback
 
 # --- AI / LLM ---
-google-generativeai>=0.8.0    # Gemini 2.5 Flash (DO NOT DOWNGRADE MODEL)
+google-genai>=0.8.0           # Gemini 2.5 Flash (DO NOT DOWNGRADE MODEL)
 langchain>=0.2.0              # Agent orchestration, prompt templates
 langchain-google-genai>=1.0.0 # LangChain x Gemini integration
 

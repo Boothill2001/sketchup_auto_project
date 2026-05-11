@@ -13,6 +13,8 @@ Usage:
 import sys
 import io
 import re
+import json
+import math
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -21,8 +23,9 @@ from typing import Callable
 import rich
 from rich import print as rprint
 
-from config import MAX_AUDIT_RETRIES, CODER_OUTPUT_FILE
-from core.llm_wrapper       import validate_keys
+from config import MAX_AUDIT_RETRIES, CODER_OUTPUT_FILE, SCANNER_OUTPUT_FILE, USE_TEXT_EXTRACTION_FIRST
+from core.llm_wrapper       import validate_keys, get_cache_stats, get_key_quota_status
+from core.pdf_utils         import get_page_count
 from agents.scanner         import scan_pdf, get_pages_by_role
 from agents.glossary_agent  import build_glossary
 from agents.schedule_parser import parse_schedule_pages
@@ -146,6 +149,44 @@ def _run(pdf_path: str) -> dict:
                 "members_total": 0, "placed": 0,
                 "unmapped": 0, "unmapped_marks": [], "audit_passed": False}
 
+    # ── Call budget estimate ──────────────────────────────────────────────────
+    _total_pages = get_page_count(str(pdf))
+
+    _existing_idx: dict = {}
+    if Path(SCANNER_OUTPUT_FILE).exists():
+        try:
+            with open(SCANNER_OUTPUT_FILE, encoding="utf-8") as _f:
+                _existing_idx = {int(k): v for k, v in json.load(_f).items()}
+        except Exception:
+            pass
+
+    _roles_preview   = get_pages_by_role(_existing_idx) if _existing_idx else {}
+    _sched_pages     = len(_roles_preview.get("schedule", []))
+    _plan_pages      = len(_roles_preview.get("plan", []))
+    _sched_factor    = 0.3 if USE_TEXT_EXTRACTION_FIRST else 1.0
+    _scanner_calls   = math.ceil(_total_pages / 36) + 1
+    _glossary_calls  = 1
+    _schedule_calls  = max(1, round(_sched_pages * _sched_factor)) if _sched_pages else round(_total_pages * 0.1)
+    _spatial_calls   = 4
+    _mapper_calls    = min(_plan_pages, 3) + 1 if _plan_pages else 2
+    _est_total       = _scanner_calls + _glossary_calls + _schedule_calls + _spatial_calls + _mapper_calls + 1 + 1
+
+    _quota_remaining = sum(max(0, s["rpd_limit"] - s["rpd_used"]) for s in get_key_quota_status())
+    _status          = "✓ OK" if _est_total <= _quota_remaining else "✗ MAY EXCEED QUOTA"
+
+    rprint("  ╔══ API BUDGET ══╗")
+    rprint(f"  ║ Estimated calls this run: ~{_est_total}")
+    rprint(
+        f"  ║   Scanner ~{_scanner_calls} | Glossary ~{_glossary_calls} | "
+        f"Schedule ~{_schedule_calls} | Spatial ~{_spatial_calls} | "
+        f"Mapper ~{_mapper_calls} | Coder+Auditor ~2"
+    )
+    rprint(f"  ║ Keys available today: {_quota_remaining} remaining")
+    rprint(f"  ║ Status: {_status}")
+    rprint("  ╚════════════════╝")
+    if _est_total > _quota_remaining:
+        rprint("  [yellow]WARNING: Estimated calls exceed quota — cache may cover some calls.[/]")
+
     # Phase 1 — Scanner
     _phase("PHASE 1 — SCANNER: Drawing Index Classification")
     index = scan_pdf(str(pdf))
@@ -213,6 +254,9 @@ def _run(pdf_path: str) -> dict:
     rprint(f"  Unmapped      : {unmapped}  {unmapped_marks or ''}")
     rprint(f"  Audit passed  : {audit['final_passed']}")
     rprint(f"  Ruby output   : {ruby_path}")
+    _stats = get_cache_stats()
+    rprint(f"  Cache stats   : {_stats['hits']} hits, {_stats['misses']} misses "
+           f"(saved {_stats['hits']} API calls today)")
 
     return {
         "ruby_path":      ruby_path,
