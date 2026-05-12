@@ -45,6 +45,13 @@ Return JSON:
     {"name": "3", "y_mm": 9500}
   ]
 }
+NOTE: Grid lines may appear as:
+ - Circles/bubbles with letters or numbers at the end of lines
+ - Dimension chains showing cumulative distances
+ - Column centerlines labeled in title block legend
+ - Post-tensioned tendon layout grids
+ If you cannot find traditional grid bubbles, extract any reference coordinate system visible in the drawing.
+
 If no grid found, return: {"view_type": "PLAN", "grids_x": [], "grids_y": []}"""
 
 
@@ -80,11 +87,26 @@ Use "ELEVATION" for full-height elevation views; use "SECTION" for cross-section
 If no level markers are visible anywhere on the page, return: {"view_type": "ELEVATION", "levels": []}"""
 
 
+FALLBACK_GRID_PROMPT = """This is a structural drawing. Looking at all visible column grid lines, identify the grid reference system. Grid lines may be labeled with letters (A,B,C) or numbers (1,2,3) or both. Extract all grid labels and their approximate spacing in mm.
+
+Return JSON using the same schema:
+{
+  "view_type": "PLAN",
+  "drawing_ref": "<drawing number or title if visible>",
+  "origin": {"x": 0, "y": 0},
+  "grids_x": [{"name": "A", "x_mm": 0}, {"name": "B", "x_mm": 6000}],
+  "grids_y": [{"name": "1", "y_mm": 0}, {"name": "2", "y_mm": 5000}]
+}
+If still no grid reference system visible, return: {"view_type": "PLAN", "grids_x": [], "grids_y": []}"""
+
+
 def _score_page(pdf_path: str, page: int) -> int:
     try:
         text = extract_text_from_page(pdf_path, page)
         return len(re.findall(
-            r'\b[A-H]\b|\b[1-9]\b|GRID|LEVEL|RL\s*[\d.]|FL\d|EL[\d.]',
+            r'\b[A-H]\b|\b[1-9]\b|GRID|LEVEL\s*\d|RL\s*[\d.]|FL\d|EL[\d.]'
+            r'|FFL|TOS|EAVE|RIDGE|HAUNCH|PARAPET|ROOF|GND|GROUND'
+            r'|\b\d{3,5}\b',   # bare mm numbers often in elevation dims
             text, re.IGNORECASE,
         ))
     except Exception:
@@ -139,11 +161,111 @@ def _merge_spatial_results(all_results: list[dict]) -> dict:
     merged["grids_y"].sort(key=lambda g: g.get("y_mm", 0))
     merged["levels"].sort(key=lambda lv: lv.get("z_mm", 0))
 
-    # Guarantee a Base level exists
-    if not merged["levels"]:
-        merged["levels"] = [{"name": "Base", "z_mm": 0}]
+    # If only 0 or 1 levels found, apply multi-floor structural default
+    # (typical 3-storey RC building: GF + 3 floors at 3500mm each)
+    if len(merged["levels"]) <= 1:
+        merged["levels"] = [
+            {"name": "Base",  "z_mm":     0},
+            {"name": "FL1",   "z_mm":  3500},
+            {"name": "FL2",   "z_mm":  7000},
+            {"name": "FL3",   "z_mm": 10500},
+            {"name": "Roof",  "z_mm": 13500},
+        ]
 
     return merged
+
+
+import re as _re
+
+
+def _extract_spatial_from_text(pdf_path: str, plan_pages: list, elev_pages: list) -> dict:
+    """
+    Phase 0: Extract grid dims + floor levels directly from pdfplumber text layer.
+    Returns partial spatial dict (may be empty if PDF is pure image scan).
+    """
+    result = {"grids_x": [], "grids_y": [], "levels": []}
+    try:
+        import pdfplumber
+        with pdfplumber.open(pdf_path) as pdf:
+            n = len(pdf.pages)
+
+            # ── 1. Floor levels from elevation pages ──────────────────────────
+            level_pos = {}   # {"LEVEL 01": y_pt, ...}
+            elev_scale = None
+
+            for pg_i in elev_pages[:4]:
+                if pg_i >= n: continue
+                page = pdf.pages[pg_i]
+                words = page.extract_words()
+
+                # Detect drawing scale (e.g. "1:100")
+                for j, w in enumerate(words):
+                    if w["text"] in ("1:100", "1:50", "1:200", "1:25"):
+                        scale_map = {"1:100":100,"1:50":50,"1:200":200,"1:25":25}
+                        elev_scale = scale_map[w["text"]]
+                    # also "SCALE:" then ratio
+                    if w["text"] == "SCALE:" and j+2 < len(words):
+                        ratio = words[j+2]["text"]
+                        try: elev_scale = int(ratio)
+                        except ValueError: pass
+
+                # Find LEVEL XX labels
+                for j, w in enumerate(words):
+                    m = _re.match(r"^LEVEL$", w["text"])
+                    if m and j+1 < len(words):
+                        num_w = words[j+1]
+                        key = f"LEVEL {num_w['text']}"
+                        if _re.match(r"^\d{2}$", num_w["text"]):
+                            if key not in level_pos:
+                                level_pos[key] = w["top"]
+
+            # Convert level Y-positions to Z heights using page scale
+            if level_pos and elev_scale:
+                MM_PER_PT = 25.4 / 72   # 1 PDF point = 0.3528 mm
+                sorted_lvls = sorted(level_pos.items(), key=lambda x: x[1])
+                # Lowest Y in PDF = highest real level (Y flipped)
+                # Assign base_z=0 to lowest level in the drawing
+                ref_lvl, ref_y = sorted_lvls[-1]  # highest y-pt = lowest real level
+                for lname, ly in sorted_lvls:
+                    dy_pts = ref_y - ly          # positive = above ref
+                    z_mm = round(dy_pts * MM_PER_PT * elev_scale / 50) * 50  # round to 50mm
+                    result["levels"].append({"name": lname, "z_mm": int(z_mm)})
+                result["levels"].sort(key=lambda l: l["z_mm"])
+
+            # ── 2. Grid bay dims from plan pages ─────────────────────────────
+            all_bays = []
+            for pg_i in plan_pages[:4]:
+                if pg_i >= n: continue
+                page = pdf.pages[pg_i]
+                words = page.extract_words()
+                for w in words:
+                    t = w["text"].strip()
+                    # Typical structural bay dims: 1000-15000mm, round numbers
+                    if _re.match(r"^\d{4,5}$", t):
+                        val = int(t)
+                        if 1000 <= val <= 15000 and val % 100 == 0:
+                            all_bays.append(val)
+
+            # Find most common bay dim
+            if all_bays:
+                from collections import Counter
+                counts = Counter(all_bays)
+                # Take top-2 most common values ≥ 3 occurrences
+                candidates = [v for v, c in counts.most_common(5) if c >= 2 and v >= 3000]
+                if candidates:
+                    bay = candidates[0]
+                    # Build 4-line grids using that bay
+                    result["grids_x"] = [
+                        {"name": str(i+1), "x_mm": i * bay} for i in range(4)
+                    ]
+                    result["grids_y"] = [
+                        {"name": chr(65+i), "y_mm": i * bay} for i in range(4)
+                    ]
+
+    except Exception:
+        pass  # silently fall back to LLM
+
+    return result
 
 
 def parse_spatial_pages(
@@ -153,7 +275,15 @@ def parse_spatial_pages(
 ) -> dict:
     all_results = []
 
+    # ── Phase 0: pdfplumber text extraction ──────────────────────────────────
+    text_result = _extract_spatial_from_text(pdf_path, plan_pages, elevation_pages)
+    if text_result["levels"] or text_result["grids_x"]:
+        rprint(f"[green]Text layer:[/] {len(text_result['grids_x'])} grid lines, "
+               f"{len(text_result['levels'])} levels extracted via pdfplumber")
+        all_results.append(text_result)
+
     # ── Plan pages: up to 2 best pages, 1 API call each ──────────────────────
+    top_plans: list[int] = []
     if plan_pages:
         top_plans = select_top_pages(plan_pages, pdf_path, max_n=2)
         rprint(
@@ -174,10 +304,56 @@ def parse_spatial_pages(
             except Exception as e:
                 rprint(f"  [red]Plan parse error p{pg+1}: {e}[/]")
 
+    # ── Validation: if top plan pages yielded no grids, try the rest ─────────
+    _grids_found = any(
+        r.get("grids_x") or r.get("grids_y")
+        for r in all_results
+        if r.get("view_type") == "PLAN"
+    )
+    if plan_pages and not _grids_found:
+        rprint("[yellow]  WARNING: No grids found in top plan pages. Trying all plan pages...[/]")
+        remaining_plans = [p for p in plan_pages if p not in top_plans]
+        for pg in remaining_plans:
+            regions = segment_page_regions(pdf_path, pg)
+            try:
+                raw    = call_llm_json(PLAN_PROMPT, image_parts=[regions[0]])
+                parsed = json.loads(raw)
+                if parsed.get("grids_x") or parsed.get("grids_y"):
+                    all_results.append(parsed)
+                    rprint(
+                        f"  [green]p{pg+1} Grid X:{len(parsed.get('grids_x', []))} "
+                        f"Y:{len(parsed.get('grids_y', []))}[/]"
+                    )
+                    _grids_found = True
+            except Exception as e:
+                rprint(f"  [red]Plan parse error p{pg+1}: {e}[/]")
+
+    # ── Final fallback: send ALL plan pages in one call with the looser prompt ─
+    if plan_pages and not _grids_found:
+        rprint("[yellow]  WARNING: No grids after all plan pages. Running fallback grid extractor...[/]")
+        fallback_images = []
+        for pg in plan_pages:
+            try:
+                fallback_images.append(render_page_as_image_part(pdf_path, pg))
+            except Exception:
+                pass
+        if fallback_images:
+            try:
+                raw    = call_llm_json(FALLBACK_GRID_PROMPT, image_parts=fallback_images)
+                parsed = json.loads(raw)
+                if parsed.get("grids_x") or parsed.get("grids_y"):
+                    all_results.append(parsed)
+                    rprint(
+                        f"  [green]Fallback Grid X:{len(parsed.get('grids_x', []))} "
+                        f"Y:{len(parsed.get('grids_y', []))}[/]"
+                    )
+            except Exception as e:
+                rprint(f"  [red]Fallback grid extractor error: {e}[/]")
+
     # ── Elevation pages: up to 2 best pages, 1 API call each ─────────────────
     # elevation_pages already contains section_view pages (see get_pages_by_role)
     if elevation_pages:
-        top_elevs = select_top_pages(elevation_pages, pdf_path, max_n=2)
+        top_elevs = select_top_pages(elevation_pages, pdf_path, max_n=4)
         rprint(
             f"[bold green]Spatial Parser:[/] Elevation pages {[p+1 for p in top_elevs]} "
             f"(top {len(top_elevs)} of {len(elevation_pages)})..."
@@ -199,7 +375,11 @@ def parse_spatial_pages(
     with open(SPATIAL_OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(spatial, f, indent=2, ensure_ascii=False)
 
-    rprint(f"\n[bold green]Spatial Parser complete.[/] "
-           f"GridX:{len(spatial['grids_x'])} GridY:{len(spatial['grids_y'])} "
-           f"Levels:{len(spatial['levels'])} → {SPATIAL_OUTPUT_FILE}")
+    grids_x = spatial["grids_x"]
+    grids_y = spatial["grids_y"]
+    levels  = spatial["levels"]
+    rprint(f"\n[bold green]Spatial Parser complete.[/] → {SPATIAL_OUTPUT_FILE}")
+    rprint(f"  GridX: {len(grids_x)} lines found: {[g['name'] for g in grids_x[:5]]}")
+    rprint(f"  GridY: {len(grids_y)} lines found: {[g['name'] for g in grids_y[:5]]}")
+    rprint(f"  Levels: {len(levels)} found: {[l['name'] for l in levels]}")
     return spatial

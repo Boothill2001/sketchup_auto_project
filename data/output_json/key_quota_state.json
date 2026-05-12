@@ -1,0 +1,27 @@
+{
+  "4f61f357": {
+    "rpd_used": 18,
+    "rpd_reset_at": "2026-05-13T00:00:00+00:00",
+    "rpm_blocked_until": null
+  },
+  "631b531f": {
+    "rpd_used": 18,
+    "rpd_reset_at": "2026-05-13T00:00:00+00:00",
+    "rpm_blocked_until": null
+  },
+  "90beb693": {
+    "rpd_used": 18,
+    "rpd_reset_at": "2026-05-13T00:00:00+00:00",
+    "rpm_blocked_until": null
+  },
+  "ec0721ca": {
+    "rpd_used": 18,
+    "rpd_reset_at": "2026-05-13T00:00:00+00:00",
+    "rpm_blocked_until": null
+  },
+  "5d4ac006": {
+    "rpd_used": 18,
+    "rpd_reset_at": "2026-05-13T00:00:00+00:00",
+    "rpm_blocked_until": null
+  }
+}

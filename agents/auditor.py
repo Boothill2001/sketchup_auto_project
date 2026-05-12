@@ -127,7 +127,15 @@ def run_audit() -> dict:
             "{ruby_snippet}", ruby_script[:5000]
         )
         raw = call_llm_json(prompt)
-        ai_report = json.loads(raw)
+        try:
+            ai_report = json.loads(raw)
+        except json.JSONDecodeError:
+            try:
+                from json_repair import repair_json
+                ai_report = json.loads(repair_json(raw))
+                rprint("[yellow]  JSON repaired in auditor (minor LLM formatting issue)[/]")
+            except Exception:
+                raise
     except Exception as e:
         rprint(f"  [red]AI audit error: {e}[/]")
         ai_report = {"issues": [], "overall_passed": False, "summary": str(e)}

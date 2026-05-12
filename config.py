@@ -18,20 +18,19 @@ load_dotenv(_env_file)
 # ---- MODEL LOCK ----
 GEMINI_MODEL = "gemini-2.5-flash"  # DO NOT DOWNGRADE OR CHANGE MODEL VERSION
 
-# ---- API KEY POOL (Round-Robin to bypass rate limits) ----
-# Keys sourced from .env — add more GEMINI_KEY_N entries to expand the pool.
-_RAW_KEYS = [
-    os.environ.get("GEMINI_KEY",   ""),
-    os.environ.get("GEMINI_KEY_2", ""),
-    os.environ.get("GEMINI_KEY_3", ""),
-    os.environ.get("GEMINI_KEY_4", ""),
-    os.environ.get("GEMINI_KEY_5", ""),
-    os.environ.get("GEMINI_KEY_6", ""),
-]
-GEMINI_API_KEYS: list[str] = [k.strip() for k in _RAW_KEYS if k.strip()]
+# ---- VERTEX AI AUTH ----
+import os as _os
 
-if not GEMINI_API_KEYS:
-    raise EnvironmentError("No GEMINI_KEY_* found in .env — add at least one API key.")
+VERTEX_PROJECT  = "river-bedrock-496101-a7"
+VERTEX_LOCATION = "us-central1"
+_SA_KEY_PATH    = _base / "river-bedrock-496101-a7-14f80fc97566.json"
+if _SA_KEY_PATH.exists():
+    _os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(_SA_KEY_PATH)
+
+# Kept for backward-compat stubs in llm_wrapper.py / app.py
+GEMINI_API_KEYS: list[str] = []
+RPD_LIMIT_PER_KEY = 999999
+RPD_STATE_FILE = _base / "data" / "output_json" / "key_quota_state.json"
 
 # ---- PATHS ----
 BASE_DIR        = os.path.dirname(os.path.abspath(__file__))
@@ -54,7 +53,7 @@ GENERATION_CONFIG = {
     "temperature": 0.1,      # Low temp → deterministic, data-accurate output
     "top_p": 0.95,
     "top_k": 40,
-    "max_output_tokens": 8192,
+    "max_output_tokens": 16384,
 }
 
 # ---- PDF PROCESSING ----
@@ -77,10 +76,6 @@ MAX_AUDIT_RETRIES = 2  # How many times Coder re-runs if Auditor finds issues
 # ---- LLM RESPONSE CACHE ----
 LLM_CACHE_ENABLED = True   # set False to disable for debugging
 LLM_CACHE_DIR = Path(BASE_DIR) / "data" / "llm_cache"
-
-# ---- RPD QUOTA TRACKING ----
-RPD_LIMIT_PER_KEY = 18  # Use 18 of 20 free-tier daily limit to leave a 2-call buffer
-RPD_STATE_FILE = Path(BASE_DIR) / "data" / "output_json" / "key_quota_state.json"
 
 # ---- TEXT EXTRACTION ----
 USE_TEXT_EXTRACTION_FIRST = True  # Try pdfplumber before vision API for schedule pages

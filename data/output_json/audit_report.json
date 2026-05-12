@@ -1,0 +1,108 @@
+{
+  "final_passed": false,
+  "total_schedule_members": 52,
+  "total_mapped_members": 52,
+  "unmapped_count": 36,
+  "unmapped_marks": [
+    "C3",
+    "C6",
+    "CH*35c",
+    "SH08d",
+    "C15",
+    "SH10f",
+    "RH25b",
+    "C11",
+    "SH15b",
+    "C12",
+    "C8",
+    "UB36b",
+    "C10",
+    "CH32a",
+    "C7",
+    "EA15a",
+    "CH35c",
+    "UB35c",
+    "CH40b",
+    "CH35a",
+    "UB36c",
+    "C2",
+    "C14",
+    "SH30b",
+    "SH30b FR",
+    "C1",
+    "C13",
+    "UA15a",
+    "SH10d",
+    "C16",
+    "C4",
+    "UB20d",
+    "C5",
+    "UB20a",
+    "SH15a",
+    "SH15b (U)"
+  ],
+  "orphan_marks": [],
+  "static_issues": [],
+  "ai_issues": [
+    {
+      "mark": "PF20a",
+      "issue_type": "missing_mark",
+      "detail": "Member 'PF20a' block not found or incomplete in the Ruby script."
+    },
+    {
+      "mark": "C3",
+      "issue_type": "missing_mark",
+      "detail": "Member 'C3' block not found or incomplete in the Ruby script."
+    },
+    {
+      "mark": "2WL",
+      "issue_type": "missing_mark",
+      "detail": "Member '2WL' block not found or incomplete in the Ruby script."
+    },
+    {
+      "mark": "C6",
+      "issue_type": "missing_mark",
+      "detail": "Member 'C6' block not found or incomplete in the Ruby script."
+    },
+    {
+      "mark": "CH*35c",
+      "issue_type": "missing_mark",
+      "detail": "Member 'CH*35c' block not found or incomplete in the Ruby script."
+    }
+  ],
+  "all_issues": [
+    {
+      "mark": "PF20a",
+      "issue_type": "missing_mark",
+      "detail": "Member 'PF20a' block not found or incomplete in the Ruby script."
+    },
+    {
+      "mark": "C3",
+      "issue_type": "missing_mark",
+      "detail": "Member 'C3' block not found or incomplete in the Ruby script."
+    },
+    {
+      "mark": "2WL",
+      "issue_type": "missing_mark",
+      "detail": "Member '2WL' block not found or incomplete in the Ruby script."
+    },
+    {
+      "mark": "C6",
+      "issue_type": "missing_mark",
+      "detail": "Member 'C6' block not found or incomplete in the Ruby script."
+    },
+    {
+      "mark": "CH*35c",
+      "issue_type": "missing_mark",
+      "detail": "Member 'CH*35c' block not found or incomplete in the Ruby script."
+    }
+  ],
+  "error_feedback_map": {
+    "PF20a": "[missing_mark] Member 'PF20a' block not found or incomplete in the Ruby script.",
+    "C3": "[missing_mark] Member 'C3' block not found or incomplete in the Ruby script.",
+    "2WL": "[missing_mark] Member '2WL' block not found or incomplete in the Ruby script.",
+    "C6": "[missing_mark] Member 'C6' block not found or incomplete in the Ruby script.",
+    "CH*35c": "[missing_mark] Member 'CH*35c' block not found or incomplete in the Ruby script."
+  },
+  "ai_summary": "5 out of 10 members passed all checks. 5 members were not found in the Ruby script."
+}

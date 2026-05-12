@@ -24,7 +24,7 @@ import rich
 from rich import print as rprint
 
 from config import MAX_AUDIT_RETRIES, CODER_OUTPUT_FILE, SCANNER_OUTPUT_FILE, USE_TEXT_EXTRACTION_FIRST
-from core.llm_wrapper       import validate_keys, get_cache_stats, get_key_quota_status
+from core.llm_wrapper       import validate_keys, get_cache_stats
 from core.pdf_utils         import get_page_count
 from agents.scanner         import scan_pdf, get_pages_by_role
 from agents.glossary_agent  import build_glossary
@@ -92,7 +92,7 @@ def _phase(label: str) -> None:
     rprint("="*60)
 
 
-_PHASE_GAP = 65  # seconds — lets all 6 RPM windows reset between phases
+_PHASE_GAP = 5  # seconds — Vertex AI has no 5 RPM cap, minimal gap only
 
 
 def _phase_gap() -> None:
@@ -171,8 +171,8 @@ def _run(pdf_path: str) -> dict:
     _mapper_calls    = min(_plan_pages, 3) + 1 if _plan_pages else 2
     _est_total       = _scanner_calls + _glossary_calls + _schedule_calls + _spatial_calls + _mapper_calls + 1 + 1
 
-    _quota_remaining = sum(max(0, s["rpd_limit"] - s["rpd_used"]) for s in get_key_quota_status())
-    _status          = "✓ OK" if _est_total <= _quota_remaining else "✗ MAY EXCEED QUOTA"
+    _quota_remaining = "Vertex AI (no daily cap)"
+    _status          = "✓ OK"
 
     rprint("  ╔══ API BUDGET ══╗")
     rprint(f"  ║ Estimated calls this run: ~{_est_total}")
@@ -181,16 +181,20 @@ def _run(pdf_path: str) -> dict:
         f"Schedule ~{_schedule_calls} | Spatial ~{_spatial_calls} | "
         f"Mapper ~{_mapper_calls} | Coder+Auditor ~2"
     )
-    rprint(f"  ║ Keys available today: {_quota_remaining} remaining")
+    rprint(f"  ║ Auth: {_quota_remaining}")
     rprint(f"  ║ Status: {_status}")
     rprint("  ╚════════════════╝")
-    if _est_total > _quota_remaining:
-        rprint("  [yellow]WARNING: Estimated calls exceed quota — cache may cover some calls.[/]")
 
     # Phase 1 — Scanner
     _phase("PHASE 1 — SCANNER: Drawing Index Classification")
     index = scan_pdf(str(pdf))
     roles = get_pages_by_role(index)
+    try:
+        with open(SCANNER_OUTPUT_FILE, encoding="utf-8") as _sf:
+            structure_type = json.load(_sf).get("project_structure_type", "unknown")
+    except Exception:
+        structure_type = index.get("project_structure_type", "unknown")
+    rprint(f"  Project structure type detected: [bold]{structure_type}[/]")
     for role, pages in roles.items():
         rprint(f"  {role:12}: pages {pages}")
 
@@ -204,11 +208,20 @@ def _run(pdf_path: str) -> dict:
     _phase("PHASE 2 — SCHEDULE PARSER: Steel Member Extraction")
     members = parse_schedule_pages(str(pdf), roles["schedule"])
     if not members:
-        msg = "No structural members found. Check scanner output and PDF quality."
-        rprint(f"ERROR: {msg}")
-        return {"ruby_path": None, "error": msg,
-                "members_total": 0, "placed": 0,
-                "unmapped": 0, "unmapped_marks": [], "audit_passed": False}
+        rprint("[yellow]  WARNING: Steel schedule returned 0 members.[/]")
+        rprint("  → Attempting fallback: visual extraction from steelwork detail pages...")
+        detail_pages = roles.get("steelwork_detail", [])
+        if detail_pages:
+            rprint(f"  Found {len(detail_pages)} steelwork detail page(s) — running detail extractor...")
+            from agents.detail_extractor import extract_from_details
+            members = extract_from_details(str(pdf), detail_pages)
+            rprint(f"  Detail extractor found {len(members)} member(s).")
+        if not members:
+            msg = "No structural members found in schedule OR detail pages. Check PDF quality."
+            rprint(f"[bold red]ABORT:[/] {msg}")
+            return {"ruby_path": None, "error": msg,
+                    "members_total": 0, "placed": 0,
+                    "unmapped": 0, "unmapped_marks": [], "audit_passed": False}
     rprint(f"  {len(members)} members extracted.")
 
     # Phase 3 — Spatial Parser

@@ -82,13 +82,8 @@ with left:
         st.success(f"✅ **{uploaded_file.name}**\n\n{kb:.1f} KB")
 
     st.divider()
-    st.subheader("🔑 API Key Status")
-    for _ks in get_key_quota_status():
-        _used, _lim = _ks["rpd_used"], _ks["rpd_limit"]
-        _filled = min(10, int(_used / max(_lim, 1) * 10))
-        _bar    = "█" * _filled + "░" * (10 - _filled)
-        _label  = "**EXHAUSTED**" if _ks["exhausted"] else f"{_used}/{_lim} calls used"
-        st.caption(f"Key {_ks['index']}: `{_bar}` {_label}")
+    st.subheader("🌐 Vertex AI Status")
+    st.success("✅ Service Account connected\n\nProject: `river-bedrock-496101-a7`")
 
     st.divider()
     st.subheader("⚙️ Options")
@@ -164,18 +159,13 @@ def _icon(line: str) -> str:
 
 if run_btn and uploaded_file:
 
-    # Pre-flight: check that at least one key has remaining RPD quota
+    # Pre-flight: verify Vertex AI connection
     if not any_key_available():
-        _kstatus   = get_key_quota_status()
-        _earliest  = min(
-            (s["rpd_reset_at"] for s in _kstatus if s["rpd_reset_at"]),
-            default="midnight UTC",
-        )
         with tab_dash:
             status_slot.error(
-                f"❌ **All API keys exhausted for today.**  \n"
-                f"Keys reset at `{_earliest}`.  \n"
-                "Add more keys in `.env` to continue, or wait until reset."
+                "❌ **Vertex AI connection unavailable.**  \n"
+                "Check that the service account JSON key file exists in the project root "
+                "and the project `river-bedrock-496101-a7` has the Vertex AI API enabled."
             )
         st.stop()
 

@@ -6,9 +6,9 @@ PyMuPDF>=1.23.0           # fitz: PDF rendering at DPI 300, text extraction
 pdfplumber>=0.10.3         # Table extraction fallback
 
 # --- AI / LLM ---
-google-genai>=0.8.0           # Gemini 2.5 Flash (DO NOT DOWNGRADE MODEL)
-langchain>=0.2.0              # Agent orchestration, prompt templates
-langchain-google-genai>=1.0.0 # LangChain x Gemini integration
+google-genai>=0.8.0               # Gemini 2.5 Flash (DO NOT DOWNGRADE MODEL)
+google-cloud-aiplatform>=1.71.0  # Vertex AI SDK dependencies + auth
+langchain>=0.2.0                  # Agent orchestration, prompt templates
 
 # --- Data & Validation ---
 pydantic>=2.5.0           # Structured output schemas
@@ -25,3 +25,4 @@ streamlit>=1.35.0         # Web app interface (run: streamlit run app.py)
 Pillow>=10.0.0            # Image processing
 rich>=13.0.0              # Coloured terminal output across agents
 tqdm>=4.66.0              # Progress bars
+json-repair               # Fallback repair for malformed LLM JSON output

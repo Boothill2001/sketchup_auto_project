@@ -41,7 +41,9 @@ Return JSON with this exact schema:
   "has_level_markers": <true|false>,
   "has_legend_abbreviations": <true|false>,
   "drawing_number": "<drawing number if visible, else null>",
-  "drawing_title": "<title from title block if visible, else null>"
+  "drawing_title": "<title from title block if visible, else null>",
+  "structure_material": "<one of: steel_frame | reinforced_concrete | composite | timber | masonry | mixed | unknown>",
+  "page_subtype": "<one of: steelwork_detail | rc_schedule | footing_plan | roof_framing | wall_bracing | null>"
 }
 
 Priority rules (apply the FIRST matching rule):
@@ -52,7 +54,10 @@ Priority rules (apply the FIRST matching rule):
 5. Cross-section cut through structural elements (slabs, walls, beams) → section_view
 6. Detail drawings of bolted/welded connections, splice plates, base plates → connection_detail
 7. Drawing number index, sheet list, or table of contents → drawing_index
-8. General text notes / specification clauses → general_note"""
+8. General text notes / specification clauses → general_note
+9. steelwork_detail: page shows section drawings or connection details of steel members (UB, UC, RHS, SHS, CHS shapes drawn as cross-sections or isometric), but NO table with MARK/SIZE/QTY columns → type=connection_detail, page_subtype=steelwork_detail
+10. rc_schedule: table listing concrete member marks (C1,C2,B1,B2...) with dimensions (width x depth), rebar bars (N12, N16, N20...), concrete grade (f'c) → type=steel_schedule, page_subtype=rc_schedule
+11. footing_plan: plan view showing pad footings, strip footings, raft slab with reinforcement callouts → type=plan_view, page_subtype=footing_plan"""
 
 
 # ── Composite grid prompt ─────────────────────────────────────────────────────
@@ -64,8 +69,8 @@ Classify EVERY thumbnail visible in the grid.
 
 Return a JSON array with exactly one object per thumbnail:
 [
-  {"page_index": 0, "role": "plan_view", "confidence": "high"},
-  {"page_index": 1, "role": "steel_schedule", "confidence": "high"},
+  {"page_index": 0, "role": "plan_view", "confidence": "high", "structure_material": "reinforced_concrete"},
+  {"page_index": 1, "role": "steel_schedule", "confidence": "high", "structure_material": "steel_frame"},
   ...
 ]
 
@@ -128,7 +133,15 @@ def _role_to_index_entry(role: str) -> dict:
 
 def _parse_grid_response(raw_json: str, expected_pages: list[int]) -> dict[int, dict]:
     """Parse LLM grid classification response → {page_num: index_entry}."""
-    data = json.loads(raw_json)
+    try:
+        data = json.loads(raw_json)
+    except json.JSONDecodeError:
+        try:
+            from json_repair import repair_json
+            data = json.loads(repair_json(raw_json))
+            rprint("[yellow]  JSON repaired (minor LLM formatting issue)[/]")
+        except Exception:
+            raise
 
     # Unwrap if LLM wrapped the array in an object
     if isinstance(data, dict):
@@ -143,6 +156,8 @@ def _parse_grid_response(raw_json: str, expected_pages: list[int]) -> dict[int, 
     valid_pages = set(expected_pages)
     result: dict[int, dict] = {}
 
+    _VALID_MATERIALS = {"steel_frame", "reinforced_concrete", "composite", "timber", "masonry", "mixed", "unknown"}
+
     for item in data:
         if not isinstance(item, dict):
             continue
@@ -151,7 +166,11 @@ def _parse_grid_response(raw_json: str, expected_pages: list[int]) -> dict[int, 
         if role not in _ROLE_FLAGS:
             role = "other"
         if raw_idx is not None and int(raw_idx) in valid_pages:
-            result[int(raw_idx)] = _role_to_index_entry(role)
+            entry = _role_to_index_entry(role)
+            mat = item.get("structure_material", "unknown")
+            entry["structure_material"] = mat if mat in _VALID_MATERIALS else "unknown"
+            entry["page_subtype"] = None
+            result[int(raw_idx)] = entry
 
     # Mark any pages the LLM missed as "other"
     for p in expected_pages:
@@ -235,6 +254,8 @@ def scan_pdf(pdf_path: str) -> dict:
             with open(SCANNER_OUTPUT_FILE, "r", encoding="utf-8") as f:
                 raw = json.load(f)
             for k, v in raw.items():
+                if not isinstance(v, dict):
+                    continue
                 if v.get("type") not in (None, "parse_error"):
                     index[int(k)] = v
             if index:
@@ -289,6 +310,36 @@ def scan_pdf(pdf_path: str) -> dict:
         _scan_pages_sequential(pdf_path, pages_todo, index, total_pages)
 
     rprint(f"  Index → {SCANNER_OUTPUT_FILE}")
+
+    # ── Aggregate structure_material → project_structure_type ─────────────────
+    mat_counts: dict[str, int] = {}
+    for info in index.values():
+        mat = info.get("structure_material", "unknown")
+        if mat and mat not in ("unknown", None):
+            mat_counts[mat] = mat_counts.get(mat, 0) + 1
+
+    steel_count = mat_counts.get("steel_frame", 0)
+    rc_count    = mat_counts.get("reinforced_concrete", 0)
+
+    if steel_count >= 2 and rc_count >= 2:
+        project_structure_type = "composite"
+    elif steel_count > rc_count:
+        project_structure_type = "steel_frame"
+    elif rc_count > steel_count:
+        project_structure_type = "reinforced_concrete"
+    else:
+        project_structure_type = "unknown"
+
+    try:
+        with open(SCANNER_OUTPUT_FILE, "r", encoding="utf-8") as f:
+            saved = json.load(f)
+        saved["project_structure_type"] = project_structure_type
+        with open(SCANNER_OUTPUT_FILE, "w", encoding="utf-8") as f:
+            json.dump(saved, f, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
+
+    rprint(f"  Project structure type: {project_structure_type}")
     return dict(sorted(index.items()))
 
 
@@ -298,7 +349,8 @@ def get_pages_by_role(index: dict) -> dict[str, list[int]]:
     Returns: { "schedule": [...], "plan": [...], "elevation": [...], "glossary": [...] }
     """
     roles: dict[str, list[int]] = {
-        "schedule": [], "plan": [], "elevation": [], "glossary": []
+        "schedule": [], "plan": [], "elevation": [], "glossary": [],
+        "steelwork_detail": [], "rc_schedule": [],
     }
     for page_num, info in index.items():
         ptype        = info.get("type", "")
@@ -306,6 +358,7 @@ def get_pages_by_role(index: dict) -> dict[str, list[int]]:
         has_grid     = info.get("has_grid_lines")
         has_levels   = info.get("has_level_markers")
         has_legend   = info.get("has_legend_abbreviations")
+        subtype      = info.get("page_subtype")
 
         if ptype == "steel_schedule" or has_schedule:
             roles["schedule"].append(int(page_num))
@@ -315,6 +368,10 @@ def get_pages_by_role(index: dict) -> dict[str, list[int]]:
             roles["elevation"].append(int(page_num))
         if ptype in ("general_note", "glossary") or has_legend:
             roles["glossary"].append(int(page_num))
+        if subtype == "steelwork_detail":
+            roles["steelwork_detail"].append(int(page_num))
+        if subtype == "rc_schedule":
+            roles["rc_schedule"].append(int(page_num))
 
     for role in roles:
         roles[role] = sorted(set(roles[role]))

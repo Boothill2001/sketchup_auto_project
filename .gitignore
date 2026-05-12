@@ -16,6 +16,11 @@ env/
 .env
 *.env
 
+# Google Cloud Service Account keys — NEVER commit credentials
+river-bedrock-*.json
+data/output_json/
+data/llm_cache/
+
 # Output files (optional - remove if you want to sync outputs)
 output/*.json
 output/*.csv
