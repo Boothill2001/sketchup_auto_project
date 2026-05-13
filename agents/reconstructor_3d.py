@@ -388,6 +388,15 @@ def build_architectural_ruby(
     if pdf_analysis is None:
         pdf_analysis = load_analysis_dict()
 
+    # Guard: skip Ruby generation when Phase 5b returned empty (timeout or structural-only)
+    _has_arch = any(
+        arch_elements.get(k)
+        for k in ("walls", "slabs", "doors", "windows", "stairs", "columns")
+    )
+    if not _has_arch:
+        rprint("Reconstructor: no architectural elements — outputting steel-only model")
+        return HEADER + "\nputs 'No architectural elements extracted — steel-only model.'"
+
     walls = arch_elements.get("walls", [])
     doors = arch_elements.get("doors", [])
     windows = arch_elements.get("windows", [])

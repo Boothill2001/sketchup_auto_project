@@ -3,20 +3,16 @@
     "UB": "Universal Beam",
     "UC": "Universal Column",
     "RHS": "Rectangular Hollow Section",
-    "SHS": "Square Hollow Section",
-    "CHS": "Circular Hollow Section",
-    "FB": "Flat Bar",
-    "EA": "Equal Angle",
-    "UA": "Unequal Angle",
-    "UMBR": "Under Member",
-    "UNO": "Unless Noted Otherwise",
+    "UMBR": "Under Beam",
+    "PL": "Plate",
     "COL": "Column",
     "BM": "Beam",
-    "PL": "Plate"
+    "SHS": "Square Hollow Section",
+    "CHS": "Circular Hollow Section",
+    "FB": "Flat Bar"
   },
   "material_grades": {
-    "default_steel": "S275JR",
-    "bolts": "8.8/S"
+    "default_steel": "S275"
   },
-  "notes": "Member naming convention for beams and columns follows the format: [Section Type] [Dimensions], e.g., UB 406x178x60, UC 203x203x46, RHS 150x100x6, SHS 100x100x5, CHS 101.6x5, FB 100x10, EA 100x100x10, UA 150x75x10."
+  "notes": "Beams are called up on plan using the following convention: BEAM TYPE AND SIZE, BEAM MARK, BEAM LENGTH, BEAM ORIENTATION (TOP/BOTTOM FLANGE), BEAM CONNECTION DETAIL, BEAM CONNECTION TYPE, BEAM REINFORCEMENT/NOTCHING."
 }

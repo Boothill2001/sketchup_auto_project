@@ -68,6 +68,46 @@ STEEL_SECTIONS: dict[str, dict] = {
     # ── FB — Flat Bar ────────────────────────────────────────────────────────
     "FB": {"type": "FB", "d": None, "b": None, "t": None},
 
+    # ── AS4100 UB series (nominal depth prefix, no mass suffix) ─────────────
+    "150UB": {"type": "UB", "d": 155, "bf":  75, "tf":  7.0, "tw": 4.5},
+    "180UB": {"type": "UB", "d": 173, "bf":  90, "tf":  8.0, "tw": 5.5},
+    "200UB": {"type": "UB", "d": 203, "bf": 100, "tf":  8.0, "tw": 5.0},
+    "250UB": {"type": "UB", "d": 256, "bf": 146, "tf": 10.9, "tw": 6.4},
+    "310UB": {"type": "UB", "d": 302, "bf": 133, "tf":  9.6, "tw": 6.1},
+    "360UB": {"type": "UB", "d": 359, "bf": 148, "tf": 13.0, "tw": 8.0},
+    "410UB": {"type": "UB", "d": 403, "bf": 178, "tf": 12.8, "tw": 8.0},
+    "460UB": {"type": "UB", "d": 457, "bf": 191, "tf": 14.5, "tw": 9.0},
+    "530UB": {"type": "UB", "d": 533, "bf": 209, "tf": 15.6, "tw": 10.2},
+
+    # ── AS4100 PFC series ────────────────────────────────────────────────────
+    "75PFC":  {"type": "PFC", "d":  75, "bf":  40, "tf":  6.1, "tw": 4.5},
+    "100PFC": {"type": "PFC", "d": 100, "bf":  50, "tf":  6.7, "tw": 5.0},
+    "150PFC": {"type": "PFC", "d": 150, "bf":  75, "tf":  9.5, "tw": 6.0},
+    "200PFC": {"type": "PFC", "d": 200, "bf":  75, "tf": 12.5, "tw": 6.5},
+    "250PFC": {"type": "PFC", "d": 250, "bf":  90, "tf": 13.0, "tw": 7.0},
+    "300PFC": {"type": "PFC", "d": 300, "bf":  90, "tf": 16.5, "tw": 8.0},
+
+    # ── AS4100 SHS series ────────────────────────────────────────────────────
+    "50SHS4":  {"type": "SHS", "d":  50, "b":  50, "t": 4.0},
+    "65SHS4":  {"type": "SHS", "d":  65, "b":  65, "t": 4.0},
+    "75SHS4":  {"type": "SHS", "d":  75, "b":  75, "t": 4.0},
+    "89SHS4":  {"type": "SHS", "d":  89, "b":  89, "t": 4.0},
+    "100SHS4": {"type": "SHS", "d": 100, "b": 100, "t": 4.0},
+    "100SHS5": {"type": "SHS", "d": 100, "b": 100, "t": 5.0},
+    "150SHS5": {"type": "SHS", "d": 150, "b": 150, "t": 5.0},
+    "150SHS6": {"type": "SHS", "d": 150, "b": 150, "t": 6.0},
+    "200SHS5": {"type": "SHS", "d": 200, "b": 200, "t": 5.0},
+    "200SHS6": {"type": "SHS", "d": 200, "b": 200, "t": 6.0},
+    "250SHS6": {"type": "SHS", "d": 250, "b": 250, "t": 6.0},
+
+    # ── AS4100 RHS series ────────────────────────────────────────────────────
+    "75x50RHS4":   {"type": "RHS", "d":  75, "b":  50, "t": 4.0},
+    "100x50RHS4":  {"type": "RHS", "d": 100, "b":  50, "t": 4.0},
+    "125x75RHS4":  {"type": "RHS", "d": 125, "b":  75, "t": 4.0},
+    "150x50RHS5":  {"type": "RHS", "d": 150, "b":  50, "t": 5.0},
+    "150x100RHS5": {"type": "RHS", "d": 150, "b": 100, "t": 5.0},
+    "200x100RHS5": {"type": "RHS", "d": 200, "b": 100, "t": 5.0},
+
     # ════════════════════════════════════════════════════════════════════════
     # TCVN / JIS / VINA-ONE — Vietnamese & Asian structural steel sections
     # ════════════════════════════════════════════════════════════════════════
@@ -163,11 +203,24 @@ _SECTION_PATTERNS = [
     (re.compile(r'^SHS\s*(\d+)\s*[xX]\s*([\d.]+)\s*$', re.IGNORECASE),
      lambda m: {"type": "SHS", "d": int(m[1]), "b": int(m[1]), "t": float(m[2])}),
 
-    # UB/UC metric: <depth>UB<mass> or <depth>UC<mass>
+    # UB/UC metric with mass: <depth>UB<mass> or <depth>UC<mass>
     (re.compile(r'^(\d+)\s*UB\s*([\d.]+)\s*$', re.IGNORECASE),
      lambda m: {"type": "UB", "d": int(m[1]), "bf": int(m[1]) // 2, "tf": 8.0, "tw": 5.0}),
     (re.compile(r'^(\d+)\s*UC\s*([\d.]+)\s*$', re.IGNORECASE),
      lambda m: {"type": "UC", "d": int(m[1]), "bf": int(m[1]) // 2, "tf": 8.0, "tw": 5.0}),
+    # UB/UC short: <depth>UB or <depth>UC (no mass suffix)
+    (re.compile(r'^(\d+)\s*UB\s*$', re.IGNORECASE),
+     lambda m: {"type": "UB", "d": int(m[1]), "bf": int(m[1]) // 2, "tf": 8.0, "tw": 5.0}),
+    (re.compile(r'^(\d+)\s*UC\s*$', re.IGNORECASE),
+     lambda m: {"type": "UC", "d": int(m[1]), "bf": int(m[1]) // 2, "tf": 8.0, "tw": 5.0}),
+    # PFC short: <depth>PFC
+    (re.compile(r'^(\d+)\s*PFC\s*$', re.IGNORECASE),
+     lambda m: {"type": "PFC", "d": int(m[1]), "bf": max(40, int(m[1]) // 3), "tf": 7.0, "tw": 5.0}),
+    # SHS short: <depth>SHS<t> or <depth>SHS
+    (re.compile(r'^(\d+)\s*SHS\s*([\d.]+)\s*$', re.IGNORECASE),
+     lambda m: {"type": "SHS", "d": int(m[1]), "b": int(m[1]), "t": float(m[2])}),
+    (re.compile(r'^(\d+)\s*SHS\s*$', re.IGNORECASE),
+     lambda m: {"type": "SHS", "d": int(m[1]), "b": int(m[1]), "t": 5.0}),
 
     # UB/UC old format: UB<depth><suffix> or UC<depth><suffix>
     (re.compile(r'^UB\s*(\d+)\s*([a-zA-Z]*)\s*$', re.IGNORECASE),
@@ -239,6 +292,134 @@ def lookup_section(section_str: str) -> dict | None:
     return None
 
 
+# ============================================================================
+# TEMPLATE-BASED RUBY GENERATOR — no LLM needed for standard geometry
+# ============================================================================
+
+def _estimate_depth(section_str: str) -> int:
+    """Extract first integer from a section string as depth in mm."""
+    m = re.search(r'(\d+)', section_str or "")
+    return int(m.group(1)) if m else 100
+
+
+def _section_rect(dims: dict, mtype: str, section_str: str) -> tuple[list, str]:
+    """
+    Return (pts_2d, log) for a solid rectangular cross-section.
+    pts_2d is a list of (x, y) tuples in mm, centred on origin.
+    All members use solid rect for LOD300 (no hollow shell needed).
+    """
+    sec_type = dims.get("type", "")
+
+    if sec_type in ("SHS", "RHS"):
+        b = dims.get("b", dims.get("d", 100))
+        d = dims.get("d", 100)
+        half_b, half_d = b / 2, d / 2
+        pts = [(-half_b, -half_d), (half_b, -half_d), (half_b, half_d), (-half_b, half_d)]
+        log = f"{sec_type} {b}×{d}mm"
+
+    elif sec_type in ("UB", "UC"):
+        d  = dims.get("d", 200)
+        bf = dims.get("bf", max(100, d // 2))
+        pts = [(-bf / 2, 0), (bf / 2, 0), (bf / 2, d), (-bf / 2, d)]
+        log = f"{sec_type} solid rect {bf}×{d}mm"
+
+    elif sec_type == "PFC":
+        d  = dims.get("d", 150)
+        bf = dims.get("bf", 75)
+        pts = [(0, 0), (bf, 0), (bf, d), (0, d)]
+        log = f"PFC {bf}×{d}mm"
+
+    elif sec_type == "angle":
+        d  = dims.get("d", 75)
+        bf = dims.get("bf", d)
+        pts = [(0, 0), (bf, 0), (bf, d), (0, d)]
+        log = f"angle {bf}×{d}mm"
+
+    elif sec_type == "FB":
+        width = dims.get("b") or 100
+        thk   = dims.get("t") or 10
+        pts = [(0, 0), (width, 0), (width, thk), (0, thk)]
+        log = f"FB {width}×{thk}mm"
+
+    else:
+        depth = _estimate_depth(section_str)
+        width = depth if mtype in ("column", "strut") else max(50, depth // 2)
+        pts = [(-width / 2, 0), (width / 2, 0), (width / 2, depth), (-width / 2, depth)]
+        log = f"estimated {width}×{depth}mm (section not in library)"
+
+    return pts, log
+
+
+def _pts_to_ruby(pts: list) -> str:
+    return "[" + ", ".join(f"[{x:g}, {y:g}]" for x, y in pts) + "]"
+
+
+def _layer_for(mtype: str, conf: str, sz: float, ez: float) -> str:
+    if conf == "unmapped" or sz == -9999 or ez == -9999:
+        return "LOD300_UNMAPPED_NEEDS_REVIEW"
+    mt = mtype.lower()
+    if mt == "column":
+        return "STR-Columns"
+    if mt in ("beam", "purlin", "rafter", "girder"):
+        return "STR-Beams"
+    if mt == "brace":
+        return "STR-Braces"
+    if mt in ("plate", "flatbar", "gusset", "baseplat"):
+        return "STR-Plates"
+    return "STR-Beams"
+
+
+def _build_member_ruby(member: dict) -> str:
+    """Generate Ruby code for one structural member — pure template, no LLM call."""
+    mark    = (member.get("mark")    or "M?").replace('"', '\\"')
+    section = (member.get("section") or "").replace('"', '\\"')
+    mtype   = (member.get("type")    or "beam").lower()
+    conf    = member.get("confidence", "high")
+    dims    = member.get("_section_dims") or {}
+
+    sp = member.get("start_point") or {}
+    ep = member.get("end_point")   or {}
+    sx = sp.get("x", 0); sy = sp.get("y", 0); sz = sp.get("z", 0)
+    ex = ep.get("x", 0); ey = ep.get("y", 0); ez = ep.get("z", 3000)
+
+    layer = _layer_for(mtype, conf, sz, ez)
+    if layer == "LOD300_UNMAPPED_NEEDS_REVIEW":
+        sx, sy, sz, ex, ey, ez = 0, 0, 0, 0, 0, 3000
+
+    pts, log_msg = _section_rect(dims, mtype, section)
+    if not dims:
+        rprint(f"  Section {section!r} not in library — {log_msg}")
+    pts_ruby = _pts_to_ruby(pts)
+
+    return (
+        f"# ---- {mark} | {section} | {mtype} ----\n"
+        f"begin\n"
+        f"  _sp  = Geom::Point3d.new({sx}.mm, {sy}.mm, {sz}.mm)\n"
+        f"  _ep  = Geom::Point3d.new({ex}.mm, {ey}.mm, {ez}.mm)\n"
+        f"  _vec = _sp.vector_to(_ep)\n"
+        f"  _len = _sp.distance(_ep)\n"
+        f"  if _len < 1.mm\n"
+        f"    puts \"SKIP {mark}: zero-length\"\n"
+        f"  else\n"
+        f"    _grp = ents.add_group\n"
+        f"    _ge  = _grp.entities\n"
+        f"    _t   = Geom::Transformation.new(_sp, _vec)\n"
+        f"    _raw = {pts_ruby}\n"
+        f"    _face = _ge.add_face(_raw.map {{ |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) }})\n"
+        f"    _face.pushpull(_len) if _face\n"
+        f"    _grp.layer = get_or_create_layer(layers, \"{layer}\")\n"
+        f"    _grp.material = _steel_mat\n"
+        f"    _grp.set_attribute(\"IFC\", \"Mark\",    \"{mark}\")\n"
+        f"    _grp.set_attribute(\"IFC\", \"Section\", \"{section}\")\n"
+        f"    _grp.set_attribute(\"IFC\", \"Type\",    \"{mtype}\")\n"
+        f"    _grp.name = \"{mark}\"\n"
+        f"  end\n"
+        f"rescue => e\n"
+        f"  puts \"SKIP {mark}: #{{e.message}}\"\n"
+        f"end\n"
+    )
+
+
 RUBY_HEADER = """\
 # =============================================================================
 # LOD 300 Structural Model — Auto-Generated by PDF-to-SketchUp Pipeline
@@ -255,6 +436,19 @@ model.start_operation('LOD300 Structural Import', true)
 def get_or_create_layer(layers, name)
   layers[name] || layers.add(name)
 end
+
+# ── Layers ────────────────────────────────────────────────────────────────────
+["STR-Columns", "STR-Beams", "STR-Braces", "STR-Plates",
+ "STR-Foundations", "STR-Slabs", "LOD300_UNMAPPED_NEEDS_REVIEW"].each do |lname|
+  get_or_create_layer(layers, lname)
+end
+
+# ── Materials ─────────────────────────────────────────────────────────────────
+_mats = model.materials
+_steel_mat = _mats["Structural_Steel"] || _mats.add("Structural_Steel")
+_steel_mat.color = Sketchup::Color.new(160, 160, 175)
+_concrete_mat = _mats["Concrete"] || _mats.add("Concrete")
+_concrete_mat.color = Sketchup::Color.new(180, 175, 165)
 
 """
 
@@ -468,13 +662,14 @@ def _generate_ruby_for_batch(batch: list[dict]) -> str:
 
 def build_ruby_script(mapped_members: list[dict], error_feedback_map: dict | None = None) -> str:
     """
-    Build the full Ruby script using at most 3 batched LLM calls.
-    error_feedback_map retries are still done per-member (single call) to keep diffs minimal.
+    Build the full Ruby script.
+    Normal members: template-generated in Python (no LLM call, deterministic).
+    error_feedback retries: single LLM call per member to apply auditor corrections.
     """
     error_feedback_map = error_feedback_map or {}
     total = len(mapped_members)
 
-    # ── Section lookup: inject _section_dims before any LLM call ─────────────
+    # ── Section lookup: inject _section_dims before generation ───────────────
     hit_count = 0
     for member in mapped_members:
         dims = lookup_section(member.get("section", ""))
@@ -483,29 +678,22 @@ def build_ruby_script(mapped_members: list[dict], error_feedback_map: dict | Non
             hit_count += 1
     rprint(f"  Section lookup: {hit_count}/{total} members resolved from table (no API needed)")
 
-    # Split members needing error-retry out first; they get individual calls.
     retry_members  = [m for m in mapped_members if error_feedback_map.get(m.get("mark", ""))]
-    batch_members  = [m for m in mapped_members if not error_feedback_map.get(m.get("mark", ""))]
-
-    BATCH_SIZE = 8
-    batches = [batch_members[i:i + BATCH_SIZE] for i in range(0, len(batch_members), BATCH_SIZE)]
+    normal_members = [m for m in mapped_members if not error_feedback_map.get(m.get("mark", ""))]
 
     rprint(f"[bold blue]Coder:[/] {total} members → "
-           f"{len(batches)} batch call(s) + {len(retry_members)} individual retry call(s)")
+           f"{len(normal_members)} template-generated + {len(retry_members)} LLM retry call(s)")
 
-    # ---- Collect batch Ruby blocks ----
-    batch_ruby_parts: list[str] = []
-    for b_idx, batch in enumerate(batches, 1):
-        marks = [m.get("mark", "?") for m in batch]
-        rprint(f"  Batch {b_idx}/{len(batches)}: {len(batch)} members ({marks[0]} … {marks[-1]})")
-        batch_ruby = _generate_ruby_for_batch(batch)
-        batch_ruby_parts.append(batch_ruby)
+    # ---- Template-based generation for normal members (zero LLM calls) ----
+    normal_parts: list[str] = []
+    for member in normal_members:
+        normal_parts.append(_build_member_ruby(member))
 
-    # ---- Collect retry Ruby blocks ----
-    retry_ruby_parts: list[tuple[str, dict]] = []
+    # ---- LLM retries for auditor-flagged members ----
+    retry_parts: list[tuple[str, dict, str]] = []
     for member in retry_members:
         mark = member.get("mark", "?")
-        rprint(f"  Retry: {mark}")
+        rprint(f"  Retry (LLM): {mark}")
         feedback = error_feedback_map[mark]
         ruby_block = generate_ruby_for_member(member, feedback, None)
         ruby_block = ruby_block.strip()
@@ -514,20 +702,17 @@ def build_ruby_script(mapped_members: list[dict], error_feedback_map: dict | Non
             if ruby_block.startswith("ruby"):
                 ruby_block = ruby_block[4:]
             ruby_block = ruby_block.rsplit("```", 1)[0].strip()
-        retry_ruby_parts.append((mark, member, ruby_block))
+        retry_parts.append((mark, member, ruby_block))
 
     # ---- Assemble final script ----
     blocks = [RUBY_HEADER]
-
-    for part in batch_ruby_parts:
+    for part in normal_parts:
         blocks.append(part)
-
-    for mark, member, ruby_block in retry_ruby_parts:
+    for mark, member, ruby_block in retry_parts:
         blocks.append(
             f"\n# ---- {mark} | {member.get('section','')} | {member.get('type','')} ----\n"
             f"{ruby_block}\n"
         )
-
     blocks.append(RUBY_FOOTER)
     return "\n".join(blocks)
 

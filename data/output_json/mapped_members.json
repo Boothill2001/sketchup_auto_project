@@ -1,27 +1,168 @@
 {
   "mapped_members": [
     {
-      "mark": "CH13c",
-      "type": "other",
-      "section": "CH13c",
-      "material": "S275JR",
-      "length_mm": null,
-      "quantity": 10,
-      "grid_reference": "Grid 1-4, A-B",
-      "remarks": null,
-      "page_source": 1,
-      "x_min": 165,
-      "y_min": 270,
-      "x_max": 190,
-      "y_max": 1000,
+      "mark": "30b",
+      "section": "SH",
+      "type": "column",
       "start_point": {
         "x": 0,
-        "y": 9000,
+        "y": 12000,
         "z": 3500
       },
       "end_point": {
         "x": 0,
-        "y": 9000,
+        "y": 12000,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "text-loc p8",
+      "level_ref": "FL1 to Roof",
+      "confidence": "high"
+    },
+    {
+      "mark": "35b",
+      "section": "UB",
+      "type": "column",
+      "start_point": {
+        "x": 6000,
+        "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 6000,
+        "y": 0,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "B-1",
+      "level_ref": "FL1 to Roof",
+      "confidence": "high"
+    },
+    {
+      "mark": "35c",
+      "section": "CH",
+      "type": "column",
+      "start_point": {
+        "x": 18000,
+        "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 18000,
+        "y": 0,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "text-loc p3",
+      "level_ref": "FL1 to Roof",
+      "confidence": "high"
+    },
+    {
+      "mark": "40b",
+      "section": "CH",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 12000,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 0,
+        "y": 12000,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "text-loc p8",
+      "level_ref": "FL1 to Roof",
+      "confidence": "high"
+    },
+    {
+      "mark": "36b",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 6000,
+        "y": 0,
+        "z": 3500
+      },
+      "confidence": "high",
+      "grid_ref": "text-loc p8"
+    },
+    {
+      "mark": "SH15b (U)",
+      "type": "other",
+      "section": "SH15b",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": null,
+      "grid_reference": "D1",
+      "remarks": "Hanger (Under)",
+      "page_source": 1,
+      "x": 1400,
+      "y": 480,
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3500
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "A-1",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "CH13c",
+      "type": "beam",
+      "section": "CH13c",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": null,
+      "grid_reference": "Throughout structure",
+      "remarks": null,
+      "page_source": 1,
+      "x": 2500,
+      "y": 500,
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 6000,
+        "y": 0,
+        "z": 3500
+      },
+      "confidence": "high",
+      "grid_ref": "text-loc p3"
+    },
+    {
+      "mark": "SH20a",
+      "type": "beam",
+      "section": "SH20a",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": null,
+      "grid_reference": "Top level",
+      "remarks": "SECOND LAYER OF Z-PURLINS",
+      "page_source": 1,
+      "x": 2500,
+      "y": 380,
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 6000,
+        "y": 0,
         "z": 3500
       },
       "confidence": "high",
@@ -31,24 +172,22 @@
       "mark": "RB16a",
       "type": "brace",
       "section": "RB16a",
-      "material": "S275JR",
+      "material": "S275",
       "length_mm": null,
-      "quantity": 10,
-      "grid_reference": "Grid 1-4, A-B",
+      "quantity": null,
+      "grid_reference": "Throughout structure",
       "remarks": null,
       "page_source": 1,
-      "x_min": 190,
-      "y_min": 270,
-      "x_max": 215,
-      "y_max": 1000,
+      "x": 1800,
+      "y": 600,
       "start_point": {
-        "x": 9000,
-        "y": 9000,
+        "x": 0,
+        "y": 0,
         "z": 3500
       },
       "end_point": {
-        "x": 9000,
-        "y": 9000,
+        "x": 6000,
+        "y": 0,
         "z": 3500
       },
       "confidence": "high",
@@ -56,53 +195,103 @@
     },
     {
       "mark": "FB",
-      "type": "other",
+      "type": "plate",
       "section": "FB",
-      "material": "S275JR",
+      "material": "S275",
       "length_mm": null,
-      "quantity": 10,
-      "grid_reference": "Grid 1-4, A-B",
+      "quantity": null,
+      "grid_reference": "Throughout structure",
       "remarks": "REFER SECTION 2 FOR FB LOCATIONS ON CURVED RAFTER LOCATION TYP.",
       "page_source": 1,
-      "x_min": 215,
-      "y_min": 270,
-      "x_max": 240,
-      "y_max": 1000,
+      "x": 1800,
+      "y": 700,
       "start_point": {
         "x": 0,
-        "y": 9000,
+        "y": 0,
         "z": 3500
       },
       "end_point": {
-        "x": 0,
-        "y": 9000,
+        "x": 6000,
+        "y": 0,
         "z": 3500
       },
       "confidence": "high",
       "grid_ref": "text-loc p3"
     },
     {
-      "mark": "SH20a",
-      "type": "other",
-      "section": "SH20a",
-      "material": "S275JR",
+      "mark": "UB20d",
+      "type": "beam",
+      "section": "UB20d",
+      "material": "S275",
       "length_mm": null,
-      "quantity": 10,
-      "grid_reference": "Grid 1-4, A-B",
-      "remarks": "SECOND LAYER OF Z-PURLINS",
+      "quantity": null,
+      "grid_reference": "C2-C3",
+      "remarks": null,
       "page_source": 1,
-      "x_min": 240,
-      "y_min": 270,
-      "x_max": 265,
-      "y_max": 1000,
+      "x": 2500,
+      "y": 300,
       "start_point": {
-        "x": 0,
-        "y": 9000,
+        "x": 6000,
+        "y": 0,
         "z": 3500
       },
       "end_point": {
-        "x": 0,
-        "y": 9000,
+        "x": 12000,
+        "y": 0,
+        "z": 3500
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "B-1 to C-1",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "UB36c",
+      "type": "beam",
+      "section": "UB36c",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": null,
+      "grid_reference": "C1-C2",
+      "remarks": null,
+      "page_source": 1,
+      "x": 1800,
+      "y": 300,
+      "start_point": {
+        "x": 12000,
+        "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 18000,
+        "y": 0,
+        "z": 3500
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "C-1 to D-1",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "Z25d",
+      "type": "other",
+      "section": "Z25d",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": null,
+      "grid_reference": "Top level",
+      "remarks": null,
+      "page_source": 1,
+      "x": 3500,
+      "y": 700,
+      "start_point": {
+        "x": 18000,
+        "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 6000,
+        "y": 0,
         "z": 3500
       },
       "confidence": "high",
@@ -110,92 +299,122 @@
     },
     {
       "mark": "PF20a",
-      "section": "PF20a",
       "type": "other",
+      "section": "PF20a",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": null,
+      "grid_reference": "Roof level",
+      "remarks": null,
+      "page_source": 1,
+      "x": 1800,
+      "y": 500,
+      "start_point": {
+        "x": 18000,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 18000,
+        "y": 0,
+        "z": 3500
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "D-1",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "PF25a",
+      "type": "other",
+      "section": "PF25a",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": null,
+      "grid_reference": "Lower levels",
+      "remarks": null,
+      "page_source": 1,
+      "x": 1800,
+      "y": 100,
       "start_point": {
         "x": 0,
         "y": 0,
-        "z": -99
-      }
-    },
-    {
-      "mark": "Z25d",
-      "type": "other",
-      "section": "Z25d",
-      "start_point": {
-        "x": 27000,
-        "y": 9000,
         "z": 3500
       },
       "end_point": {
-        "x": 27000,
-        "y": 9000,
+        "x": 6000,
+        "y": 0,
         "z": 3500
       },
       "confidence": "high",
       "grid_ref": "text-loc p3"
     },
     {
-      "mark": "C3",
-      "section": null,
-      "type": "column",
+      "mark": "CH32a",
+      "type": "beam",
+      "section": "CH32a",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": null,
+      "grid_reference": "Lower levels",
+      "remarks": null,
+      "page_source": 1,
+      "x": 3500,
+      "y": 100,
       "start_point": {
         "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "2WL",
-      "section": null,
-      "type": "other",
-      "start_point": {
-        "x": 27000,
-        "y": 9000,
+        "y": 6000,
         "z": 3500
       },
       "end_point": {
-        "x": 27000,
-        "y": 9000,
+        "x": 6000,
+        "y": 6000,
         "z": 3500
       },
       "rotation_degrees": 0,
-      "grid_ref": "text-loc p8",
-      "level_ref": "UNMAPPED",
-      "confidence": "high"
+      "grid_ref": "A-2 to B-2",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
     },
     {
-      "mark": "C6",
-      "section": null,
-      "type": "column",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "CH*35c",
-      "section": null,
+      "mark": "CH 35a",
       "type": "other",
+      "section": "CH",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 6000,
+        "y": 6000,
+        "z": 0
+      },
+      "end_point": {
+        "x": 6000,
+        "y": 6000,
+        "z": 3500
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "B-2",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "C 1",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
       "start_point": {
         "x": 0,
         "y": 0,
@@ -204,810 +423,721 @@
       "end_point": {
         "x": 0,
         "y": 0,
-        "z": 3000
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "A-1",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "C 2",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 6000,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 6000,
+        "y": 0,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "B-1",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "C 3",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 12000,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 12000,
+        "y": 0,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "C-1",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "C 4",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 18000,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 18000,
+        "y": 0,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "D-1",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "C 5",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 0,
+        "y": 6000,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 6000,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "A-2",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "C 6",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 6000,
+        "y": 6000,
+        "z": 0
+      },
+      "end_point": {
+        "x": 6000,
+        "y": 6000,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "B-2",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "C 7",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 12000,
+        "y": 6000,
+        "z": 0
+      },
+      "end_point": {
+        "x": 12000,
+        "y": 6000,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "C-2",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "C 8",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 18000,
+        "y": 6000,
+        "z": 0
+      },
+      "end_point": {
+        "x": 18000,
+        "y": 6000,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "D-2",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "CH* 35c",
+      "type": "other",
+      "section": "CH",
+      "material": "S275",
+      "length_mm": 180,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": "STAIR 04",
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 12000,
+        "y": 6000,
+        "z": 0
+      },
+      "end_point": {
+        "x": 12000,
+        "y": 6000,
+        "z": 3500
       },
       "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
+      "grid_ref": "C-2",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "C 12",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": 2400,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 0,
+        "y": 12000,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 12000,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "A-3",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
     },
     {
       "mark": "LW6",
+      "type": "other",
       "section": null,
-      "type": "other",
-      "start_point": {
-        "x": 27000,
-        "y": 18000,
-        "z": 3500
-      },
-      "end_point": {
-        "x": 27000,
-        "y": 18000,
-        "z": 3500
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "text-loc p8",
-      "level_ref": "UNMAPPED",
-      "confidence": "high"
-    },
-    {
-      "mark": "5WL",
-      "section": null,
-      "type": "other",
-      "start_point": {
-        "x": 27000,
-        "y": 18000,
-        "z": 3500
-      },
-      "end_point": {
-        "x": 27000,
-        "y": 18000,
-        "z": 3500
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "text-loc p8",
-      "level_ref": "UNMAPPED",
-      "confidence": "high"
-    },
-    {
-      "mark": "SH08d",
-      "section": "SH08d",
-      "type": "other",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
       "start_point": {
         "x": 0,
         "y": 0,
-        "z": 0
+        "z": 3500
       },
       "end_point": {
-        "x": 0,
+        "x": 6000,
         "y": 0,
-        "z": 3000
+        "z": 3500
       },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
+      "confidence": "high",
+      "grid_ref": "text-loc p8"
     },
     {
-      "mark": "C15",
-      "section": null,
+      "mark": "C 10",
       "type": "column",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "SH10f",
-      "section": "SH10f",
-      "type": "other",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "RH25b",
-      "section": "RH25b",
-      "type": "beam",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "7WL",
       "section": null,
-      "type": "other",
+      "material": "S275",
+      "length_mm": 400,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
       "start_point": {
-        "x": 27000,
-        "y": 18000,
-        "z": 3500
-      },
-      "end_point": {
-        "x": 27000,
-        "y": 18000,
-        "z": 3500
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "text-loc p8",
-      "level_ref": "UNMAPPED",
-      "confidence": "high"
-    },
-    {
-      "mark": "C11",
-      "section": null,
-      "type": "column",
-      "start_point": {
-        "x": 0,
-        "y": 0,
+        "x": 6000,
+        "y": 12000,
         "z": 0
       },
       "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
+        "x": 6000,
+        "y": 12000,
+        "z": 13500
       },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "PF15a",
-      "section": "PF15a",
-      "type": "beam",
-      "start_point": {
-        "x": 0,
-        "y": 9000,
-        "z": 3500
-      },
-      "end_point": {
-        "x": 0,
-        "y": 9000,
-        "z": 3500
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "text-loc p3",
-      "level_ref": "UNMAPPED",
-      "confidence": "high"
-    },
-    {
-      "mark": "SH15b",
-      "section": "SH15b",
-      "type": "other",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "LW3",
-      "section": null,
-      "type": "other",
-      "start_point": {
-        "x": 27000,
-        "y": 9000,
-        "z": 3500
-      },
-      "end_point": {
-        "x": 27000,
-        "y": 9000,
-        "z": 3500
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "text-loc p8",
-      "level_ref": "UNMAPPED",
-      "confidence": "high"
-    },
-    {
-      "mark": "C12",
-      "section": null,
-      "type": "column",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "LW1",
-      "section": null,
-      "type": "other",
-      "start_point": {
-        "x": 27000,
-        "y": 9000,
-        "z": 3500
-      },
-      "end_point": {
-        "x": 27000,
-        "y": 9000,
-        "z": 3500
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "text-loc p8",
-      "level_ref": "UNMAPPED",
-      "confidence": "high"
-    },
-    {
-      "mark": "C8",
-      "section": null,
-      "type": "column",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "UB36b",
-      "section": "UB36b",
-      "type": "beam",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "C10",
-      "section": null,
-      "type": "column",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "CH32a",
-      "section": "CH32a",
-      "type": "other",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "C7",
-      "section": null,
-      "type": "column",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "EA15a",
-      "section": "EA15a",
-      "type": "angle",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "CH35c",
-      "section": "CH35c",
-      "type": "other",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "UB35c",
-      "section": "UB35c",
-      "type": "column",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "CH40b",
-      "section": "CH40b",
-      "type": "other",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "CH35a",
-      "section": null,
-      "type": "other",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "UB36c",
-      "section": "UB36c",
-      "type": "column",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "C2",
-      "section": null,
-      "type": "column",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "C14",
-      "section": null,
-      "type": "column",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "SH30b",
-      "section": "SH30b",
-      "type": "other",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "SH30b FR",
-      "section": "SH30b",
-      "type": "other",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "PF25a",
-      "section": "PF25a",
-      "type": "other",
-      "start_point": {
-        "x": 0,
-        "y": 9000,
-        "z": 3500
-      },
-      "end_point": {
-        "x": 0,
-        "y": 9000,
-        "z": 3500
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "text-loc p3",
-      "level_ref": "UNMAPPED",
-      "confidence": "high"
-    },
-    {
-      "mark": "C1",
-      "section": null,
-      "type": "column",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
+      "rotation_degrees": 90,
+      "grid_ref": "B-3",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
     },
     {
       "mark": "4WL",
-      "section": null,
       "type": "other",
-      "start_point": {
-        "x": 27000,
-        "y": 18000,
-        "z": 3500
-      },
-      "end_point": {
-        "x": 27000,
-        "y": 18000,
-        "z": 3500
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "text-loc p8",
-      "level_ref": "UNMAPPED",
-      "confidence": "high"
-    },
-    {
-      "mark": "C13",
       "section": null,
-      "type": "column",
+      "material": "S275",
+      "length_mm": 2400,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
       "start_point": {
         "x": 0,
         "y": 0,
-        "z": 0
+        "z": 3500
       },
       "end_point": {
-        "x": 0,
+        "x": 6000,
         "y": 0,
-        "z": 3000
+        "z": 3500
       },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
+      "confidence": "high",
+      "grid_ref": "text-loc p8"
     },
     {
-      "mark": "SH10e",
-      "section": "SH10e",
+      "mark": "5WL",
       "type": "other",
+      "section": null,
+      "material": "S275",
+      "length_mm": 2400,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
       "start_point": {
         "x": 0,
-        "y": 9000,
+        "y": 0,
         "z": 3500
       },
       "end_point": {
-        "x": 0,
-        "y": 9000,
+        "x": 6000,
+        "y": 0,
         "z": 3500
       },
-      "rotation_degrees": 0,
-      "grid_ref": "text-loc p3",
-      "level_ref": "UNMAPPED",
-      "confidence": "high"
+      "confidence": "high",
+      "grid_ref": "text-loc p8"
     },
     {
-      "mark": "UA15a",
-      "section": "UA15a",
-      "type": "angle",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "SH10d",
-      "section": "SH10d",
-      "type": "brace",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "C16",
+      "mark": "7WL",
+      "type": "other",
       "section": null,
-      "type": "column",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
       "start_point": {
         "x": 0,
         "y": 0,
-        "z": 0
+        "z": 3500
       },
       "end_point": {
-        "x": 0,
+        "x": 6000,
         "y": 0,
-        "z": 3000
+        "z": 3500
       },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
+      "confidence": "high",
+      "grid_ref": "text-loc p8"
     },
     {
-      "mark": "C4",
+      "mark": "2WL",
+      "type": "other",
       "section": null,
-      "type": "column",
+      "material": "S275",
+      "length_mm": 2400,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
       "start_point": {
         "x": 0,
         "y": 0,
-        "z": 0
+        "z": 3500
       },
       "end_point": {
-        "x": 0,
+        "x": 6000,
         "y": 0,
-        "z": 3000
+        "z": 3500
       },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
+      "confidence": "high",
+      "grid_ref": "text-loc p8"
     },
     {
-      "mark": "UB20d",
-      "section": "UB20d",
-      "type": "column",
-      "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "end_point": {
-        "x": 0,
-        "y": 0,
-        "z": 3000
-      },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
-    },
-    {
-      "mark": "C5",
+      "mark": "LW3",
+      "type": "other",
       "section": null,
-      "type": "column",
+      "material": "S275",
+      "length_mm": 2400,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
       "start_point": {
         "x": 0,
         "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 6000,
+        "y": 0,
+        "z": 3500
+      },
+      "confidence": "high",
+      "grid_ref": "text-loc p8"
+    },
+    {
+      "mark": "LW1",
+      "type": "other",
+      "section": null,
+      "material": "S275",
+      "length_mm": 2400,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 6000,
+        "y": 0,
+        "z": 3500
+      },
+      "confidence": "high",
+      "grid_ref": "text-loc p8"
+    },
+    {
+      "mark": "C 11",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": 2400,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 12000,
+        "y": 12000,
+        "z": 0
+      },
+      "end_point": {
+        "x": 12000,
+        "y": 12000,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "C-3",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "C 13",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": 400,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 18000,
+        "y": 12000,
+        "z": 0
+      },
+      "end_point": {
+        "x": 18000,
+        "y": 12000,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "D-3",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "C 14",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": 400,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 0,
+        "y": 18000,
         "z": 0
       },
       "end_point": {
         "x": 0,
-        "y": 0,
-        "z": 3000
+        "y": 18000,
+        "z": 13500
       },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
+      "rotation_degrees": 90,
+      "grid_ref": "A-4",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
     },
     {
-      "mark": "UB20a",
-      "section": "UB20a",
+      "mark": "C 15",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 6000,
+        "y": 18000,
+        "z": 0
+      },
+      "end_point": {
+        "x": 6000,
+        "y": 18000,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "B-4",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "C 16",
+      "type": "column",
+      "section": null,
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 7,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 12000,
+        "y": 18000,
+        "z": 0
+      },
+      "end_point": {
+        "x": 12000,
+        "y": 18000,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "C-4",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "b03HS",
       "type": "beam",
+      "section": "CH32a",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": null,
+      "grid_reference": null,
+      "remarks": "DENOTES SPICE LOCATIONS",
+      "page_source": 16,
+      "x": null,
+      "y": null,
       "start_point": {
         "x": 0,
         "y": 0,
-        "z": 0
+        "z": 3500
       },
       "end_point": {
-        "x": 0,
+        "x": 6000,
         "y": 0,
-        "z": 3000
+        "z": 3500
       },
-      "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
+      "confidence": "high",
+      "grid_ref": "text-loc p10"
     },
     {
-      "mark": "SH15a",
-      "section": "SH15a",
-      "type": "other",
+      "mark": "b04HC",
+      "type": "beam",
+      "section": "CH32a",
+      "material": "S275",
+      "length_mm": 70311,
+      "quantity": 1,
+      "grid_reference": null,
+      "remarks": "DENOTES SPICE LOCATIONS",
+      "page_source": 16,
+      "x": null,
+      "y": null,
       "start_point": {
-        "x": 0,
-        "y": 0,
-        "z": 0
+        "x": 18000,
+        "y": 6000,
+        "z": 3500
       },
       "end_point": {
         "x": 0,
-        "y": 0,
-        "z": 3000
+        "y": 12000,
+        "z": 3500
       },
       "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
+      "grid_ref": "D-2 to A-3",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
     },
     {
-      "mark": "SH15b (U)",
-      "section": "SH15b",
+      "mark": "c53*HC",
       "type": "other",
+      "section": "SH10e",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": 8,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 16,
+      "x": null,
+      "y": null,
       "start_point": {
         "x": 0,
-        "y": 0,
+        "y": 12000,
         "z": 0
       },
       "end_point": {
         "x": 0,
-        "y": 0,
-        "z": 3000
+        "y": 12000,
+        "z": 3500
       },
       "rotation_degrees": 0,
-      "grid_ref": "UNMAPPED",
-      "level_ref": "UNMAPPED",
-      "confidence": "unmapped"
+      "grid_ref": "A-3",
+      "level_ref": "Base to Roof",
+      "confidence": "low"
+    },
+    {
+      "mark": "H",
+      "type": "beam",
+      "section": "UB36c",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": null,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 16,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 18000,
+        "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 6000,
+        "y": 0,
+        "z": 3500
+      },
+      "confidence": "high",
+      "grid_ref": "text-loc p3"
+    },
+    {
+      "mark": "10",
+      "type": "beam",
+      "section": "UB36c",
+      "material": "S275",
+      "length_mm": null,
+      "quantity": null,
+      "grid_reference": null,
+      "remarks": null,
+      "page_source": 16,
+      "x": null,
+      "y": null,
+      "start_point": {
+        "x": 18000,
+        "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 6000,
+        "y": 0,
+        "z": 3500
+      },
+      "confidence": "high",
+      "grid_ref": "text-loc p3"
     }
   ]
 }

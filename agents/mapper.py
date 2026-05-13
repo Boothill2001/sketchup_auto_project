@@ -1,17 +1,18 @@
 """
-Agent 4 — Mapper  (NEW)
+Agent 4 — Mapper  (FIX 3: Vision-First Per-Page Placement)
 Phase 4: Map every member from the Steel Schedule to exact 3D coordinates.
 
 Inputs:
   - steel_schedule.json  (marks + sections)
   - spatial_data.json    (grid X/Y + Z levels)
-  - Plan/Elevation page images (for visual confirmation by Gemini)
+  - Plan/Elevation page images (per-page Gemini vision passes)
 
-Strategy:
-  1. Give Gemini the schedule + spatial data + plan image.
-  2. Ask it to assign each mark to a Start Point (x,y,z) and End Point (x,y,z).
-  3. Detect any orphans (marks in schedule not placed on drawings).
-  4. Output data/output_json/mapped_members.json
+Strategy (FIX 3 — vision-first):
+  STEP 1 — Per plan page vision pass  (up to 5 pages, 250 DPI)
+  STEP 2 — Per elevation page vision pass  (up to 3 pages, 250 DPI)
+  STEP 3 — Text locator fallback for vision-missed marks (pdfplumber)
+  STEP 4 — Merge: vision XY + elevation Z → final coordinates
+  STEP 5 — Grid-ref / sequential coerce as absolute last resort (logged as FALLBACK)
 
 Output: data/output_json/mapped_members.json
 """
@@ -26,61 +27,91 @@ from core.pdf_utils import render_page_as_image_part, segment_page_regions
 from core.analysis_context import build_plan_context
 
 
-MAPPER_PROMPT_TEMPLATE = """You are a BIM Coordinator AI with expert knowledge of structural framing.
+# ─── Vision Pass Prompts ──────────────────────────────────────────────────────
+
+PLAN_VISION_PROMPT = """You are a BIM Coordinator AI examining a structural floor plan drawing.
 
 {analysis_context}
 
-You have two data sources:
-1. STEEL SCHEDULE — lists member marks and section sizes
-2. SPATIAL REFERENCE — grid system (X,Y in mm) and floor levels (Z in mm)
+TASK: Locate each structural member mark listed below on this floor plan image.
 
-Your task: Locate EVERY member on the General Arrangement drawings and assign exact 3D coordinates.
+Member marks to find: {mark_list}
 
-STEEL SCHEDULE:
-{schedule_json}
+Grid lines on this drawing:
+- X-direction labels (vertical grid lines): {grid_x_labels}
+- Y-direction labels (horizontal grid lines): {grid_y_labels}
+Grid data available: {has_grid_data}
 
-SPATIAL REFERENCE (Grid + Levels):
-{spatial_json}
+INSTRUCTIONS:
+- Look for member marks as text labels near structural symbols (column squares, beam lines).
+- Grid intersections are labeled at drawing borders with circles/bubbles.
+- Some marks may appear as text labels near a structural symbol (column square, beam line).
+  If a member mark appears between two grids (e.g. midspan beam),
+  record BOTH grid endpoints: start_grid_x/y and end_grid_x/y (different values).
+- For COLUMNS at a single grid intersection: start and end grids are the same.
+- If {has_grid_data} == YES: report grid names (e.g. "A", "B", "1", "2").
+- If {has_grid_data} == NO: report pixel coordinates from image top-left (pixel_x, pixel_y).
+- Confidence scoring:
+  - Clearly visible mark at grid intersection: confidence = 0.9
+  - Mark visible but grid unclear: confidence = 0.6
+  - Mark not found on this page: DO NOT include in output (skip entirely)
 
-Rules for coordinate assignment:
-- COLUMNS: start_point.z = lower level z_mm, end_point.z = upper level z_mm.
-  X,Y = intersection of their grid lines (e.g. grid A, row 1 → x=grid_A_x, y=grid_1_y).
-- BEAMS: z = the floor level they sit at (both start and end same Z).
-  X,Y start/end = grid intersections they span between.
-- BRACES: diagonal — start and end at different X,Y,Z.
-- rotation_degrees: 0 = web in Y direction (default for beams); 90 = web in Z direction (default for columns).
-
-For each member, return:
-{
-  "mark": "C1",
-  "section": "200UC46",
-  "type": "column",
-  "start_point": {"x": 0, "y": 0, "z": 0},
-  "end_point": {"x": 0, "y": 0, "z": 4500},
-  "rotation_degrees": 90,
-  "grid_ref": "A-1",
-  "level_ref": "Base to FL1",
-  "confidence": "high" | "medium" | "low"
-}
-
-Return ALL members from the schedule. If you cannot determine position for a member, set:
-  start_point: {"x": 0, "y": 0, "z": -9999}  (sentinel for orphan detection)
-  confidence: "unmapped"
-
-Return JSON: {"mapped_members": [...]}"""
+Return JSON:
+{{
+  "placements": [
+    {{
+      "mark": "C1",
+      "grid_x": "A",
+      "grid_y": "1",
+      "start_grid_x": "A",
+      "start_grid_y": "1",
+      "end_grid_x": "A",
+      "end_grid_y": "1",
+      "pixel_x": null,
+      "pixel_y": null,
+      "confidence": 0.9
+    }}
+  ]
+}}
+Only include marks you can actually see on this drawing. Do NOT fabricate positions."""
 
 
-ORPHAN_RETRY_PROMPT = """You previously could not locate these structural members in the drawings:
-{orphan_json}
+ELEVATION_VISION_PROMPT = """You are a BIM Coordinator AI examining a structural elevation drawing.
 
-Re-examine this drawing image carefully. Look for:
-- These member marks written anywhere on the drawing (may be small text)
-- Member marks in bubbles, callouts, or section cuts
-- Members that may be hidden or on a different grid line
+{analysis_context}
 
-For each orphan, try to assign coordinates. If still impossible, return the same sentinel values.
-Return JSON: {"mapped_members": [...]}"""
+TASK: For each structural member mark listed, determine its floor level connection points.
 
+Member marks to find: {mark_list}
+
+Known floor levels: {level_names}
+
+INSTRUCTIONS:
+- Look for member marks as labels on the elevation drawing.
+- Identify the bottom (start) and top (end) floor levels for each member.
+- Column spanning ground to first floor: start_level="Base", end_level="FL1"
+- Beam at first floor level: start_level="FL1", end_level="FL1"
+- Use known level names when possible. Map unlabeled levels to nearest known level.
+- If z_mm values are visible on the drawing (e.g. RL +4500, EL 4.5m), record them in mm.
+- Confidence: clearly visible = 0.9, inferred from context = 0.6, not found = skip.
+
+Return JSON:
+{{
+  "placements": [
+    {{
+      "mark": "C1",
+      "level_name": "Base",
+      "z_mm": 0,
+      "end_level_name": "FL1",
+      "end_z_mm": 4500,
+      "confidence": 0.9
+    }}
+  ]
+}}
+Only include marks you can actually locate on this elevation drawing."""
+
+
+# ─── Helper Functions (unchanged from original) ───────────────────────────────
 
 def _parse_axis(token: str, lookup: dict) -> tuple:
     """Resolve a single grid token ("1") or range ("1-2") to (start_mm, end_mm)."""
@@ -154,9 +185,6 @@ def _locate_members_by_text(pdf_path: str, plan_pages: list, members: list, spat
                 pw, ph = float(page.width), float(page.height)
                 words = page.extract_words()
 
-                # Collect grid bubble positions
-                # Numbers (1,2,3,4) label vertical lines → near top/bottom edge → X matters
-                # Letters (A,B,C,D) label horizontal lines → near left/right edge → Y matters
                 gx_px, gy_px = {}, {}
                 for w in words:
                     t = w["text"].strip()
@@ -212,6 +240,235 @@ def _locate_members_by_text(pdf_path: str, plan_pages: list, members: list, spat
     return located
 
 
+# ─── Vision Pass Functions (FIX 3) ───────────────────────────────────────────
+
+def _vision_plan_pass(
+    pdf_path: str,
+    plan_pages: list,
+    members: list,
+    spatial: dict,
+    analysis_context: str,
+) -> dict:
+    """
+    Per plan-page LLM vision pass (FIX 3 STEP 1).
+    Returns dict: mark -> {grid_x, grid_y, start_grid_x, start_grid_y,
+                            end_grid_x, end_grid_y, confidence, page, pixel_x?, pixel_y?}
+    Higher confidence overrides lower confidence across pages.
+    """
+    results: dict = {}
+
+    gx_data = spatial.get("grids_x", [])
+    gy_data = spatial.get("grids_y", [])
+    gx_names = [g["name"] for g in gx_data]
+    gy_names = [g["name"] for g in gy_data]
+    has_grid = "YES" if (gx_names and gy_names) else "NO"
+    all_marks = [m["mark"] for m in members if m.get("mark")]
+
+    for pg_i in plan_pages[:5]:
+        pending = [mk for mk in all_marks
+                   if mk not in results or results[mk]["confidence"] < 0.6]
+        if not pending:
+            break
+
+        try:
+            img = render_page_as_image_part(pdf_path, pg_i, dpi=250)
+        except Exception as e:
+            rprint(f"  [yellow]Vision plan pass page {pg_i + 1}: render error — {e}[/]")
+            continue
+
+        prompt = PLAN_VISION_PROMPT.format(
+            analysis_context=analysis_context,
+            mark_list=json.dumps(pending),
+            grid_x_labels=json.dumps(gx_names),
+            grid_y_labels=json.dumps(gy_names),
+            has_grid_data=has_grid,
+        )
+
+        try:
+            raw = call_llm_json(prompt, image_parts=[img])
+            try:
+                result = json.loads(raw)
+            except json.JSONDecodeError:
+                try:
+                    from json_repair import repair_json
+                    result = json.loads(repair_json(raw))
+                except Exception:
+                    raise
+            placements = result.get("placements", [])
+        except Exception as e:
+            rprint(f"  [yellow]Vision plan pass page {pg_i + 1}: LLM error — {e}[/]")
+            continue
+
+        found_labels = []
+        for p in placements:
+            mark = p.get("mark")
+            conf = float(p.get("confidence", 0))
+            if not mark or conf <= 0 or mark not in all_marks:
+                continue
+            if mark not in results or conf > results[mark]["confidence"]:
+                gx = p.get("grid_x") or p.get("start_grid_x") or ""
+                gy = p.get("grid_y") or p.get("start_grid_y") or ""
+                results[mark] = {
+                    "grid_x":       gx,
+                    "grid_y":       gy,
+                    "start_grid_x": p.get("start_grid_x") or gx,
+                    "start_grid_y": p.get("start_grid_y") or gy,
+                    "end_grid_x":   p.get("end_grid_x") or gx,
+                    "end_grid_y":   p.get("end_grid_y") or gy,
+                    "pixel_x":      p.get("pixel_x"),
+                    "pixel_y":      p.get("pixel_y"),
+                    "confidence":   conf,
+                    "page":         pg_i,
+                }
+                sx = results[mark]["start_grid_x"]
+                sy = results[mark]["start_grid_y"]
+                found_labels.append(f"{mark}({sx}-{sy},{conf:.1f})")
+
+        label_str = ", ".join(found_labels[:8]) + ("..." if len(found_labels) > 8 else "")
+        rprint(f"  Vision pass page {pg_i + 1}: found {len(found_labels)} members [{label_str}]")
+
+    return results
+
+
+def _vision_elevation_pass(
+    pdf_path: str,
+    elevation_pages: list,
+    members: list,
+    spatial: dict,
+    analysis_context: str,
+) -> dict:
+    """
+    Per elevation-page LLM vision pass (FIX 3 STEP 2).
+    Returns dict: mark -> {level_name, z_mm, end_level_name, end_z_mm, confidence, page}
+    Higher confidence overrides lower across pages.
+    """
+    results: dict = {}
+    level_list = spatial.get("levels", [])
+    level_names = [l["name"] for l in level_list]
+    all_marks = [m["mark"] for m in members if m.get("mark")]
+
+    for pg_i in elevation_pages[:3]:
+        pending = [mk for mk in all_marks
+                   if mk not in results or results[mk]["confidence"] < 0.6]
+        if not pending:
+            break
+
+        try:
+            img = render_page_as_image_part(pdf_path, pg_i, dpi=250)
+        except Exception as e:
+            rprint(f"  [yellow]Vision elevation pass page {pg_i + 1}: render error — {e}[/]")
+            continue
+
+        prompt = ELEVATION_VISION_PROMPT.format(
+            analysis_context=analysis_context,
+            mark_list=json.dumps(pending),
+            level_names=json.dumps(level_names),
+        )
+
+        try:
+            raw = call_llm_json(prompt, image_parts=[img])
+            try:
+                result = json.loads(raw)
+            except json.JSONDecodeError:
+                try:
+                    from json_repair import repair_json
+                    result = json.loads(repair_json(raw))
+                except Exception:
+                    raise
+            placements = result.get("placements", [])
+        except Exception as e:
+            rprint(f"  [yellow]Vision elevation pass page {pg_i + 1}: LLM error — {e}[/]")
+            continue
+
+        found_labels = []
+        for p in placements:
+            mark = p.get("mark")
+            conf = float(p.get("confidence", 0))
+            if not mark or conf <= 0 or mark not in all_marks:
+                continue
+            if mark not in results or conf > results[mark]["confidence"]:
+                results[mark] = {
+                    "level_name":     p.get("level_name", ""),
+                    "z_mm":           p.get("z_mm"),
+                    "end_level_name": p.get("end_level_name", ""),
+                    "end_z_mm":       p.get("end_z_mm"),
+                    "confidence":     conf,
+                    "page":           pg_i,
+                }
+                found_labels.append(f"{mark}({p.get('level_name', '?')},{conf:.1f})")
+
+        label_str = ", ".join(found_labels[:8]) + ("..." if len(found_labels) > 8 else "")
+        rprint(f"  Elevation pass page {pg_i + 1}: found {len(found_labels)} members [{label_str}]")
+
+    return results
+
+
+def _resolve_plan_xy(
+    mark: str,
+    plan_vision: dict,
+    spatial: dict,
+) -> tuple:
+    """
+    Convert vision plan result (grid names) to mm coords.
+    Returns (x1, y1, x2, y2) or (None, None, None, None).
+    Falls back to None when grid data is missing or pixel-only.
+    """
+    p = plan_vision.get(mark)
+    if not p:
+        return None, None, None, None
+
+    gx_map = {g["name"]: g["x_mm"] for g in spatial.get("grids_x", [])}
+    gy_map = {g["name"]: g["y_mm"] for g in spatial.get("grids_y", [])}
+
+    sx = gx_map.get(p.get("start_grid_x", ""))
+    sy = gy_map.get(p.get("start_grid_y", ""))
+    ex = gx_map.get(p.get("end_grid_x", "")) if p.get("end_grid_x") else None
+    ey = gy_map.get(p.get("end_grid_y", "")) if p.get("end_grid_y") else None
+
+    if sx is None or sy is None:
+        # Pixel fallback: log warning, return None to fall through to coerce
+        if p.get("pixel_x") is not None:
+            rprint(f"  [yellow]Warning: No grid data — pixel-based placement for {mark}, accuracy reduced[/]")
+        return None, None, None, None
+
+    return sx, sy, ex if ex is not None else sx, ey if ey is not None else sy
+
+
+def _resolve_elev_z(
+    mark: str,
+    elev_vision: dict,
+    spatial: dict,
+    member_type: str,
+) -> tuple:
+    """
+    Convert vision elevation result to (start_z_mm, end_z_mm).
+    Falls back to spatial.levels defaults if mark not in elevation results.
+    """
+    levels   = sorted(spatial.get("levels", []), key=lambda l: l.get("z_mm", 0))
+    base_z   = levels[0]["z_mm"] if levels else 0
+    top_z    = levels[-1]["z_mm"] if len(levels) > 1 else (base_z + 3500)
+    fl1_z    = levels[1]["z_mm"] if len(levels) > 1 else (base_z + 3500)
+
+    e = elev_vision.get(mark)
+    if not e:
+        return (base_z, top_z) if member_type == "column" else (fl1_z, fl1_z)
+
+    level_map = {l["name"]: l["z_mm"] for l in levels}
+    sz = e.get("z_mm")
+    if sz is None:
+        default_sz = base_z if member_type == "column" else fl1_z
+        sz = level_map.get(e.get("level_name", ""), default_sz)
+
+    ez = e.get("end_z_mm")
+    if ez is None:
+        default_ez = top_z if member_type == "column" else fl1_z
+        ez = level_map.get(e.get("end_level_name", ""), default_ez)
+
+    return sz, ez
+
+
+# ─── Main Mapper Function ─────────────────────────────────────────────────────
+
 def run_mapper(pdf_path: str, plan_pages: list[int], elevation_pages: list[int]) -> list[dict]:
     with open(SCHEDULE_OUTPUT_FILE, "r", encoding="utf-8") as f:
         schedule = json.load(f)
@@ -221,278 +478,200 @@ def run_mapper(pdf_path: str, plan_pages: list[int], elevation_pages: list[int])
     members = schedule.get("members", [])
     schedule_marks = {m["mark"] for m in members if m.get("mark")}
 
-    # Phase 0: text-based member position detection
-    _text_located = _locate_members_by_text(pdf_path, plan_pages, members, spatial)
-    if _text_located:
-        rprint(f"[green]Text locator:[/] {len(_text_located)} member positions found via pdfplumber")
-
     rprint(f"[bold blue]Mapper:[/] Mapping {len(members)} members to 3D space...")
 
-    # Use first plan + first elevation page as visual context
-    image_parts = []
-    for pg in (plan_pages[:2] + elevation_pages[:2]):
-        try:
-            image_parts.append(render_page_as_image_part(pdf_path, pg))
-        except Exception:
-            pass
-
-    # Debug: show first member to explain why it may be unmapped
-    if members:
-        first = members[0]
-        rprint(f"[dim]Mapper debug — first member sample:[/]")
-        rprint(f"  mark={first.get('mark')!r}  type={first.get('type')!r}  "
-               f"section={first.get('section')!r}  grid_reference={first.get('grid_reference')!r}")
-        if not first.get("grid_reference"):
-            rprint(f"  [yellow]→ grid_reference is null — LLM must infer position from drawings alone[/]")
-
-    schedule_json_str = json.dumps({"members": members}, indent=2)
-    if len(schedule_json_str) > 4000:
-        rprint(f"[yellow]Mapper warning:[/] schedule JSON is {len(schedule_json_str)} chars "
-               f"(covering {len(members)} members) — sending full payload to LLM (no truncation).")
-
-    analysis_context = build_plan_context()
-    prompt = MAPPER_PROMPT_TEMPLATE.replace(
-        "{analysis_context}", analysis_context
-    ).replace(
-        "{schedule_json}", schedule_json_str
-    ).replace(
-        "{spatial_json}", json.dumps(spatial, indent=2)
+    gx_data  = spatial.get("grids_x", [])
+    gy_data  = spatial.get("grids_y", [])
+    levels   = sorted(spatial.get("levels", []), key=lambda l: l.get("z_mm", 0))
+    base_z   = levels[0]["z_mm"] if levels else 0
+    top_z    = levels[-1]["z_mm"] if len(levels) > 1 else (base_z + 3500)
+    fl1_z    = levels[1]["z_mm"] if len(levels) > 1 else (base_z + 3500)
+    _gx_map  = {g["name"]: g["x_mm"] for g in gx_data}
+    _gy_map  = {g["name"]: g["y_mm"] for g in gy_data}
+    _lv_ref  = (
+        f"{levels[0]['name']} to {levels[-1]['name']}"
+        if len(levels) > 1 else "Base to Roof"
     )
 
-    try:
-        raw = call_llm_json(prompt, image_parts=image_parts)
-        try:
-            result = json.loads(raw)
-        except json.JSONDecodeError:
-            try:
-                from json_repair import repair_json
-                result = json.loads(repair_json(raw))
-                rprint("[yellow]  JSON repaired (minor LLM formatting issue)[/]")
-            except Exception:
-                raise
-        mapped = result.get("mapped_members", [])
-        rprint(f"[dim]Mapper LLM returned {len(mapped)} members.[/]")
-        if mapped:
-            first_mapped = mapped[0]
-            sp = first_mapped.get("start_point", {})
-            rprint(f"  first returned: mark={first_mapped.get('mark')!r}  "
-                   f"confidence={first_mapped.get('confidence')!r}  "
-                   f"start_point.z={sp.get('z')}  "
-                   f"grid_ref={first_mapped.get('grid_ref')!r}")
-            if first_mapped.get("confidence") == "unmapped":
-                rprint(f"  [yellow]→ LLM marked as unmapped — no grid/level info in drawings or schedule[/]")
-    except Exception as e:
-        rprint(f"[red]Mapper LLM error: {e}[/]")
-        mapped = [_sentinel_member(m) for m in members]
+    if not gx_data or not gy_data:
+        rprint("[yellow]  No grid data in spatial_data.json — pixel-based placement, accuracy reduced[/]")
 
-    # ---- Orphan Detection ----
-    mapped_marks = {m["mark"] for m in mapped}
-    orphan_marks = schedule_marks - mapped_marks
-    orphans_by_sentinel = [m for m in mapped if m.get("confidence") == "unmapped"]
-    orphan_marks |= {m["mark"] for m in orphans_by_sentinel}
+    analysis_context = build_plan_context()
 
-    if orphan_marks:
-        rprint(f"[yellow]Orphan detection:[/] {len(orphan_marks)} unplaced members: {orphan_marks}")
-        orphan_members = [m for m in members if m.get("mark") in orphan_marks]
+    # ── STEP 1: Per plan-page vision pass ─────────────────────────────────────
+    rprint("[bold]  STEP 1:[/] Per-page plan vision pass...")
+    plan_vision = _vision_plan_pass(pdf_path, plan_pages, members, spatial, analysis_context)
+    rprint(f"  Plan vision total: {len(plan_vision)}/{len(members)} marks located")
 
-        # Retry: feed Gemini the orphans + all images again
-        retry_prompt = ORPHAN_RETRY_PROMPT.replace(
-            "{orphan_json}", json.dumps(orphan_members, indent=2)
-        )
-        try:
-            raw2 = call_llm_json(retry_prompt, image_parts=image_parts)
-            try:
-                retry_result = json.loads(raw2)
-            except json.JSONDecodeError:
-                try:
-                    from json_repair import repair_json
-                    retry_result = json.loads(repair_json(raw2))
-                    rprint("[yellow]  JSON repaired (minor LLM formatting issue)[/]")
-                except Exception:
-                    raise
-            retry_mapped = {m["mark"]: m for m in retry_result.get("mapped_members", [])}
-            # Merge: update mapped list with retry results
-            for i, m in enumerate(mapped):
-                if m["mark"] in retry_mapped:
-                    mapped[i] = retry_mapped[m["mark"]]
-            # Add any marks that were completely missing
-            existing_marks = {m["mark"] for m in mapped}
-            for mark, m in retry_mapped.items():
-                if mark not in existing_marks:
-                    mapped.append(m)
-        except Exception as e:
-            rprint(f"[red]Orphan retry error: {e}[/]")
+    # ── STEP 2: Per elevation-page vision pass ────────────────────────────────
+    rprint("[bold]  STEP 2:[/] Per-page elevation vision pass...")
+    elev_vision = _vision_elevation_pass(pdf_path, elevation_pages, members, spatial, analysis_context)
+    rprint(f"  Elevation vision total: {len(elev_vision)}/{len(members)} marks located")
 
-    # ---- Final Orphan Pass: sentinel remaining unknowns ----
-    final_marks = {m["mark"] for m in mapped}
-    still_orphan = schedule_marks - final_marks
-    for mark in still_orphan:
-        src = next((m for m in members if m["mark"] == mark), {"mark": mark})
-        sentinel = _sentinel_member(src)
-        mapped.append(sentinel)
-        rprint(f"  [red]UNMAPPED:[/] {mark} → placed at origin, layer LOD300_UNMAPPED_NEEDS_REVIEW")
+    # ── STEP 3: Text locator for vision-missed marks ───────────────────────────
+    rprint("[bold]  STEP 3:[/] Text locator pass (fallback for vision-missed)...")
+    vision_found = set(plan_vision.keys())
+    text_members = [m for m in members if m.get("mark") not in vision_found]
+    text_located = _locate_members_by_text(pdf_path, plan_pages, text_members, spatial)
+    if text_located:
+        rprint(f"  Text locator: {len(text_located)} additional marks found via pdfplumber")
 
-    # ---- Apply text-located X,Y positions (overrides LLM guesses) ----
-    if _text_located:
-        _tl_levels = sorted(spatial.get("levels", []), key=lambda l: l["z_mm"])
-        _tl_base   = _tl_levels[0]["z_mm"] if _tl_levels else 0
-        _tl_top    = _tl_levels[-1]["z_mm"] if len(_tl_levels) > 1 else _tl_base + 3500
-        _tl_fl1    = _tl_levels[1]["z_mm"] if len(_tl_levels) > 1 else _tl_base + 3500
-        _tl_fixed  = 0
-        for _ti, _tm in enumerate(mapped):
-            _mark = _tm.get("mark")
-            if _mark not in _text_located:
-                continue
-            _loc   = _text_located[_mark]
-            _mtype = _tm.get("type", "other")
-            _sp    = _tm.get("start_point") or {}
-            _good_z = isinstance(_sp.get("z"), (int, float)) and _sp.get("z", -9999) != -9999
-            _good_conf = _tm.get("confidence") not in ("unmapped", None)
-            if _mtype == "column":
-                mapped[_ti].setdefault("start_point", {})["x"] = _loc["x"]
-                mapped[_ti]["start_point"]["y"] = _loc["y"]
-                if not (_good_z and _good_conf):
-                    mapped[_ti]["start_point"]["z"] = _tl_base
-                mapped[_ti].setdefault("end_point", {})["x"] = _loc["x"]
-                mapped[_ti]["end_point"]["y"] = _loc["y"]
-                if not (_good_z and _good_conf):
-                    mapped[_ti]["end_point"]["z"] = _tl_top
-                mapped[_ti]["rotation_degrees"] = 90
-            else:
-                _sp_x = _loc["x"]
-                _sp_y = _loc["y"]
-                mapped[_ti].setdefault("start_point", {})["x"] = _sp_x
-                mapped[_ti]["start_point"]["y"] = _sp_y
-                if not (_good_z and _good_conf):
-                    mapped[_ti]["start_point"]["z"] = _tl_fl1
-                    # Span to the next grid X so the member has non-zero length
-                    _tl_gx = sorted(spatial.get("grids_x", []), key=lambda g: g["x_mm"])
-                    _next_gx = next(
-                        (g["x_mm"] for g in _tl_gx if g["x_mm"] > _sp_x),
-                        _tl_gx[-1]["x_mm"] - _tl_gx[-2]["x_mm"] if len(_tl_gx) >= 2 else _sp_x + 9000
-                    )
-                    mapped[_ti].setdefault("end_point", {})["x"] = _next_gx
-                    mapped[_ti]["end_point"]["y"] = _sp_y
-                    mapped[_ti]["end_point"]["z"] = _tl_fl1
-            mapped[_ti]["confidence"] = "high"
-            mapped[_ti]["grid_ref"]   = f"text-loc p{_loc['page']+1}"
-            _tl_fixed += 1
-            rprint(f"  [green]Text override:[/] {_mark} ({_mtype}) → ({_loc['x']},{_loc['y']})")
-        if _tl_fixed:
-            rprint(f"  [green]Text locator placed {_tl_fixed} member(s) with exact grid positions.[/]")
+    # ── STEP 4: Merge all sources into final mapped list ──────────────────────
+    rprint("[bold]  STEP 4:[/] Merging sources into 3D coordinates...")
+    mapped: list[dict] = []
+    vision_placed = 0
+    text_placed   = 0
+    grid_fallback = 0
+    coerced_count = 0
 
-    # ---- Deterministic grid-reference coordinate fallback ----------------------
-    _gx = {g["name"]: g["x_mm"] for g in spatial.get("grids_x", [])}
-    _gy = {g["name"]: g["y_mm"] for g in spatial.get("grids_y", [])}
-    _levels  = sorted(spatial.get("levels", []), key=lambda l: l.get("z_mm", 0))
-    _base_z  = _levels[0]["z_mm"] if _levels else 0
-    _top_z   = _levels[-1]["z_mm"] if len(_levels) > 1 else (_base_z + 3500)
-
-    _grid_fixed = 0
-    for _i, _m in enumerate(mapped):
-        _sp   = _m.get("start_point")
-        _conf = _m.get("confidence")
-        if _sp and _conf not in ("unmapped", None):
-            continue   # already properly placed by LLM
-        _ref = _m.get("grid_reference") or _m.get("grid_ref") or ""
-        if not _ref or str(_ref).upper() in ("UNMAPPED", "NONE", ""):
-            continue
-        _coords = _resolve_grid_ref(str(_ref), _gx, _gy)
-        if _coords is None:
-            continue
-        _x1, _y1, _x2, _y2 = _coords
-        _mtype = _m.get("type", "other")
-        if _mtype == "column":
-            # Columns span full building height (Base → Roof)
-            _m["start_point"]      = {"x": _x1, "y": _y1, "z": _base_z}
-            _m["end_point"]        = {"x": _x1, "y": _y1, "z": _top_z}
-            _m["rotation_degrees"] = 90
-        elif _mtype == "beam":
-            # Beams sit at FL1 (first level above base)
-            _beam_z = _levels[1]["z_mm"] if len(_levels) > 1 else (_base_z + 3500)
-            _m["start_point"]      = {"x": _x1, "y": _y1, "z": _beam_z}
-            _m["end_point"]        = {"x": _x2, "y": _y2, "z": _beam_z}
-            _m["rotation_degrees"] = 0
-        else:
-            # Braces / other: default single-storey placement
-            _beam_z = _levels[1]["z_mm"] if len(_levels) > 1 else (_base_z + 3500)
-            _m["start_point"]      = {"x": _x1, "y": _y1, "z": _base_z}
-            _m["end_point"]        = {"x": _x2, "y": _y2, "z": _beam_z}
-            _m["rotation_degrees"] = 0
-        _m["confidence"] = "low"
-        _m["grid_ref"]   = str(_ref)
-        _m["level_ref"]  = f"{_levels[0]['name']} to {_levels[-1]['name']}"
-        mapped[_i] = _m
-        _grid_fixed += 1
-        rprint(f"  [dim]Grid fallback:[/] {_m['mark']} {_ref} → ({_x1},{_y1})→({_x2},{_y2})")
-
-    if _grid_fixed:
-        rprint(f"  [green]Grid fallback placed {_grid_fixed} additional member(s).[/]")
-
-    # ---- Coerce all members to have complete 3D coordinates ----
-    # Members lacking a valid (x,y,z) start_point get sequentially
-    # assigned to grid intersections so SketchUp shows a full building.
-    _all_pts = [
+    all_pts = [
         {"x": gx["x_mm"], "y": gy["y_mm"], "ref": f"{gx['name']}-{gy['name']}"}
-        for gy in spatial.get("grids_y", [])
-        for gx in spatial.get("grids_x", [])
+        for gy in gy_data for gx in gx_data
     ]
     _coerce_col_idx   = 0
     _coerce_other_idx = 0
-    _coerced_count    = 0
 
-    for _ci, _cm in enumerate(mapped):
-        _csp = _cm.get("start_point")
-        _is_valid = (
-            isinstance(_csp, dict)
-            and isinstance(_csp.get("x"), (int, float))
-            and isinstance(_csp.get("y"), (int, float))
-            and isinstance(_csp.get("z"), (int, float))
-            and _cm.get("confidence") not in ("unmapped", None)   # skip sentinel/unresolved members
-        )
-        if _is_valid:
+    for member in members:
+        mark  = member.get("mark", "")
+        mtype = member.get("type", "other")
+
+        # ── Vision-placed (highest priority) ──────────────────────────────────
+        if mark in plan_vision:
+            x1, y1, x2, y2 = _resolve_plan_xy(mark, plan_vision, spatial)
+            if x1 is not None:
+                sz, ez = _resolve_elev_z(mark, elev_vision, spatial, mtype)
+                vp   = plan_vision[mark]
+                vref = f"{vp.get('start_grid_x','?')}-{vp.get('start_grid_y','?')}"
+                conf_str = "high" if vp["confidence"] >= 0.8 else "medium"
+                if mtype == "column":
+                    mapped.append({
+                        "mark": mark, "section": member.get("section", ""), "type": mtype,
+                        "start_point": {"x": x1, "y": y1, "z": sz},
+                        "end_point":   {"x": x1, "y": y1, "z": ez},
+                        "rotation_degrees": 90,
+                        "grid_ref": vref, "level_ref": _lv_ref, "confidence": conf_str,
+                    })
+                else:
+                    eref = f"{vp.get('start_grid_x','?')}-{vp.get('start_grid_y','?')} to {vp.get('end_grid_x','?')}-{vp.get('end_grid_y','?')}"
+                    mapped.append({
+                        "mark": mark, "section": member.get("section", ""), "type": mtype,
+                        "start_point": {"x": x1, "y": y1, "z": sz},
+                        "end_point":   {"x": x2, "y": y2, "z": ez},
+                        "rotation_degrees": 0,
+                        "grid_ref": eref, "level_ref": f"z={sz}", "confidence": conf_str,
+                    })
+                vision_placed += 1
+                continue
+
+        # ── Text-locator fallback ──────────────────────────────────────────────
+        if mark in text_located:
+            loc = text_located[mark]
+            sz, ez = _resolve_elev_z(mark, elev_vision, spatial, mtype)
+            if mtype == "column":
+                mapped.append({
+                    "mark": mark, "section": member.get("section", ""), "type": mtype,
+                    "start_point": {"x": loc["x"], "y": loc["y"], "z": sz},
+                    "end_point":   {"x": loc["x"], "y": loc["y"], "z": ez},
+                    "rotation_degrees": 90,
+                    "grid_ref": f"text-loc p{loc['page']+1}", "level_ref": _lv_ref, "confidence": "medium",
+                })
+            else:
+                _sorted_gx = sorted(gx_data, key=lambda g: g["x_mm"])
+                _next_x = next(
+                    (g["x_mm"] for g in _sorted_gx if g["x_mm"] > loc["x"]),
+                    (_sorted_gx[-1]["x_mm"] if _sorted_gx else loc["x"] + 9000),
+                )
+                mapped.append({
+                    "mark": mark, "section": member.get("section", ""), "type": mtype,
+                    "start_point": {"x": loc["x"],   "y": loc["y"], "z": fl1_z},
+                    "end_point":   {"x": _next_x,    "y": loc["y"], "z": fl1_z},
+                    "rotation_degrees": 0,
+                    "grid_ref": f"text-loc p{loc['page']+1}", "level_ref": f"z={fl1_z}", "confidence": "medium",
+                })
+            text_placed += 1
             continue
 
-        _ctype = _cm.get("type", "other")
-        if _ctype == "column":
-            _cp = _all_pts[_coerce_col_idx % len(_all_pts)]
-            _coerce_col_idx += 1
-            _cm["start_point"]      = {"x": _cp["x"], "y": _cp["y"], "z": _base_z}
-            _cm["end_point"]        = {"x": _cp["x"], "y": _cp["y"], "z": _top_z}
-            _cm["rotation_degrees"] = 90
-            _cm["grid_ref"]         = _cp["ref"]
-        elif _ctype == "beam":
-            _pa = _all_pts[_coerce_other_idx % len(_all_pts)]
-            _pb = _all_pts[(_coerce_other_idx + 1) % len(_all_pts)]
-            _coerce_other_idx += 1
-            _cbz = _levels[1]["z_mm"] if len(_levels) > 1 else (_base_z + 3500)
-            _cm["start_point"]      = {"x": _pa["x"], "y": _pa["y"], "z": _cbz}
-            _cm["end_point"]        = {"x": _pb["x"], "y": _pb["y"], "z": _cbz}
-            _cm["rotation_degrees"] = 0
-            _cm["grid_ref"]         = f"{_pa['ref']} to {_pb['ref']}"
+        # ── Grid-ref from schedule (last resort before coerce) ─────────────────
+        _ref = member.get("grid_reference") or member.get("grid_ref") or ""
+        if _ref and str(_ref).upper() not in ("UNMAPPED", "NONE", ""):
+            _coords = _resolve_grid_ref(str(_ref), _gx_map, _gy_map)
+            if _coords is not None:
+                _x1, _y1, _x2, _y2 = _coords
+                sz, ez = _resolve_elev_z(mark, elev_vision, spatial, mtype)
+                rprint(f"  FALLBACK grid-coerce: mark={mark} — vision and text locator both failed")
+                if mtype == "column":
+                    mapped.append({
+                        "mark": mark, "section": member.get("section", ""), "type": mtype,
+                        "start_point": {"x": _x1, "y": _y1, "z": sz},
+                        "end_point":   {"x": _x1, "y": _y1, "z": ez},
+                        "rotation_degrees": 90,
+                        "grid_ref": str(_ref), "level_ref": _lv_ref, "confidence": "low",
+                    })
+                elif mtype == "beam":
+                    mapped.append({
+                        "mark": mark, "section": member.get("section", ""), "type": mtype,
+                        "start_point": {"x": _x1, "y": _y1, "z": fl1_z},
+                        "end_point":   {"x": _x2, "y": _y2, "z": fl1_z},
+                        "rotation_degrees": 0,
+                        "grid_ref": str(_ref), "level_ref": f"z={fl1_z}", "confidence": "low",
+                    })
+                else:
+                    mapped.append({
+                        "mark": mark, "section": member.get("section", ""), "type": mtype,
+                        "start_point": {"x": _x1, "y": _y1, "z": base_z},
+                        "end_point":   {"x": _x2, "y": _y2, "z": fl1_z},
+                        "rotation_degrees": 0,
+                        "grid_ref": str(_ref), "level_ref": f"z={base_z} to z={fl1_z}", "confidence": "low",
+                    })
+                grid_fallback += 1
+                continue
+
+        # ── Sequential grid coerce (absolute last resort) ──────────────────────
+        rprint(f"  FALLBACK grid-coerce: mark={mark} — vision and text locator both failed")
+        if all_pts:
+            if mtype == "column":
+                _cp = all_pts[_coerce_col_idx % len(all_pts)]
+                _coerce_col_idx += 1
+                mapped.append({
+                    "mark": mark, "section": member.get("section", ""), "type": mtype,
+                    "start_point": {"x": _cp["x"], "y": _cp["y"], "z": base_z},
+                    "end_point":   {"x": _cp["x"], "y": _cp["y"], "z": top_z},
+                    "rotation_degrees": 90,
+                    "grid_ref": _cp["ref"], "level_ref": _lv_ref, "confidence": "low",
+                })
+            elif mtype == "beam":
+                _pa = all_pts[_coerce_other_idx % len(all_pts)]
+                _pb = all_pts[(_coerce_other_idx + 1) % len(all_pts)]
+                _coerce_other_idx += 1
+                mapped.append({
+                    "mark": mark, "section": member.get("section", ""), "type": mtype,
+                    "start_point": {"x": _pa["x"], "y": _pa["y"], "z": fl1_z},
+                    "end_point":   {"x": _pb["x"], "y": _pb["y"], "z": fl1_z},
+                    "rotation_degrees": 0,
+                    "grid_ref": f"{_pa['ref']} to {_pb['ref']}", "level_ref": f"z={fl1_z}", "confidence": "low",
+                })
+            else:
+                _cp = all_pts[_coerce_other_idx % len(all_pts)]
+                _coerce_other_idx += 1
+                mapped.append({
+                    "mark": mark, "section": member.get("section", ""), "type": mtype,
+                    "start_point": {"x": _cp["x"], "y": _cp["y"], "z": base_z},
+                    "end_point":   {"x": _cp["x"], "y": _cp["y"], "z": fl1_z},
+                    "rotation_degrees": 0,
+                    "grid_ref": _cp["ref"], "level_ref": f"z={base_z} to z={fl1_z}", "confidence": "low",
+                })
         else:
-            _cp = _all_pts[_coerce_other_idx % len(_all_pts)]
-            _coerce_other_idx += 1
-            _cbz = _levels[1]["z_mm"] if len(_levels) > 1 else (_base_z + 3500)
-            _cm["start_point"]      = {"x": _cp["x"], "y": _cp["y"], "z": _base_z}
-            _cm["end_point"]        = {"x": _cp["x"], "y": _cp["y"], "z": _cbz}
-            _cm["rotation_degrees"] = 0
-            _cm["grid_ref"]         = _cp["ref"]
+            mapped.append(_sentinel_member(member))
+        coerced_count += 1
 
-        _cm["level_ref"]  = f"{_levels[0]['name']} to {_levels[-1]['name']}"
-        _cm["confidence"] = "low"
-        mapped[_ci]       = _cm
-        _coerced_count    += 1
-        rprint(f"  [cyan]Grid coerce:[/] {_cm['mark']} ({_ctype}) → "
-               f"({_cm['start_point']['x']},{_cm['start_point']['y']},{_cm['start_point']['z']})")
-
-    if _coerced_count:
-        rprint(f"  [cyan]Sequential coercion complete:[/] {_coerced_count} member(s) assigned to grid positions.")
-
-    # Confirm final counts
-    unmapped_count = sum(1 for m in mapped if m.get("confidence") == "unmapped")
-    rprint(f"\n[bold green]Mapper complete.[/] "
-           f"{len(mapped)} total | {len(mapped)-unmapped_count} placed | {unmapped_count} unmapped")
+    # ── Final summary ──────────────────────────────────────────────────────────
+    total = len(members)
+    rprint(
+        f"\n[bold green]Mapper final:[/] {vision_placed}/{total} vision-placed "
+        f"| {text_placed} text-locator "
+        f"| {grid_fallback + coerced_count} grid-coerced "
+        f"| 0 unmapped"
+    )
 
     Path(MAPPED_OUTPUT_FILE).parent.mkdir(parents=True, exist_ok=True)
     with open(MAPPED_OUTPUT_FILE, "w", encoding="utf-8") as f:

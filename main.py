@@ -256,11 +256,17 @@ def _run(pdf_path: str) -> dict:
     _phase("PHASE 5b — ARCHITECTURAL: Wall, Slab, Door/Window Extraction + 3D")
     rprint("  Extracting architectural elements from plans & elevations...")
     arch_elements = extract_architectural_elements(str(pdf))
+    _arch_included = any(
+        arch_elements.get(k)
+        for k in ("walls", "slabs", "doors", "windows", "stairs")
+    )
     rprint(f"  Walls: {len(arch_elements.get('walls', []))} | "
            f"Slabs: {len(arch_elements.get('slabs', []))} | "
            f"Doors: {len(arch_elements.get('doors', []))} | "
            f"Windows: {len(arch_elements.get('windows', []))} | "
            f"Stairs: {len(arch_elements.get('stairs', []))}")
+    if not _arch_included:
+        rprint("  [yellow]  → No architectural elements extracted — steel-only model will be generated.[/]")
     rprint("  Generating architectural Ruby script...")
     arch_script = build_architectural_ruby(arch_elements)
     arch_rb_path = save_architectural_ruby(arch_script)
@@ -298,19 +304,21 @@ def _run(pdf_path: str) -> dict:
     rprint(f"  3D-placed     : {len(mapped_members) - unmapped}")
     rprint(f"  Unmapped      : {unmapped}  {unmapped_marks or ''}")
     rprint(f"  Audit passed  : {audit['final_passed']}")
+    rprint(f"  Architectural : {'included' if _arch_included else 'steel-only'}")
     rprint(f"  Ruby output   : {ruby_path}")
     _stats = get_cache_stats()
     rprint(f"  Cache stats   : {_stats['hits']} hits, {_stats['misses']} misses "
            f"(saved {_stats['hits']} API calls today)")
 
     return {
-        "ruby_path":      ruby_path,
-        "members_total":  len(members),
-        "placed":         len(mapped_members) - unmapped,
-        "unmapped":       unmapped,
-        "unmapped_marks": unmapped_marks,
-        "audit_passed":   audit["final_passed"],
-        "error":          None,
+        "ruby_path":              ruby_path,
+        "members_total":          len(members),
+        "placed":                 len(mapped_members) - unmapped,
+        "unmapped":               unmapped,
+        "unmapped_marks":         unmapped_marks,
+        "audit_passed":           audit["final_passed"],
+        "architectural_included": _arch_included,
+        "error":                  None,
     }
 
 

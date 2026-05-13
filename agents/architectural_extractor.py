@@ -19,6 +19,8 @@ Output: data/output_json/architectural_elements.json
 
 import json
 import re
+import time
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from pathlib import Path
 from typing import Optional
 
@@ -31,6 +33,22 @@ from core.pdf_utils import render_page_as_image_part, extract_text_from_page
 from core.analysis_context import build_context_string, load_analysis_dict
 
 ARCHITECTURAL_OUTPUT_FILE = str(Path(OUTPUT_JSON_DIR) / "architectural_elements.json")
+
+_LLM_CALL_TIMEOUT   = 90    # seconds per individual LLM call
+_PHASE_TOTAL_TIMEOUT = 300  # seconds total budget for Phase 5b
+
+
+def _call_with_timeout(fn, *args, **kwargs):
+    """Run fn(*args, **kwargs) with _LLM_CALL_TIMEOUT-second timeout.
+    Uses shutdown(wait=False) so a timed-out thread doesn't block continuation.
+    """
+    ex = ThreadPoolExecutor(max_workers=1)
+    try:
+        fut = ex.submit(fn, *args, **kwargs)
+        return fut.result(timeout=_LLM_CALL_TIMEOUT)
+    finally:
+        ex.shutdown(wait=False)
+
 
 # ── Prompt: Extract walls, openings, stairs from plan view ──────────────────
 PLAN_EXTRACT_PROMPT = """You are a BIM architect analyzing an architectural plan view drawing.
@@ -166,19 +184,19 @@ Return JSON:
 
 def extract_architectural_elements(
     pdf_path: str,
-    plan_pages: list[int],
-    elevation_pages: list[int],
+    plan_pages: list[int] | None = None,
+    elevation_pages: list[int] | None = None,
     pdf_analysis: Optional[dict] = None,
 ) -> dict:
     """
     Main entry point. Extracts all architectural elements from plan + elevation pages.
-    
+
     Args:
         pdf_path: Path to the PDF file
-        plan_pages: List of 0-based page indices for plan views
-        elevation_pages: List of 0-based page indices for elevation/section views
+        plan_pages: List of 0-based page indices for plan views (auto-loaded if None)
+        elevation_pages: List of 0-based page indices for elevation views (auto-loaded if None)
         pdf_analysis: Phase 0 analysis dict (convention detection)
-    
+
     Returns:
         dict with keys: walls, doors, windows, stairs, slabs, columns, grid_lines,
                         rooms, floor_levels, roof, building_outline
@@ -186,11 +204,27 @@ def extract_architectural_elements(
     if pdf_analysis is None:
         pdf_analysis = load_analysis_dict()
 
-    # Only run if architectural elements are expected
-    arch_elements = pdf_analysis.get("architectural_elements", [])
+    # Auto-load plan/elevation pages from scanner output when not supplied
+    if plan_pages is None or elevation_pages is None:
+        try:
+            from config import SCANNER_OUTPUT_FILE as _sf_path
+            _scanner = json.loads(Path(_sf_path).read_text(encoding="utf-8"))
+            _roles: dict = {}
+            for _k, _v in _scanner.items():
+                if isinstance(_v, dict) and "role" in _v:
+                    _roles.setdefault(_v["role"], []).append(int(_k))
+            if plan_pages is None:
+                plan_pages = sorted(_roles.get("plan", []))
+            if elevation_pages is None:
+                elevation_pages = sorted(_roles.get("elevation", []))
+        except Exception:
+            plan_pages = plan_pages or []
+            elevation_pages = elevation_pages or []
+
+    arch_elements_flag = pdf_analysis.get("architectural_elements", [])
     pdf_type = pdf_analysis.get("pdf_type", "unknown")
-    
-    if pdf_type == "structural_only" and "walls" not in arch_elements:
+
+    if pdf_type == "structural_only" and "walls" not in arch_elements_flag:
         rprint("[dim]Architectural extractor: structural-only PDF detected — skipping wall/slab extraction.[/]")
         return _empty_result()
 
@@ -200,48 +234,64 @@ def extract_architectural_elements(
 
     analysis_context = build_context_string(pdf_analysis)
     result = _empty_result()
+    phase_start = time.time()
 
-    # Step 1: Extract from plan views using text
+    # Step 1: Text extraction from plan pages (no LLM — no timeout needed)
     if plan_pages:
-        rprint(f"  Processing {len(plan_pages)} plan page(s)...")
+        rprint(f"  Processing {len(plan_pages)} plan page(s) via text...")
         text_elements = _extract_from_plan_text(pdf_path, plan_pages, pdf_analysis)
         result = _merge_results(result, text_elements)
 
-    # Step 2: Visual extraction from plan views via LLM
-    if plan_pages:
-        for pg in plan_pages[:2]:  # Max 2 plan pages via vision
+    # Step 2: Visual extraction from plan views via LLM (up to 2 pages, 90s each)
+    plan_batch = plan_pages[:2]
+    if plan_batch:
+        for idx, pg in enumerate(plan_batch):
+            # Total phase timeout guard
+            if time.time() - phase_start > _PHASE_TOTAL_TIMEOUT:
+                rprint("[yellow]Phase 5b exceeded 300s — generating steel-only model (architectural skipped)[/]")
+                return _empty_result()
             try:
                 img = render_page_as_image_part(pdf_path, pg)
                 prompt = PLAN_EXTRACT_PROMPT.replace("{analysis_context}", analysis_context)
-                raw = call_llm_json(prompt, image_parts=[img])
+                raw = _call_with_timeout(call_llm_json, prompt, image_parts=[img])
                 try:
                     plan_data = json.loads(raw)
                 except json.JSONDecodeError:
                     from json_repair import repair_json
                     plan_data = json.loads(repair_json(raw))
-                rprint(f"  [green]Plan page {pg+1}:[/] {len(plan_data.get('walls',[]))} walls, "
-                       f"{len(plan_data.get('doors',[]))} doors, {len(plan_data.get('windows',[]))} windows")
                 result = _merge_results(result, plan_data)
+                rprint(
+                    f"  Arch extraction: page {idx + 1}/{len(plan_batch)} done "
+                    f"(walls: {len(result['walls'])}, slabs: {len(result['slabs'])}, "
+                    f"doors: {len(result['doors'])})"
+                )
+            except FuturesTimeoutError:
+                rprint(f"  [yellow]Arch page {pg + 1} timed out — skipped[/]")
             except Exception as e:
-                rprint(f"  [yellow]Plan page {pg+1} extraction failed: {e}[/]")
+                rprint(f"  [yellow]Plan page {pg + 1} extraction failed: {e}[/]")
 
-    # Step 3: Extract from elevation views via LLM
+    # Step 3: Visual extraction from elevation views via LLM (up to 1 page, 90s)
     if elevation_pages:
+        if time.time() - phase_start > _PHASE_TOTAL_TIMEOUT:
+            rprint("[yellow]Phase 5b exceeded 300s — generating steel-only model (architectural skipped)[/]")
+            return _empty_result()
         for pg in elevation_pages[:1]:
             try:
                 img = render_page_as_image_part(pdf_path, pg)
                 prompt = ELEVATION_EXTRACT_PROMPT.replace("{analysis_context}", analysis_context)
-                raw = call_llm_json(prompt, image_parts=[img])
+                raw = _call_with_timeout(call_llm_json, prompt, image_parts=[img])
                 try:
                     elev_data = json.loads(raw)
                 except json.JSONDecodeError:
                     from json_repair import repair_json
                     elev_data = json.loads(repair_json(raw))
-                rprint(f"  [green]Elevation page {pg+1}:[/] "
-                       f"{len(elev_data.get('floor_levels',[]))} levels")
+                rprint(f"  [green]Elevation page {pg + 1}:[/] "
+                       f"{len(elev_data.get('floor_levels', []))} levels")
                 result = _merge_results(result, elev_data)
+            except FuturesTimeoutError:
+                rprint(f"  [yellow]Arch page {pg + 1} (elevation) timed out — skipped[/]")
             except Exception as e:
-                rprint(f"  [yellow]Elevation page {pg+1} extraction failed: {e}[/]")
+                rprint(f"  [yellow]Elevation page {pg + 1} extraction failed: {e}[/]")
 
     # Step 4: Post-processing — rationalize coordinates
     result = _rationalize_coordinates(result, pdf_analysis)

@@ -53,9 +53,9 @@ def render_page_as_image_part(pdf_path: str, page_number: int, dpi: int | None =
     return img
 
 
-def render_page_fast(pdf_path: str, page_number: int) -> Image.Image:
-    """Low-res render for scanner/classification — 3-4x faster than full DPI."""
-    return render_page_as_image_part(pdf_path, page_number, dpi=SCANNER_DPI)
+def render_page_fast(pdf_path: str, page_number: int, dpi: int | None = None) -> Image.Image:
+    """Low-res render for scanner/classification. Pass dpi= to override SCANNER_DPI."""
+    return render_page_as_image_part(pdf_path, page_number, dpi=dpi or SCANNER_DPI)
 
 
 def build_thumbnail_grid(
