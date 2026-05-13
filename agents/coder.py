@@ -13,11 +13,12 @@ Unmapped members (confidence="unmapped") go to layer LOD300_UNMAPPED_NEEDS_REVIE
 """
 
 import json
+import math
 import re
 from pathlib import Path
 from rich import print as rprint
 
-from config import MAPPED_OUTPUT_FILE, CODER_OUTPUT_FILE
+from config import MAPPED_OUTPUT_FILE, CODER_OUTPUT_FILE, SPATIAL_OUTPUT_FILE
 from core.llm_wrapper import call_llm, call_llm_with_feedback
 
 
@@ -161,14 +162,14 @@ STEEL_SECTIONS: dict[str, dict] = {
 
 # ============================================================================
 # SECTION PATTERN PARSER — handles Vietnamese/Asian naming conventions
-#   I200x100x5.5x8 → d=200, bf=100, tw=5.5, tf=8
-#   H250x250x9x14  → d=250, bf=250, tw=9, tf=14
-#   C200x75x6x9    → d=200, bf=75, tw=6, tf=9
-#   L75x75x6       → equal angle, leg=75, leg=75, t=6
-#   RHS150x100x5   → d=150, b=100, t=5
-#   SHS100x100x5   → d=100, b=100, t=5
-#   200UC46        → d=200, UC type (UB/UC old format without full dims)
-#   310UB40.4      → d=310, UB type
+#   I200x100x5.5x8 -> d=200, bf=100, tw=5.5, tf=8
+#   H250x250x9x14  -> d=250, bf=250, tw=9, tf=14
+#   C200x75x6x9    -> d=200, bf=75, tw=6, tf=9
+#   L75x75x6       -> equal angle, leg=75, leg=75, t=6
+#   RHS150x100x5   -> d=150, b=100, t=5
+#   SHS100x100x5   -> d=100, b=100, t=5
+#   200UC46        -> d=200, UC type (UB/UC old format without full dims)
+#   310UB40.4      -> d=310, UB type
 # ============================================================================
 
 _SECTION_PATTERNS = [
@@ -233,7 +234,7 @@ _SECTION_PATTERNS = [
      lambda m: {"type": "PFC", "d": int(m[1]) * 10, "bf": int(m[1]) * 2.5, "tf": 6.0, "tw": 4.0}),
 
     # Generic: just digits like "200UC46" pre-parsed but failed exact match
-    # → use approximate: d ≈ first number, infer rest
+    # -> use approximate: d ≈ first number, infer rest
     (re.compile(r'^(\d+)\s*UB([\d.]+)$', re.IGNORECASE),
      lambda m: {"type": "UB", "d": int(m[1]), "bf": int(m[1]) * 2 // 3, "tf": 8.0, "tw": 5.0}),
 ]
@@ -273,7 +274,7 @@ def lookup_section(section_str: str) -> dict | None:
     if result is not None:
         return result
 
-    # 3. Try normalizing spaces (e.g., "I 200 x 100 x 5.5 x 8" → "I200x100x5.5x8")
+    # 3. Try normalizing spaces (e.g., "I 200 x 100 x 5.5 x 8" -> "I200x100x5.5x8")
     normalized = key.replace(" ", "")
     result = STEEL_SECTIONS.get(normalized)
     if result is not None:
@@ -369,6 +370,59 @@ def _layer_for(mtype: str, conf: str, sz: float, ez: float) -> str:
     return "STR-Beams"
 
 
+# ── Spatial helpers (levels + grids loaded once per build_ruby_script call) ──
+_spatial_cache: tuple | None = None
+
+
+def _load_spatial() -> tuple[list, list, list]:
+    """Return (sorted_z_levels, sorted_x_grids, sorted_y_grids) in mm. Cached per run."""
+    global _spatial_cache
+    if _spatial_cache is not None:
+        return _spatial_cache
+    try:
+        data = json.loads(Path(SPATIAL_OUTPUT_FILE).read_text(encoding="utf-8"))
+        levels = sorted(lv["z_mm"] for lv in data.get("levels", []) if "z_mm" in lv)
+        gx = sorted(g["x_mm"] for g in data.get("grids_x", []) if "x_mm" in g)
+        gy = sorted(g["y_mm"] for g in data.get("grids_y", []) if "y_mm" in g)
+        _spatial_cache = (levels, gx, gy)
+    except Exception:
+        _spatial_cache = ([0, 3500, 7000, 10500, 13500], [], [])
+    return _spatial_cache
+
+
+def _next_level_z(sz: float) -> float:
+    """Return z_mm of the next floor level strictly above sz, or sz+3500 if none."""
+    levels, _, _ = _load_spatial()
+    for z in levels:
+        if z > sz + 1:
+            return float(z)
+    return float(sz) + 3500.0
+
+
+def _beam_extension(sx: float, sy: float) -> tuple[float, float]:
+    """
+    For a zero-length beam/other at (sx, sy), return (ex, ey) by extending to the
+    nearest adjacent grid line — whichever gap is smallest in X or Y direction.
+    Falls back to (sx+4000, sy) if no grid data available.
+    """
+    _, gx, gy = _load_spatial()
+    dx_cands = [abs(x - sx) for x in gx if abs(x - sx) > 1]
+    dy_cands = [abs(y - sy) for y in gy if abs(y - sy) > 1]
+    dx_min = min(dx_cands, default=4000.0)
+    dy_min = min(dy_cands, default=None)
+
+    if dy_min is None or dx_min <= dy_min:
+        # next grid in X direction (East-West beam)
+        x_targets = [x for x in gx if x > sx + 1]
+        ex = float(x_targets[0]) if x_targets else sx + dx_min
+        return ex, sy
+    else:
+        # next grid in Y direction (North-South beam)
+        y_targets = [y for y in gy if y > sy + 1]
+        ey = float(y_targets[0]) if y_targets else sy + dy_min
+        return sx, ey
+
+
 def _build_member_ruby(member: dict) -> str:
     """Generate Ruby code for one structural member — pure template, no LLM call."""
     mark    = (member.get("mark")    or "M?").replace('"', '\\"')
@@ -379,12 +433,43 @@ def _build_member_ruby(member: dict) -> str:
 
     sp = member.get("start_point") or {}
     ep = member.get("end_point")   or {}
-    sx = sp.get("x", 0); sy = sp.get("y", 0); sz = sp.get("z", 0)
-    ex = ep.get("x", 0); ey = ep.get("y", 0); ez = ep.get("z", 3000)
+    sx = float(sp.get("x", 0)); sy = float(sp.get("y", 0)); sz = float(sp.get("z", 0))
+    ex = float(ep.get("x", 0)); ey = float(ep.get("y", 0)); ez = float(ep.get("z", 0))
 
     layer = _layer_for(mtype, conf, sz, ez)
     if layer == "LOD300_UNMAPPED_NEEDS_REVIEW":
-        sx, sy, sz, ex, ey, ez = 0, 0, 0, 0, 0, 3000
+        sx, sy, sz, ex, ey, ez = 0.0, 0.0, 0.0, 0.0, 0.0, 3000.0
+
+    # ── Fix zero-length members ───────────────────────────────────────────────
+    sec_type = dims.get("type", "")
+    _is_col_section = sec_type in ("SHS",) or (
+        sec_type in ("RHS",) and abs(dims.get("d", 0) - dims.get("b", 1)) < 2
+    )
+    _len3d = math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2 + (ez - sz) ** 2)
+
+    if mtype == "column":
+        if abs(ez - sz) < 1:
+            ez = _next_level_z(sz)
+            rprint(f"  Coder fix: column {mark!r} no height -> ez={ez:.0f}mm")
+    elif _len3d < 1:
+        if _is_col_section:
+            # Square hollow section -> treat as column
+            ez = _next_level_z(sz)
+            rprint(f"  Coder fix: {mtype} {mark!r} SHS->column -> ez={ez:.0f}mm")
+        else:
+            # Beam / channel / other — extend to nearest adjacent grid
+            ex, ey = _beam_extension(sx, sy)
+            rprint(f"  Coder fix: {mtype} {mark!r} zero-length -> beam to ({ex:.0f},{ey:.0f})")
+
+    # ── Snap horizontal beams to cardinal direction (no diagonal in plan) ─────
+    if abs(ez - sz) < 1 and mtype != "column":
+        dx, dy = ex - sx, ey - sy
+        if abs(dx) > 1 and abs(dy) > 1:
+            if abs(dx) >= abs(dy):
+                ey = sy  # East-West dominant
+            else:
+                ex = sx  # North-South dominant
+            rprint(f"  Coder fix: {mark!r} diagonal snapped to cardinal axis")
 
     pts, log_msg = _section_rect(dims, mtype, section)
     if not dims:
@@ -394,12 +479,12 @@ def _build_member_ruby(member: dict) -> str:
     return (
         f"# ---- {mark} | {section} | {mtype} ----\n"
         f"begin\n"
-        f"  _sp  = Geom::Point3d.new({sx}.mm, {sy}.mm, {sz}.mm)\n"
-        f"  _ep  = Geom::Point3d.new({ex}.mm, {ey}.mm, {ez}.mm)\n"
+        f"  _sp  = Geom::Point3d.new({sx:g}.mm, {sy:g}.mm, {sz:g}.mm)\n"
+        f"  _ep  = Geom::Point3d.new({ex:g}.mm, {ey:g}.mm, {ez:g}.mm)\n"
         f"  _vec = _sp.vector_to(_ep)\n"
         f"  _len = _sp.distance(_ep)\n"
-        f"  if _len < 1.mm\n"
-        f"    puts \"SKIP {mark}: zero-length\"\n"
+        f"  if _len < 1.mm || !_vec.valid?\n"
+        f"    puts \"SKIP {mark}: zero-length (check mapper coords)\"\n"
         f"  else\n"
         f"    _grp = ents.add_group\n"
         f"    _ge  = _grp.entities\n"
@@ -575,12 +660,12 @@ LAYER NAME RULES:
 - confidence == "unmapped" OR start_z == -9999 OR end_z == -9999:
     layer = "LOD300_UNMAPPED_NEEDS_REVIEW"
     AND override start_pt = (0,0,0), end_pt = (0,0,3000) so it doesn't crash
-- type == "beam"   → "LOD300_BEAM"
-- type == "column" → "LOD300_COLUMN"
-- type == "slab"   → "LOD300_SLAB"
-- type == "brace"  → "LOD300_BRACE"
-- type == "wall"   → "LOD300_WALL"
-- other            → "LOD300_OTHER"
+- type == "beam"   -> "LOD300_BEAM"
+- type == "column" -> "LOD300_COLUMN"
+- type == "slab"   -> "LOD300_SLAB"
+- type == "brace"  -> "LOD300_BRACE"
+- type == "wall"   -> "LOD300_WALL"
+- other            -> "LOD300_OTHER"
 
 Generate code for ALL {count} members. Output ONLY Ruby code."""
 
@@ -666,6 +751,9 @@ def build_ruby_script(mapped_members: list[dict], error_feedback_map: dict | Non
     Normal members: template-generated in Python (no LLM call, deterministic).
     error_feedback retries: single LLM call per member to apply auditor corrections.
     """
+    global _spatial_cache
+    _spatial_cache = None  # reload spatial data fresh each pipeline run
+
     error_feedback_map = error_feedback_map or {}
     total = len(mapped_members)
 
@@ -681,7 +769,7 @@ def build_ruby_script(mapped_members: list[dict], error_feedback_map: dict | Non
     retry_members  = [m for m in mapped_members if error_feedback_map.get(m.get("mark", ""))]
     normal_members = [m for m in mapped_members if not error_feedback_map.get(m.get("mark", ""))]
 
-    rprint(f"[bold blue]Coder:[/] {total} members → "
+    rprint(f"[bold blue]Coder:[/] {total} members -> "
            f"{len(normal_members)} template-generated + {len(retry_members)} LLM retry call(s)")
 
     # ---- Template-based generation for normal members (zero LLM calls) ----
@@ -721,7 +809,7 @@ def save_ruby_script(script: str) -> None:
     Path(CODER_OUTPUT_FILE).parent.mkdir(parents=True, exist_ok=True)
     with open(CODER_OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write(script)
-    rprint(f"\n[bold green]Coder complete.[/] Ruby script → {CODER_OUTPUT_FILE}")
+    rprint(f"\n[bold green]Coder complete.[/] Ruby script -> {CODER_OUTPUT_FILE}")
 
 
 if __name__ == "__main__":

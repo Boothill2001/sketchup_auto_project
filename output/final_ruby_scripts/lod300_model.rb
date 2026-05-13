@@ -14,1417 +14,1268 @@ def get_or_create_layer(layers, name)
   layers[name] || layers.add(name)
 end
 
-
-# ---- 30b | SH | column ----
-begin
-  _start_x = 0
-  _start_y = 12000
-  _start_z = 3500
-  _end_x = 0
-  _end_y = 12000
-  _end_z = 13500
-  _mark = "30b"
-  _section = "SH"
-  _type = "column"
-  _confidence = "high"
-  _rotation_degrees = 90
-
-  _layer_name = case _type
-                when "beam" then "LOD300_BEAM"
-                when "column" then "LOD300_COLUMN"
-                when "slab" then "LOD300_SLAB"
-                when "brace" then "LOD300_BRACE"
-                when "wall" then "LOD300_WALL"
-                else "LOD300_OTHER"
-                end
-  if _confidence == "unmapped" || _start_z == -9999 || _end_z == -9999
-    _layer_name = "LOD300_UNMAPPED_NEEDS_REVIEW"
-    _start_x, _start_y, _start_z = 0, 0, 0
-    _end_x, _end_y, _end_z = 0, 0, 3000
-  end
-
-  _sp  = Geom::Point3d.new(_start_x.mm, _start_y.mm, _start_z.mm)
-  _ep  = Geom::Point3d.new(_end_x.mm,   _end_y.mm,   _end_z.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-
-  # Cross-section for SH (I-beam placeholder)
-  _bf = 150.0
-  _d = 300.0
-  _tf = 10.0
-  _tw = 7.0
-  _half_bf = _bf/2.0
-  _half_tw = _tw/2.0
-  _web_h = _d - 2*_tf
-  _pts_raw = [
-    [-_half_bf,0], [_half_bf,0], [_half_bf,_tf], [_half_tw,_tf],
-    [_half_tw,_tf+_web_h], [_half_bf,_tf+_web_h], [_half_bf,_d], [-_half_bf,_d],
-    [-_half_bf,_tf+_web_h], [-_half_tw,_tf+_web_h], [-_half_tw,_tf], [-_half_bf,_tf]
-  ]
-
-  # Apply rotation
-  if _rotation_degrees != 0
-    _angle = _rotation_degrees.degrees
-    _cos_a = Math.cos(_angle)
-    _sin_a = Math.sin(_angle)
-    _rotated_pts_raw = _pts_raw.map do |p|
-      x = p[0]
-      y = p[1]
-      [x * _cos_a - y * _sin_a, x * _sin_a + y * _cos_a]
-    end
-    _pts_raw = _rotated_pts_raw
-  end
-
-  _face = _ge.add_face(_pts_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, _layer_name)
-  _grp.set_attribute("IFC", "Mark",    _mark)
-  _grp.set_attribute("IFC", "Section", _section)
-  _grp.set_attribute("IFC", "Type",    _type)
-  _grp.name = _mark
-rescue => e
-  puts "SKIP 30b: #{e.message}"
+# ── Layers ────────────────────────────────────────────────────────────────────
+["STR-Columns", "STR-Beams", "STR-Braces", "STR-Plates",
+ "STR-Foundations", "STR-Slabs", "LOD300_UNMAPPED_NEEDS_REVIEW"].each do |lname|
+  get_or_create_layer(layers, lname)
 end
 
-# ---- 35b | UB | column ----
+# ── Materials ─────────────────────────────────────────────────────────────────
+_mats = model.materials
+_steel_mat = _mats["Structural_Steel"] || _mats.add("Structural_Steel")
+_steel_mat.color = Sketchup::Color.new(160, 160, 175)
+_concrete_mat = _mats["Concrete"] || _mats.add("Concrete")
+_concrete_mat.color = Sketchup::Color.new(180, 175, 165)
+
+
+# ---- CH13c | CH13c | other ----
 begin
-  _start_x = 6000
-  _start_y = 0
-  _start_z = 3500
-  _end_x = 6000
-  _end_y = 0
-  _end_z = 13500
-  _mark = "35b"
-  _section = "UB"
-  _type = "column"
-  _confidence = "high"
-  _rotation_degrees = 90
-
-  _layer_name = case _type
-                when "beam" then "LOD300_BEAM"
-                when "column" then "LOD300_COLUMN"
-                when "slab" then "LOD300_SLAB"
-                when "brace" then "LOD300_BRACE"
-                when "wall" then "LOD300_WALL"
-                else "LOD300_OTHER"
-                end
-  if _confidence == "unmapped" || _start_z == -9999 || _end_z == -9999
-    _layer_name = "LOD300_UNMAPPED_NEEDS_REVIEW"
-    _start_x, _start_y, _start_z = 0, 0, 0
-    _end_x, _end_y, _end_z = 0, 0, 3000
-  end
-
-  _sp  = Geom::Point3d.new(_start_x.mm, _start_y.mm, _start_z.mm)
-  _ep  = Geom::Point3d.new(_end_x.mm,   _end_y.mm,   _end_z.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-
-  # Cross-section for UB (I-beam placeholder)
-  _bf = 150.0
-  _d = 300.0
-  _tf = 10.0
-  _tw = 7.0
-  _half_bf = _bf/2.0
-  _half_tw = _tw/2.0
-  _web_h = _d - 2*_tf
-  _pts_raw = [
-    [-_half_bf,0], [_half_bf,0], [_half_bf,_tf], [_half_tw,_tf],
-    [_half_tw,_tf+_web_h], [_half_bf,_tf+_web_h], [_half_bf,_d], [-_half_bf,_d],
-    [-_half_bf,_tf+_web_h], [-_half_tw,_tf+_web_h], [-_half_tw,_tf], [-_half_bf,_tf]
-  ]
-
-  # Apply rotation
-  if _rotation_degrees != 0
-    _angle = _rotation_degrees.degrees
-    _cos_a = Math.cos(_angle)
-    _sin_a = Math.sin(_angle)
-    _rotated_pts_raw = _pts_raw.map do |p|
-      x = p[0]
-      y = p[1]
-      [x * _cos_a - y * _sin_a, x * _sin_a + y * _cos_a]
-    end
-    _pts_raw = _rotated_pts_raw
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP CH13c: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[0, 0], [65, 0], [65, 125], [0, 125]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "CH13c")
+    _grp.set_attribute("IFC", "Section", "CH13c")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "CH13c"
   end
-
-  _face = _ge.add_face(_pts_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, _layer_name)
-  _grp.set_attribute("IFC", "Mark",    _mark)
-  _grp.set_attribute("IFC", "Section", _section)
-  _grp.set_attribute("IFC", "Type",    _type)
-  _grp.name = _mark
-rescue => e
-  puts "SKIP 35b: #{e.message}"
-end
-
-# ---- 35c | CH | column ----
-begin
-  _start_x = 18000
-  _start_y = 0
-  _start_z = 3500
-  _end_x = 18000
-  _end_y = 0
-  _end_z = 13500
-  _mark = "35c"
-  _section = "CH"
-  _type = "column"
-  _confidence = "high"
-  _rotation_degrees = 90
-
-  _layer_name = case _type
-                when "beam" then "LOD300_BEAM"
-                when "column" then "LOD300_COLUMN"
-                when "slab" then "LOD300_SLAB"
-                when "brace" then "LOD300_BRACE"
-                when "wall" then "LOD300_WALL"
-                else "LOD300_OTHER"
-                end
-  if _confidence == "unmapped" || _start_z == -9999 || _end_z == -9999
-    _layer_name = "LOD300_UNMAPPED_NEEDS_REVIEW"
-    _start_x, _start_y, _start_z = 0, 0, 0
-    _end_x, _end_y, _end_z = 0, 0, 3000
-  end
-
-  _sp  = Geom::Point3d.new(_start_x.mm, _start_y.mm, _start_z.mm)
-  _ep  = Geom::Point3d.new(_end_x.mm,   _end_y.mm,   _end_z.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-
-  # Cross-section for CH (Channel placeholder)
-  _bf = 75.0
-  _d = 150.0
-  _tf = 10.0
-  _tw = 7.0
-  _pts_raw = [
-    [0,0],[_bf,0],[_bf,_tf],[_tw,_tf],[_tw,_d-_tf],[_bf,_d-_tf],[_bf,_d],[0,_d]
-  ]
-
-  # Apply rotation
-  if _rotation_degrees != 0
-    _angle = _rotation_degrees.degrees
-    _cos_a = Math.cos(_angle)
-    _sin_a = Math.sin(_angle)
-    _rotated_pts_raw = _pts_raw.map do |p|
-      x = p[0]
-      y = p[1]
-      [x * _cos_a - y * _sin_a, x * _sin_a + y * _cos_a]
-    end
-    _pts_raw = _rotated_pts_raw
-  end
-
-  _face = _ge.add_face(_pts_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, _layer_name)
-  _grp.set_attribute("IFC", "Mark",    _mark)
-  _grp.set_attribute("IFC", "Section", _section)
-  _grp.set_attribute("IFC", "Type",    _type)
-  _grp.name = _mark
-rescue => e
-  puts "SKIP 35c: #{e.message}"
-end
-
-# ---- 40b | CH | column ----
-begin
-  _start_x = 0
-  _start_y = 12000
-  _start_z = 3500
-  _end_x = 0
-  _end_y = 12000
-  _end_z = 13500
-  _mark = "40b"
-  _section = "CH"
-  _type = "column"
-  _confidence = "high"
-  _rotation_degrees = 90
-
-  _layer_name = case _type
-                when "beam" then "LOD300_BEAM"
-                when "column" then "LOD300_COLUMN"
-                when "slab" then "LOD300_SLAB"
-                when "brace" then "LOD300_BRACE"
-                when "wall" then "LOD300_WALL"
-                else "LOD300_OTHER"
-                end
-  if _confidence == "unmapped" || _start_z == -9999 || _end_z == -9999
-    _layer_name = "LOD300_UNMAPPED_NEEDS_REVIEW"
-    _start_x, _start_y, _start_z = 0, 0, 0
-    _end_x, _end_y, _end_z = 0, 0, 3000
-  end
-
-  _sp  = Geom::Point3d.new(_start_x.mm, _start_y.mm, _start_z.mm)
-  _ep  = Geom::Point3d.new(_end_x.mm,   _end_y.mm,   _end_z.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-
-  # Cross-section for CH (Channel placeholder)
-  _bf = 75.0
-  _d = 150.0
-  _tf = 10.0
-  _tw = 7.0
-  _pts_raw = [
-    [0,0],[_bf,0],[_bf,_tf],[_tw,_tf],[_tw,_d-_tf],[_bf,_d-_tf],[_bf,_d],[0,_d]
-  ]
-
-  # Apply rotation
-  if _rotation_degrees != 0
-    _angle = _rotation_degrees.degrees
-    _cos_a = Math.cos(_angle)
-    _sin_a = Math.sin(_angle)
-    _rotated_pts_raw = _pts_raw.map do |p|
-      x = p[0]
-      y = p[1]
-      [x * _cos_a - y * _sin_a, x * _sin_a + y * _cos_a]
-    end
-    _pts_raw = _rotated_pts_raw
-  end
-
-  _face = _ge.add_face(_pts_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, _layer_name)
-  _grp.set_attribute("IFC", "Mark",    _mark)
-  _grp.set_attribute("IFC", "Section", _section)
-  _grp.set_attribute("IFC", "Type",    _type)
-  _grp.name = _mark
-rescue => e
-  puts "SKIP 40b: #{e.message}"
-end
-
-# ---- 36b |  | other ----
-begin
-  _start_x = 0
-  _start_y = 0
-  _start_z = 3500
-  _end_x = 6000
-  _end_y = 0
-  _end_z = 3500
-  _mark = "36b"
-  _section = "" # Missing in data
-  _type = "other" # Default type
-  _confidence = "high"
-  _rotation_degrees = 0 # Default rotation
-
-  _layer_name = case _type
-                when "beam" then "LOD300_BEAM"
-                when "column" then "LOD300_COLUMN"
-                when "slab" then "LOD300_SLAB"
-                when "brace" then "LOD300_BRACE"
-                when "wall" then "LOD300_WALL"
-                else "LOD300_OTHER"
-                end
-  if _confidence == "unmapped" || _start_z == -9999 || _end_z == -9999
-    _layer_name = "LOD300_UNMAPPED_NEEDS_REVIEW"
-    _start_x, _start_y, _start_z = 0, 0, 0
-    _end_x, _end_y, _end_z = 0, 0, 3000
-  end
-
-  _sp  = Geom::Point3d.new(_start_x.mm, _start_y.mm, _start_z.mm)
-  _ep  = Geom::Point3d.new(_end_x.mm,   _end_y.mm,   _end_z.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-
-  # Cross-section for UNKNOWN (100x100 rectangle)
-  _pts_raw = [
-    [0,0],[100,0],[100,100],[0,100]
-  ]
-
-  # Apply rotation
-  if _rotation_degrees != 0
-    _angle = _rotation_degrees.degrees
-    _cos_a = Math.cos(_angle)
-    _sin_a = Math.sin(_angle)
-    _rotated_pts_raw = _pts_raw.map do |p|
-      x = p[0]
-      y = p[1]
-      [x * _cos_a - y * _sin_a, x * _sin_a + y * _cos_a]
-    end
-    _pts_raw = _rotated_pts_raw
-  end
-
-  _face = _ge.add_face(_pts_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, _layer_name)
-  _grp.set_attribute("IFC", "Mark",    _mark)
-  _grp.set_attribute("IFC", "Section", _section)
-  _grp.set_attribute("IFC", "Type",    _type)
-  _grp.name = _mark
-rescue => e
-  puts "SKIP 36b: #{e.message}"
-end
-
-# ---- SH15b (U) | SH15b | other ----
-begin
-  _start_x = 0
-  _start_y = 0
-  _start_z = 0
-  _end_x = 0
-  _end_y = 0
-  _end_z = 3500
-  _mark = "SH15b (U)"
-  _section = "SH15b"
-  _type = "other"
-  _confidence = "low"
-  _rotation_degrees = 0
-
-  _layer_name = case _type
-                when "beam" then "LOD300_BEAM"
-                when "column" then "LOD300_COLUMN"
-                when "slab" then "LOD300_SLAB"
-                when "brace" then "LOD300_BRACE"
-                when "wall" then "LOD300_WALL"
-                else "LOD300_OTHER"
-                end
-  if _confidence == "unmapped" || _start_z == -9999 || _end_z == -9999
-    _layer_name = "LOD300_UNMAPPED_NEEDS_REVIEW"
-    _start_x, _start_y, _start_z = 0, 0, 0
-    _end_x, _end_y, _end_z = 0, 0, 3000
-  end
-
-  _sp  = Geom::Point3d.new(_start_x.mm, _start_y.mm, _start_z.mm)
-  _ep  = Geom::Point3d.new(_end_x.mm,   _end_y.mm,   _end_z.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-
-  # Cross-section for UNKNOWN (100x100 rectangle) due to confidence "low"
-  _pts_raw = [
-    [0,0],[100,0],[100,100],[0,100]
-  ]
-
-  # Apply rotation
-  if _rotation_degrees != 0
-    _angle = _rotation_degrees.degrees
-    _cos_a = Math.cos(_angle)
-    _sin_a = Math.sin(_angle)
-    _rotated_pts_raw = _pts_raw.map do |p|
-      x = p[0]
-      y = p[1]
-      [x * _cos_a - y * _sin_a, x * _sin_a + y * _cos_a]
-    end
-    _pts_raw = _rotated_pts_raw
-  end
-
-  _face = _ge.add_face(_pts_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, _layer_name)
-  _grp.set_attribute("IFC", "Mark",    _mark)
-  _grp.set_attribute("IFC", "Section", _section)
-  _grp.set_attribute("IFC", "Type",    _type)
-  _grp.name = _mark
-rescue => e
-  puts "SKIP SH15b (U): #{e.message}"
-end
-
-# ---- CH13c | CH13c | beam ----
-begin
-  _start_x = 0
-  _start_y = 0
-  _start_z = 3500
-  _end_x = 6000
-  _end_y = 0
-  _end_z = 3500
-  _mark = "CH13c"
-  _section = "CH13c"
-  _type = "beam"
-  _confidence = "high"
-  _rotation_degrees = 0 # Default rotation
-
-  _layer_name = case _type
-                when "beam" then "LOD300_BEAM"
-                when "column" then "LOD300_COLUMN"
-                when "slab" then "LOD300_SLAB"
-                when "brace" then "LOD300_BRACE"
-                when "wall" then "LOD300_WALL"
-                else "LOD300_OTHER"
-                end
-  if _confidence == "unmapped" || _start_z == -9999 || _end_z == -9999
-    _layer_name = "LOD300_UNMAPPED_NEEDS_REVIEW"
-    _start_x, _start_y, _start_z = 0, 0, 0
-    _end_x, _end_y, _end_z = 0, 0, 3000
-  end
-
-  _sp  = Geom::Point3d.new(_start_x.mm, _start_y.mm, _start_z.mm)
-  _ep  = Geom::Point3d.new(_end_x.mm,   _end_y.mm,   _end_z.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-
-  # Cross-section for PFC
-  _d = 125.0
-  _bf = 65.0
-  _tf = 9.5
-  _tw = 6.5
-  _pts_raw = [
-    [0,0],[_bf,0],[_bf,_tf],[_tw,_tf],[_tw,_d-_tf],[_bf,_d-_tf],[_bf,_d],[0,_d]
-  ]
-
-  # Apply rotation
-  if _rotation_degrees != 0
-    _angle = _rotation_degrees.degrees
-    _cos_a = Math.cos(_angle)
-    _sin_a = Math.sin(_angle)
-    _rotated_pts_raw = _pts_raw.map do |p|
-      x = p[0]
-      y = p[1]
-      [x * _cos_a - y * _sin_a, x * _sin_a + y * _cos_a]
-    end
-    _pts_raw = _rotated_pts_raw
-  end
-
-  _face = _ge.add_face(_pts_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, _layer_name)
-  _grp.set_attribute("IFC", "Mark",    _mark)
-  _grp.set_attribute("IFC", "Section", _section)
-  _grp.set_attribute("IFC", "Type",    _type)
-  _grp.name = _mark
 rescue => e
   puts "SKIP CH13c: #{e.message}"
 end
 
-# ---- SH20a | SH20a | beam ----
+# ---- FB | FB | other ----
 begin
-  _start_x = 0
-  _start_y = 0
-  _start_z = 3500
-  _end_x = 6000
-  _end_y = 0
-  _end_z = 3500
-  _mark = "SH20a"
-  _section = "SH20a"
-  _type = "beam"
-  _confidence = "high"
-  _rotation_degrees = 0 # Default rotation
-
-  _layer_name = case _type
-                when "beam" then "LOD300_BEAM"
-                when "column" then "LOD300_COLUMN"
-                when "slab" then "LOD300_SLAB"
-                when "brace" then "LOD300_BRACE"
-                when "wall" then "LOD300_WALL"
-                else "LOD300_OTHER"
-                end
-  if _confidence == "unmapped" || _start_z == -9999 || _end_z == -9999
-    _layer_name = "LOD300_UNMAPPED_NEEDS_REVIEW"
-    _start_x, _start_y, _start_z = 0, 0, 0
-    _end_x, _end_y, _end_z = 0, 0, 3000
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 10500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP FB: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[0, 0], [100, 0], [100, 10], [0, 10]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "FB")
+    _grp.set_attribute("IFC", "Section", "FB")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "FB"
   end
-
-  _sp  = Geom::Point3d.new(_start_x.mm, _start_y.mm, _start_z.mm)
-  _ep  = Geom::Point3d.new(_end_x.mm,   _end_y.mm,   _end_z.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-
-  # Cross-section for RHS
-  _d = 200.0
-  _b = 75.0
-  # _t = 4.0 # Not used for outer profile
-  _pts_raw = [
-    [0,0],[_b,0],[_b,_d],[0,_d]
-  ]
-
-  # Apply rotation
-  if _rotation_degrees != 0
-    _angle = _rotation_degrees.degrees
-    _cos_a = Math.cos(_angle)
-    _sin_a = Math.sin(_angle)
-    _rotated_pts_raw = _pts_raw.map do |p|
-      x = p[0]
-      y = p[1]
-      [x * _cos_a - y * _sin_a, x * _sin_a + y * _cos_a]
-    end
-    _pts_raw = _rotated_pts_raw
-  end
-
-  _face = _ge.add_face(_pts_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, _layer_name)
-  _grp.set_attribute("IFC", "Mark",    _mark)
-  _grp.set_attribute("IFC", "Section", _section)
-  _grp.set_attribute("IFC", "Type",    _type)
-  _grp.name = _mark
-rescue => e
-  puts "SKIP SH20a: #{e.message}"
-end
-# ---- RB16a | RB16a | brace ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_BRACE")
-  _grp.set_attribute("IFC", "Mark",    "RB16a")
-  _grp.set_attribute("IFC", "Section", "RB16a")
-  _grp.set_attribute("IFC", "Type",    "brace")
-  _grp.name = "RB16a"
-rescue => e
-  puts "SKIP RB16a: #{e.message}"
-end
-
-# ---- FB | FB | plate ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder (section dims for FB are null)
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "FB")
-  _grp.set_attribute("IFC", "Section", "FB")
-  _grp.set_attribute("IFC", "Type",    "plate")
-  _grp.name = "FB"
 rescue => e
   puts "SKIP FB: #{e.message}"
 end
 
-# ---- UB20d | UB20d | beam ----
+# ---- UB36b | UB36b | beam ----
 begin
-  _sp  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(12000.mm, 0.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 11525.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(0.mm, 17438.mm, 10500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # I/UB/UC section: bf=100, d=200, tf=8.0, tw=5.0
-  half_bf = 100.0/2; half_tw = 5.0/2; web_h = 200.0 - 2*8.0
-  _pts = [
-    [-half_bf,0], [half_bf,0], [half_bf,8.0], [half_tw,8.0],
-    [half_tw,8.0+web_h], [half_bf,8.0+web_h], [half_bf,200.0], [-half_bf,200.0],
-    [-half_bf,8.0+web_h], [-half_tw,8.0+web_h], [-half_tw,8.0], [-half_bf,8.0]
-  ]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_BEAM")
-  _grp.set_attribute("IFC", "Mark",    "UB20d")
-  _grp.set_attribute("IFC", "Section", "UB20d")
-  _grp.set_attribute("IFC", "Type",    "beam")
-  _grp.name = "UB20d"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP UB36b: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-86, 0], [86, 0], [86, 359], [-86, 359]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "UB36b")
+    _grp.set_attribute("IFC", "Section", "UB36b")
+    _grp.set_attribute("IFC", "Type",    "beam")
+    _grp.name = "UB36b"
+  end
 rescue => e
-  puts "SKIP UB20d: #{e.message}"
-end
-
-# ---- UB36c | UB36c | beam ----
-begin
-  _sp  = Geom::Point3d.new(12000.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(18000.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # I/UB/UC section: bf=180, d=360, tf=8.0, tw=5.0
-  half_bf = 180.0/2; half_tw = 5.0/2; web_h = 360.0 - 2*8.0
-  _pts = [
-    [-half_bf,0], [half_bf,0], [half_bf,8.0], [half_tw,8.0],
-    [half_tw,8.0+web_h], [half_bf,8.0+web_h], [half_bf,360.0], [-half_bf,360.0],
-    [-half_bf,8.0+web_h], [-half_tw,8.0+web_h], [-half_tw,8.0], [-half_bf,8.0]
-  ]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_BEAM")
-  _grp.set_attribute("IFC", "Mark",    "UB36c")
-  _grp.set_attribute("IFC", "Section", "UB36c")
-  _grp.set_attribute("IFC", "Type",    "beam")
-  _grp.name = "UB36c"
-rescue => e
-  puts "SKIP UB36c: #{e.message}"
-end
-
-# ---- Z25d | Z25d | other ----
-begin
-  _sp  = Geom::Point3d.new(18000.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "Z25d")
-  _grp.set_attribute("IFC", "Section", "Z25d")
-  _grp.set_attribute("IFC", "Type",    "other")
-  _grp.name = "Z25d"
-rescue => e
-  puts "SKIP Z25d: #{e.message}"
+  puts "SKIP UB36b: #{e.message}"
 end
 
 # ---- PF20a | PF20a | other ----
 begin
-  _sp  = Geom::Point3d.new(18000.mm, 0.mm, 0.mm)
-  _ep  = Geom::Point3d.new(18000.mm, 0.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 5762.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 5762.mm, 3500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "PF20a")
-  _grp.set_attribute("IFC", "Section", "PF20a")
-  _grp.set_attribute("IFC", "Type",    "other")
-  _grp.name = "PF20a"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP PF20a: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 20], [-25, 20]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "PF20a")
+    _grp.set_attribute("IFC", "Section", "PF20a")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "PF20a"
+  end
 rescue => e
   puts "SKIP PF20a: #{e.message}"
+end
+
+# ---- CH*35c | CH*35c | other ----
+begin
+  _sp  = Geom::Point3d.new(0.mm, 11525.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 11525.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP CH*35c: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 35], [-25, 35]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "CH*35c")
+    _grp.set_attribute("IFC", "Section", "CH*35c")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "CH*35c"
+  end
+rescue => e
+  puts "SKIP CH*35c: #{e.message}"
+end
+
+# ---- CH40b | CH40b | other ----
+begin
+  _sp  = Geom::Point3d.new(0.mm, 17438.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 17438.mm, 10500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP CH40b: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[0, 0], [100, 0], [100, 400], [0, 400]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "CH40b")
+    _grp.set_attribute("IFC", "Section", "CH40b")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "CH40b"
+  end
+rescue => e
+  puts "SKIP CH40b: #{e.message}"
+end
+
+# ---- SH30b | SH30b | other ----
+begin
+  _sp  = Geom::Point3d.new(0.mm, 17438.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 17438.mm, 10500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP SH30b: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-50, -150], [50, -150], [50, 150], [-50, 150]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "SH30b")
+    _grp.set_attribute("IFC", "Section", "SH30b")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "SH30b"
+  end
+rescue => e
+  puts "SKIP SH30b: #{e.message}"
+end
+
+# ---- CH32a | CH32a | other ----
+begin
+  _sp  = Geom::Point3d.new(4200.mm, 5762.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(9150.mm, 5762.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP CH32a: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[0, 0], [80, 0], [80, 320], [0, 320]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "CH32a")
+    _grp.set_attribute("IFC", "Section", "CH32a")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "CH32a"
+  end
+rescue => e
+  puts "SKIP CH32a: #{e.message}"
 end
 
 # ---- PF25a | PF25a | other ----
 begin
   _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "PF25a")
-  _grp.set_attribute("IFC", "Section", "PF25a")
-  _grp.set_attribute("IFC", "Type",    "other")
-  _grp.name = "PF25a"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP PF25a: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 25], [-25, 25]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "PF25a")
+    _grp.set_attribute("IFC", "Section", "PF25a")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "PF25a"
+  end
 rescue => e
   puts "SKIP PF25a: #{e.message}"
 end
 
-# ---- CH32a | CH32a | beam ----
+# ---- CH 35a |  | other ----
 begin
-  _sp  = Geom::Point3d.new(0.mm, 6000.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 6000.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # PFC/Channel section: d=320, bf=80.0, tf=6.0, tw=4.0
-  _pts = [
-    [0,0],[80.0,0],[80.0,6.0],[4.0,6.0],
-    [4.0,320.0-6.0],[80.0,320.0-6.0],[80.0,320.0],[0,320.0]
-  ]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_BEAM")
-  _grp.set_attribute("IFC", "Mark",    "CH32a")
-  _grp.set_attribute("IFC", "Section", "CH32a")
-  _grp.set_attribute("IFC", "Type",    "beam")
-  _grp.name = "CH32a"
-rescue => e
-  puts "SKIP CH32a: #{e.message}"
-end
-# ---- CH 35a | CH | other ----
-begin
-  _sp  = Geom::Point3d.new(6000.mm, 6000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 6000.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  _rot_angle = 0.degrees
-  _rot_transform_local = Geom::Transformation.rotation(Geom::Point3d.new(0,0,0), Geom::Vector3d.new(0,0,1), _rot_angle)
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| (_t * _rot_transform_local) * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "CH 35a")
-  _grp.set_attribute("IFC", "Section", "CH")
-  _grp.set_attribute("IFC", "Type",    "other")
-  _grp.name = "CH 35a"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP CH 35a: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 100], [-25, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "CH 35a")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "CH 35a"
+  end
 rescue => e
   puts "SKIP CH 35a: #{e.message}"
 end
 
 # ---- C 1 |  | column ----
 begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 10500.mm)
   _ep  = Geom::Point3d.new(0.mm, 0.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  _rot_angle = 90.degrees
-  _rot_transform_local = Geom::Transformation.rotation(Geom::Point3d.new(0,0,0), Geom::Vector3d.new(0,0,1), _rot_angle)
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| (_t * _rot_transform_local) * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 1")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 1"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 1: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 1")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 1"
+  end
 rescue => e
   puts "SKIP C 1: #{e.message}"
 end
 
 # ---- C 2 |  | column ----
 begin
-  _sp  = Geom::Point3d.new(6000.mm, 0.mm, 0.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(4200.mm, 0.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  _rot_angle = 90.degrees
-  _rot_transform_local = Geom::Transformation.rotation(Geom::Point3d.new(0,0,0), Geom::Vector3d.new(0,0,1), _rot_angle)
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| (_t * _rot_transform_local) * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 2")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 2"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 2: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 2")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 2"
+  end
 rescue => e
   puts "SKIP C 2: #{e.message}"
 end
 
 # ---- C 3 |  | column ----
 begin
-  _sp  = Geom::Point3d.new(12000.mm, 0.mm, 0.mm)
-  _ep  = Geom::Point3d.new(12000.mm, 0.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(9150.mm, 0.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(9150.mm, 0.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  _rot_angle = 90.degrees
-  _rot_transform_local = Geom::Transformation.rotation(Geom::Point3d.new(0,0,0), Geom::Vector3d.new(0,0,1), _rot_angle)
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| (_t * _rot_transform_local) * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 3")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 3"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 3: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 3")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 3"
+  end
 rescue => e
   puts "SKIP C 3: #{e.message}"
 end
 
 # ---- C 4 |  | column ----
 begin
-  _sp  = Geom::Point3d.new(18000.mm, 0.mm, 0.mm)
-  _ep  = Geom::Point3d.new(18000.mm, 0.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(13350.mm, 0.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(13350.mm, 0.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  _rot_angle = 90.degrees
-  _rot_transform_local = Geom::Transformation.rotation(Geom::Point3d.new(0,0,0), Geom::Vector3d.new(0,0,1), _rot_angle)
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| (_t * _rot_transform_local) * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 4")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 4"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 4: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 4")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 4"
+  end
 rescue => e
   puts "SKIP C 4: #{e.message}"
 end
 
 # ---- C 5 |  | column ----
 begin
-  _sp  = Geom::Point3d.new(0.mm, 6000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(0.mm, 6000.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 5762.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(0.mm, 5762.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  _rot_angle = 90.degrees
-  _rot_transform_local = Geom::Transformation.rotation(Geom::Point3d.new(0,0,0), Geom::Vector3d.new(0,0,1), _rot_angle)
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| (_t * _rot_transform_local) * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 5")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 5"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 5: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 5")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 5"
+  end
 rescue => e
   puts "SKIP C 5: #{e.message}"
 end
 
 # ---- C 6 |  | column ----
 begin
-  _sp  = Geom::Point3d.new(6000.mm, 6000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 6000.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(4200.mm, 5762.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 5762.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  _rot_angle = 90.degrees
-  _rot_transform_local = Geom::Transformation.rotation(Geom::Point3d.new(0,0,0), Geom::Vector3d.new(0,0,1), _rot_angle)
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| (_t * _rot_transform_local) * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 6")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 6"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 6: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 6")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 6"
+  end
 rescue => e
   puts "SKIP C 6: #{e.message}"
 end
 
 # ---- C 7 |  | column ----
 begin
-  _sp  = Geom::Point3d.new(12000.mm, 6000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(12000.mm, 6000.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(9150.mm, 5762.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(9150.mm, 5762.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  _rot_angle = 90.degrees
-  _rot_transform_local = Geom::Transformation.rotation(Geom::Point3d.new(0,0,0), Geom::Vector3d.new(0,0,1), _rot_angle)
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| (_t * _rot_transform_local) * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 7")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 7"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 7: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 7")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 7"
+  end
 rescue => e
   puts "SKIP C 7: #{e.message}"
 end
+
 # ---- C 8 |  | column ----
 begin
-  _sp  = Geom::Point3d.new(18000.mm, 6000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(18000.mm, 6000.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(13350.mm, 5762.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(13350.mm, 5762.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 8")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 8"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 8: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 8")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 8"
+  end
 rescue => e
   puts "SKIP C 8: #{e.message}"
 end
 
-# ---- CH* 35c | CH | other ----
+# ---- C 12 | CH400 | column ----
 begin
-  _sp  = Geom::Point3d.new(12000.mm, 6000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(12000.mm, 6000.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(13350.mm, 11525.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(13350.mm, 11525.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "CH* 35c")
-  _grp.set_attribute("IFC", "Section", "CH")
-  _grp.set_attribute("IFC", "Type",    "other")
-  _grp.name = "CH* 35c"
-rescue => e
-  puts "SKIP CH* 35c: #{e.message}"
-end
-
-# ---- C 12 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 12000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(0.mm, 12000.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 12")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 12"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 12: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[0, 0], [1000, 0], [1000, 4000], [0, 4000]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 12")
+    _grp.set_attribute("IFC", "Section", "CH400")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 12"
+  end
 rescue => e
   puts "SKIP C 12: #{e.message}"
 end
 
-# ---- LW6 |  | other ----
+# ---- CH* 35c | CH400 | other ----
 begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 10500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "LW6")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "other")
-  _grp.name = "LW6"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP CH* 35c: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[0, 0], [1000, 0], [1000, 4000], [0, 4000]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "CH* 35c")
+    _grp.set_attribute("IFC", "Section", "CH400")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "CH* 35c"
+  end
 rescue => e
-  puts "SKIP LW6: #{e.message}"
+  puts "SKIP CH* 35c: #{e.message}"
 end
 
-# ---- C 10 |  | column ----
+# ---- STAIR 04 |  | other ----
 begin
-  _sp  = Geom::Point3d.new(6000.mm, 12000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 12000.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 11525.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(0.mm, 17438.mm, 10500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 10")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 10"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP STAIR 04: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 100], [-25, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "STAIR 04")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "STAIR 04"
+  end
+rescue => e
+  puts "SKIP STAIR 04: #{e.message}"
+end
+
+# ---- STAIR 03 |  | other ----
+begin
+  _sp  = Geom::Point3d.new(4200.mm, 5762.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 11525.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP STAIR 03: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 100], [-25, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "STAIR 03")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "STAIR 03"
+  end
+rescue => e
+  puts "SKIP STAIR 03: #{e.message}"
+end
+
+# ---- STAIR 02 |  | other ----
+begin
+  _sp  = Geom::Point3d.new(9150.mm, 5762.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(9150.mm, 11525.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP STAIR 02: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 100], [-25, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "STAIR 02")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "STAIR 02"
+  end
+rescue => e
+  puts "SKIP STAIR 02: #{e.message}"
+end
+
+# ---- C 10 | CH400 | column ----
+begin
+  _sp  = Geom::Point3d.new(4200.mm, 11525.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 11525.mm, 13500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 10: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[0, 0], [1000, 0], [1000, 4000], [0, 4000]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 10")
+    _grp.set_attribute("IFC", "Section", "CH400")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 10"
+  end
 rescue => e
   puts "SKIP C 10: #{e.message}"
 end
 
-# ---- 4WL |  | other ----
+# ---- C 11 | FB400 | column ----
 begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(9150.mm, 11525.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(9150.mm, 11525.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "4WL")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "other")
-  _grp.name = "4WL"
-rescue => e
-  puts "SKIP 4WL: #{e.message}"
-end
-
-# ---- 5WL |  | other ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "5WL")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "other")
-  _grp.name = "5WL"
-rescue => e
-  puts "SKIP 5WL: #{e.message}"
-end
-
-# ---- 7WL |  | other ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "7WL")
-  _grp.set_attribute("IFC", "Section", "")
-  _grp.set_attribute("IFC", "Type",    "other")
-  _grp.name = "7WL"
-rescue => e
-  puts "SKIP 7WL: #{e.message}"
-end
-# ---- 2WL | null | other ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "2WL")
-  _grp.set_attribute("IFC", "Section", "null")
-  _grp.set_attribute("IFC", "Type",    "other")
-  _grp.name = "2WL"
-rescue => e
-  puts "SKIP 2WL: #{e.message}"
-end
-# ---- LW3 | null | other ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "LW3")
-  _grp.set_attribute("IFC", "Section", "null")
-  _grp.set_attribute("IFC", "Type",    "other")
-  _grp.name = "LW3"
-rescue => e
-  puts "SKIP LW3: #{e.message}"
-end
-# ---- LW1 | null | other ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "LW1")
-  _grp.set_attribute("IFC", "Section", "null")
-  _grp.set_attribute("IFC", "Type",    "other")
-  _grp.name = "LW1"
-rescue => e
-  puts "SKIP LW1: #{e.message}"
-end
-# ---- C 11 | null | column ----
-begin
-  _sp  = Geom::Point3d.new(12000.mm, 12000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(12000.mm, 12000.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 11")
-  _grp.set_attribute("IFC", "Section", "null")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 11"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 11: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-200, 0], [200, 0], [200, 400], [-200, 400]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 11")
+    _grp.set_attribute("IFC", "Section", "FB400")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 11"
+  end
 rescue => e
   puts "SKIP C 11: #{e.message}"
 end
-# ---- C 13 | null | column ----
+
+# ---- STAIR 0 |  | other ----
 begin
-  _sp  = Geom::Point3d.new(18000.mm, 12000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(18000.mm, 12000.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 13")
-  _grp.set_attribute("IFC", "Section", "null")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 13"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP STAIR 0: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 100], [-25, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "STAIR 0")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "STAIR 0"
+  end
+rescue => e
+  puts "SKIP STAIR 0: #{e.message}"
+end
+
+# ---- C 13 | CH400 | column ----
+begin
+  _sp  = Geom::Point3d.new(0.mm, 17438.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(0.mm, 17438.mm, 13500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 13: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[0, 0], [1000, 0], [1000, 4000], [0, 4000]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 13")
+    _grp.set_attribute("IFC", "Section", "CH400")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 13"
+  end
 rescue => e
   puts "SKIP C 13: #{e.message}"
 end
-# ---- C 14 | null | column ----
+
+# ---- C 14 | CH400 | column ----
 begin
-  _sp  = Geom::Point3d.new(0.mm, 18000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(0.mm, 18000.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(4200.mm, 17438.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 17438.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 14")
-  _grp.set_attribute("IFC", "Section", "null")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 14"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 14: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[0, 0], [1000, 0], [1000, 4000], [0, 4000]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 14")
+    _grp.set_attribute("IFC", "Section", "CH400")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 14"
+  end
 rescue => e
   puts "SKIP C 14: #{e.message}"
 end
-# ---- C 15 | null | column ----
+
+# ---- C 15 |  | column ----
 begin
-  _sp  = Geom::Point3d.new(6000.mm, 18000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 18000.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(9150.mm, 17438.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(9150.mm, 17438.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 15")
-  _grp.set_attribute("IFC", "Section", "null")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 15"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 15: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 15")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 15"
+  end
 rescue => e
   puts "SKIP C 15: #{e.message}"
 end
-# ---- C 16 | null | column ----
+
+# ---- C 16 |  | column ----
 begin
-  _sp  = Geom::Point3d.new(12000.mm, 18000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(12000.mm, 18000.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(13350.mm, 17438.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(13350.mm, 17438.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: use rectangle 100mm x 100mm as placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_COLUMN")
-  _grp.set_attribute("IFC", "Mark",    "C 16")
-  _grp.set_attribute("IFC", "Section", "null")
-  _grp.set_attribute("IFC", "Type",    "column")
-  _grp.name = "C 16"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP C 16: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "C 16")
+    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "C 16"
+  end
 rescue => e
   puts "SKIP C 16: #{e.message}"
 end
-# ---- b03HS | CH32a | beam ----
+
+# ---- CH 35c | CH 35c | column ----
+begin
+  _sp  = Geom::Point3d.new(0.mm, 5762.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(0.mm, 5762.mm, 13500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP CH 35c: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[0, 0], [87.5, 0], [87.5, 350], [0, 350]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "CH 35c")
+    _grp.set_attribute("IFC", "Section", "CH 35c")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "CH 35c"
+  end
+rescue => e
+  puts "SKIP CH 35c: #{e.message}"
+end
+
+# ---- UB20d | UB20d | beam ----
 begin
   _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(0.mm, 5762.mm, 3500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # PFC/Channel: bf=80.0mm, d=320mm, tf=6.0mm, tw=4.0mm
-  _pts = [[0,0],[80.0,0],[80.0,6.0],[4.0,6.0],[4.0,314.0],[80.0,314.0],[80.0,320],[0,320]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_BEAM")
-  _grp.set_attribute("IFC", "Mark",    "b03HS")
-  _grp.set_attribute("IFC", "Section", "CH32a")
-  _grp.set_attribute("IFC", "Type",    "beam")
-  _grp.name = "b03HS"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP UB20d: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-50, 0], [50, 0], [50, 200], [-50, 200]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "UB20d")
+    _grp.set_attribute("IFC", "Section", "UB20d")
+    _grp.set_attribute("IFC", "Type",    "beam")
+    _grp.name = "UB20d"
+  end
 rescue => e
-  puts "SKIP b03HS: #{e.message}"
+  puts "SKIP UB20d: #{e.message}"
 end
 
-# ---- b04HC | CH32a | beam ----
+# ---- UB36c | UB36c | beam ----
 begin
-  _sp  = Geom::Point3d.new(18000.mm, 6000.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 12000.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(0.mm, 5762.mm, 3500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # PFC/Channel: bf=80.0mm, d=320mm, tf=6.0mm, tw=4.0mm
-  _pts = [[0,0],[80.0,0],[80.0,6.0],[4.0,6.0],[4.0,314.0],[80.0,314.0],[80.0,320],[0,320]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_BEAM")
-  _grp.set_attribute("IFC", "Mark",    "b04HC")
-  _grp.set_attribute("IFC", "Section", "CH32a")
-  _grp.set_attribute("IFC", "Type",    "beam")
-  _grp.name = "b04HC"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP UB36c: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-90, 0], [90, 0], [90, 360], [-90, 360]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "UB36c")
+    _grp.set_attribute("IFC", "Section", "UB36c")
+    _grp.set_attribute("IFC", "Type",    "beam")
+    _grp.name = "UB36c"
+  end
 rescue => e
-  puts "SKIP b04HC: #{e.message}"
+  puts "SKIP UB36c: #{e.message}"
 end
 
-# ---- c53*HC | SH10e | other ----
+# ---- 250PFC | 250PFC | beam ----
 begin
-  _sp  = Geom::Point3d.new(0.mm, 12000.mm, 0.mm)
-  _ep  = Geom::Point3d.new(0.mm, 12000.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 11525.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 11525.mm, 3500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # UNKNOWN section: using 100mm x 100mm placeholder
-  _pts = [[0,0],[100,0],[100,100],[0,100]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_OTHER")
-  _grp.set_attribute("IFC", "Mark",    "c53*HC")
-  _grp.set_attribute("IFC", "Section", "SH10e")
-  _grp.set_attribute("IFC", "Type",    "other")
-  _grp.name = "c53*HC"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP 250PFC: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[0, 0], [90, 0], [90, 250], [0, 250]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "250PFC")
+    _grp.set_attribute("IFC", "Section", "250PFC")
+    _grp.set_attribute("IFC", "Type",    "beam")
+    _grp.name = "250PFC"
+  end
 rescue => e
-  puts "SKIP c53*HC: #{e.message}"
+  puts "SKIP 250PFC: #{e.message}"
 end
 
-# ---- H | UB36c | beam ----
+# ---- SH15a | SH15a | other ----
 begin
-  _sp  = Geom::Point3d.new(18000.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(9150.mm, 5762.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(13350.mm, 5762.mm, 3500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # I/UB/UC: bf=180mm, d=360mm, tf=8.0mm, tw=5.0mm
-  _half_bf = 180.0/2
-  _half_tw = 5.0/2
-  _web_h = 360 - 2*8.0
-  _pts = [[-_half_bf,0], [_half_bf,0], [_half_bf,8.0], [_half_tw,8.0], [_half_tw,8.0+_web_h], [_half_bf,8.0+_web_h], [_half_bf,360], [-_half_bf,360], [-_half_bf,8.0+_web_h], [-_half_tw,8.0+_web_h], [-_half_tw,8.0], [-_half_bf,8.0]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_BEAM")
-  _grp.set_attribute("IFC", "Mark",    "H")
-  _grp.set_attribute("IFC", "Section", "UB36c")
-  _grp.set_attribute("IFC", "Type",    "beam")
-  _grp.name = "H"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP SH15a: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 15], [-25, 15]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "SH15a")
+    _grp.set_attribute("IFC", "Section", "SH15a")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "SH15a"
+  end
 rescue => e
-  puts "SKIP H: #{e.message}"
+  puts "SKIP SH15a: #{e.message}"
 end
 
-# ---- 10 | UB36c | beam ----
+# ---- SH08d | SH08d | other ----
 begin
-  _sp  = Geom::Point3d.new(18000.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(6000.mm, 0.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 11525.mm, 10500.mm)
+  _ep  = Geom::Point3d.new(0.mm, 11525.mm, 13500.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
-  _grp = ents.add_group
-  _ge  = _grp.entities
-  _t   = Geom::Transformation.new(_sp, _vec)
-  # Cross-section at origin, extruded along _vec
-  # I/UB/UC: bf=180mm, d=360mm, tf=8.0mm, tw=5.0mm
-  _half_bf = 180.0/2
-  _half_tw = 5.0/2
-  _web_h = 360 - 2*8.0
-  _pts = [[-_half_bf,0], [_half_bf,0], [_half_bf,8.0], [_half_tw,8.0], [_half_tw,8.0+_web_h], [_half_bf,8.0+_web_h], [_half_bf,360], [-_half_bf,360], [-_half_bf,8.0+_web_h], [-_half_tw,8.0+_web_h], [-_half_tw,8.0], [-_half_bf,8.0]]
-  _face = _ge.add_face(_pts.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-  _face.pushpull(_len)
-  _grp.layer = get_or_create_layer(layers, "LOD300_BEAM")
-  _grp.set_attribute("IFC", "Mark",    "10")
-  _grp.set_attribute("IFC", "Section", "UB36c")
-  _grp.set_attribute("IFC", "Type",    "beam")
-  _grp.name = "10"
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP SH08d: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-44.5, -44.5], [44.5, -44.5], [44.5, 44.5], [-44.5, 44.5]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "SH08d")
+    _grp.set_attribute("IFC", "Section", "SH08d")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "SH08d"
+  end
 rescue => e
-  puts "SKIP 10: #{e.message}"
+  puts "SKIP SH08d: #{e.message}"
 end
+
+# ---- SH10f | SH10f | other ----
+begin
+  _sp  = Geom::Point3d.new(13350.mm, 5762.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(17550.mm, 5762.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP SH10f: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 10], [-25, 10]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "SH10f")
+    _grp.set_attribute("IFC", "Section", "SH10f")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "SH10f"
+  end
+rescue => e
+  puts "SKIP SH10f: #{e.message}"
+end
+
+# ---- SH15b | SH15b | other ----
+begin
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(0.mm, 5762.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP SH15b: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 15], [-25, 15]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "SH15b")
+    _grp.set_attribute("IFC", "Section", "SH15b")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "SH15b"
+  end
+rescue => e
+  puts "SKIP SH15b: #{e.message}"
+end
+
+# ---- SH10e | SH10e | beam ----
+begin
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP SH10e: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 10], [-25, 10]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "SH10e")
+    _grp.set_attribute("IFC", "Section", "SH10e")
+    _grp.set_attribute("IFC", "Type",    "beam")
+    _grp.name = "SH10e"
+  end
+rescue => e
+  puts "SKIP SH10e: #{e.message}"
+end
+
+# ---- UA15a | UA15a | angle ----
+begin
+  _sp  = Geom::Point3d.new(4200.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP UA15a: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 15], [-25, 15]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "UA15a")
+    _grp.set_attribute("IFC", "Section", "UA15a")
+    _grp.set_attribute("IFC", "Type",    "angle")
+    _grp.name = "UA15a"
+  end
+rescue => e
+  puts "SKIP UA15a: #{e.message}"
+end
+
+# ---- SH150 | SH150 | other ----
+begin
+  _sp  = Geom::Point3d.new(4200.mm, 5762.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(9150.mm, 5762.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP SH150: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-37.5, 0], [37.5, 0], [37.5, 150], [-37.5, 150]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "SH150")
+    _grp.set_attribute("IFC", "Section", "SH150")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "SH150"
+  end
+rescue => e
+  puts "SKIP SH150: #{e.message}"
+end
+
+# ---- CH35a | CH35a | column ----
+begin
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 13500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP CH35a: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[0, 0], [100, 0], [100, 380], [0, 380]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "CH35a")
+    _grp.set_attribute("IFC", "Section", "CH35a")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "CH35a"
+  end
+rescue => e
+  puts "SKIP CH35a: #{e.message}"
+end
+
+# ---- EA15a | EA15a | angle ----
+begin
+  _sp  = Geom::Point3d.new(9150.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(9150.mm, 0.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP EA15a: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 15], [-25, 15]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "EA15a")
+    _grp.set_attribute("IFC", "Section", "EA15a")
+    _grp.set_attribute("IFC", "Type",    "angle")
+    _grp.name = "EA15a"
+  end
+rescue => e
+  puts "SKIP EA15a: #{e.message}"
+end
+
+# ---- RH25b | RH25b | other ----
+begin
+  _sp  = Geom::Point3d.new(13350.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(13350.mm, 0.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP RH25b: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 25], [-25, 25]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "RH25b")
+    _grp.set_attribute("IFC", "Section", "RH25b")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "RH25b"
+  end
+rescue => e
+  puts "SKIP RH25b: #{e.message}"
+end
+
+# ---- UB20a | UB20a | beam ----
+begin
+  _sp  = Geom::Point3d.new(9150.mm, 5762.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(13350.mm, 5762.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP UB20a: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-66.5, 0], [66.5, 0], [66.5, 203], [-66.5, 203]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "UB20a")
+    _grp.set_attribute("IFC", "Section", "UB20a")
+    _grp.set_attribute("IFC", "Type",    "beam")
+    _grp.name = "UB20a"
+  end
+rescue => e
+  puts "SKIP UB20a: #{e.message}"
+end
+
+# ---- SH10d | SH10d | other ----
+begin
+  _sp  = Geom::Point3d.new(0.mm, 11525.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(4200.mm, 11525.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP SH10d: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 10], [-25, 10]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "SH10d")
+    _grp.set_attribute("IFC", "Section", "SH10d")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "SH10d"
+  end
+rescue => e
+  puts "SKIP SH10d: #{e.message}"
+end
+
+# ---- SH20a | SH20a | other ----
+begin
+  _sp  = Geom::Point3d.new(4200.mm, 11525.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(9150.mm, 11525.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP SH20a: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-37.5, -100], [37.5, -100], [37.5, 100], [-37.5, 100]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "SH20a")
+    _grp.set_attribute("IFC", "Section", "SH20a")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "SH20a"
+  end
+rescue => e
+  puts "SKIP SH20a: #{e.message}"
+end
+
+# ---- PF15a | PF15a | other ----
+begin
+  _sp  = Geom::Point3d.new(9150.mm, 11525.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(13350.mm, 11525.mm, 3500.mm)
+  _vec = _sp.vector_to(_ep)
+  _len = _sp.distance(_ep)
+  if _len < 1.mm || !_vec.valid?
+    puts "SKIP PF15a: zero-length (check mapper coords)"
+  else
+    _grp = ents.add_group
+    _ge  = _grp.entities
+    _t   = Geom::Transformation.new(_sp, _vec)
+    _raw = [[-25, 0], [25, 0], [25, 15], [-25, 15]]
+    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
+    _face.pushpull(_len) if _face
+    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "PF15a")
+    _grp.set_attribute("IFC", "Section", "PF15a")
+    _grp.set_attribute("IFC", "Type",    "other")
+    _grp.name = "PF15a"
+  end
+rescue => e
+  puts "SKIP PF15a: #{e.message}"
+end
+
 
 model.commit_operation
 puts "=== LOD 300 Import Complete ==="
