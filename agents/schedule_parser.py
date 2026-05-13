@@ -1,8 +1,7 @@
 """
 Agent 2 — Schedule Parser
 Phase 2: Extract member marks and section sizes from Steel Schedule pages.
-Uses the Glossary to normalize non-standard abbreviations.
-
+Uses the Glossary and PDF Analysis context to adapt to ANY convention.
 Output: data/output_json/steel_schedule.json
 """
 
@@ -13,9 +12,12 @@ from rich import print as rprint
 from config import SCHEDULE_OUTPUT_FILE, GLOSSARY_OUTPUT_FILE, USE_TEXT_EXTRACTION_FIRST
 from core.llm_wrapper import call_llm_json
 from core.pdf_utils import render_page_as_image_part, segment_page_regions, get_page_count, extract_tables_pdfplumber
+from core.analysis_context import build_schedule_context
 
 
 EXTRACT_PROMPT_TEMPLATE = """You are a Senior Structural Detailer extracting data from a structural steel schedule.
+
+{analysis_context}
 
 PROJECT GLOSSARY (use this to normalise abbreviations):
 {glossary_json}
@@ -56,6 +58,9 @@ def parse_schedule_pages(pdf_path: str, schedule_pages: list[int]) -> list[dict]
             f"falling back to all {total} pages (full scan)."
         )
 
+    # ── Load PDF analysis context (adapts to convention) ────────────────────
+    analysis_context = build_schedule_context()
+
     glossary = load_glossary()
     glossary_summary = json.dumps({
         "abbreviations": glossary.get("abbreviations", {}),
@@ -67,7 +72,8 @@ def parse_schedule_pages(pdf_path: str, schedule_pages: list[int]) -> list[dict]
 
     for page_num in schedule_pages:
         rprint(f"[bold magenta]Schedule Parser:[/] Extracting page {page_num + 1}...")
-        base_prompt = EXTRACT_PROMPT_TEMPLATE.replace("{glossary_json}", glossary_summary)
+        base_prompt = EXTRACT_PROMPT_TEMPLATE.replace("{analysis_context}", analysis_context)
+        base_prompt = base_prompt.replace("{glossary_json}", glossary_summary)
 
         # ── Text-first path ──────────────────────────────────────────────────
         text_data = extract_tables_pdfplumber(pdf_path, page_num) if USE_TEXT_EXTRACTION_FIRST else None

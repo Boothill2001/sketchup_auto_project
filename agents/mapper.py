@@ -23,9 +23,12 @@ from rich import print as rprint
 from config import SCHEDULE_OUTPUT_FILE, SPATIAL_OUTPUT_FILE, MAPPED_OUTPUT_FILE
 from core.llm_wrapper import call_llm_json
 from core.pdf_utils import render_page_as_image_part, segment_page_regions
+from core.analysis_context import build_plan_context
 
 
 MAPPER_PROMPT_TEMPLATE = """You are a BIM Coordinator AI with expert knowledge of structural framing.
+
+{analysis_context}
 
 You have two data sources:
 1. STEEL SCHEDULE — lists member marks and section sizes
@@ -247,7 +250,10 @@ def run_mapper(pdf_path: str, plan_pages: list[int], elevation_pages: list[int])
         rprint(f"[yellow]Mapper warning:[/] schedule JSON is {len(schedule_json_str)} chars "
                f"(covering {len(members)} members) — sending full payload to LLM (no truncation).")
 
+    analysis_context = build_plan_context()
     prompt = MAPPER_PROMPT_TEMPLATE.replace(
+        "{analysis_context}", analysis_context
+    ).replace(
         "{schedule_json}", schedule_json_str
     ).replace(
         "{spatial_json}", json.dumps(spatial, indent=2)

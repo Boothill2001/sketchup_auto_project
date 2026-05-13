@@ -2,9 +2,10 @@
 Agent 3 — Spatial Parser  (NEW)
 Phase 3: Extract the spatial reference system from Plan and Elevation pages.
 
-  - PLAN views  → Grid X (columns A,B,C...) and Grid Y (rows 1,2,3...) with distances
+  - PLAN views  → Grid X (columns) and Grid Y (rows) with distances
   - ELEVATION views → Z-level system (Base, FL1, Roof, etc.) with heights in mm
 
+Adapts to PDF convention via Phase 0 analysis.
 Output: data/output_json/spatial_data.json
 """
 
@@ -16,14 +17,16 @@ from rich import print as rprint
 from config import SPATIAL_OUTPUT_FILE
 from core.llm_wrapper import call_llm_json
 from core.pdf_utils import render_page_as_image_part, segment_page_regions, extract_text_from_page
+from core.analysis_context import build_plan_context
 
 
 PLAN_PROMPT = """You are a Senior Structural Detailer. This is a STRUCTURAL PLAN VIEW drawing.
 Extract the complete grid system (column and row grid lines).
 
+{analysis_context}
+
 Rules:
-- Grid X labels are typically letters: A, B, C, D... (left to right)
-- Grid Y labels are typically numbers: 1, 2, 3, 4... (bottom to top)
+- Read grid labels EXACTLY as they appear on the drawing (use the convention above).
 - All distances are CUMULATIVE from the origin (0,0).
 - Read dimension chains carefully — they may be incremental (e.g. 6000, 5000) not cumulative.
   Convert to cumulative: [0, 6000, 11000].
@@ -35,35 +38,37 @@ Return JSON:
   "drawing_ref": "<drawing number or title if visible>",
   "origin": {"x": 0, "y": 0},
   "grids_x": [
-    {"name": "A", "x_mm": 0},
-    {"name": "B", "x_mm": 6000},
-    {"name": "C", "x_mm": 11000}
+    {{"name": "A", "x_mm": 0}},
+    {{"name": "B", "x_mm": 6000}},
+    {{"name": "C", "x_mm": 11000}}
   ],
   "grids_y": [
-    {"name": "1", "y_mm": 0},
-    {"name": "2", "y_mm": 5000},
-    {"name": "3", "y_mm": 9500}
+    {{"name": "1", "y_mm": 0}},
+    {{"name": "2", "y_mm": 5000}},
+    {{"name": "3", "y_mm": 9500}}
   ]
 }
+
 NOTE: Grid lines may appear as:
- - Circles/bubbles with letters or numbers at the end of lines
+ - Circles/bubbles with labels at the end of lines
  - Dimension chains showing cumulative distances
  - Column centerlines labeled in title block legend
- - Post-tensioned tendon layout grids
- If you cannot find traditional grid bubbles, extract any reference coordinate system visible in the drawing.
+ - "Trục" prefix (Vietnamese) for axis labels
 
-If no grid found, return: {"view_type": "PLAN", "grids_x": [], "grids_y": []}"""
+If no grid found, return: {{"view_type": "PLAN", "grids_x": [], "grids_y": []}}"""
 
 
 ELEVATION_PROMPT = """You are a Senior Structural Detailer. This is a STRUCTURAL ELEVATION or SECTION VIEW drawing.
 Extract EVERY floor level and datum height shown anywhere on this page (Z-axis).
+
+{analysis_context}
 
 Where to look:
 - Datum triangles ▽ or ▼ next to a height label
 - Horizontal dashed lines labelled with a level name and RL/EL/FFL value
 - Portal frame elevations: look for GROUND, EAVE, HAUNCH, RIDGE, APEX height callouts
 - Section views: look for FINISHED FLOOR LEVEL (FFL), TOP OF SLAB (TOS), TOP OF STEEL (TOS) markers
-- Any text matching: BASE / GND / GROUND / RL / FFL / FL0 / FL1 / FL2 / FL3 / LEVEL 1 / LEVEL 2 / EAVE / HAUNCH / RIDGE / ROOF / PARAPET / TOP PLATE
+- Any text matching: BASE / GND / GROUND / RL / FFL / FL0 / FL1 / FL2 / FL3 / LEVEL 1 / LEVEL 2 / EAVE / HAUNCH / RIDGE / ROOF / PARAPET / TOP PLATE / TẦNG / CỐT / MÁI (Vietnamese)
 
 Conversion rules:
 - Express ALL heights in MILLIMETERS, relative to Base = 0.
@@ -77,17 +82,19 @@ Use "ELEVATION" for full-height elevation views; use "SECTION" for cross-section
   "view_type": "ELEVATION",
   "drawing_ref": "<drawing number or title if visible>",
   "levels": [
-    {"name": "GROUND",  "z_mm": 0},
-    {"name": "FL1",     "z_mm": 3600},
-    {"name": "EAVE",    "z_mm": 4200},
-    {"name": "RIDGE",   "z_mm": 5800},
-    {"name": "ROOF",    "z_mm": 6000}
+    {{"name": "GROUND",  "z_mm": 0}},
+    {{"name": "FL1",     "z_mm": 3600}},
+    {{"name": "EAVE",    "z_mm": 4200}},
+    {{"name": "RIDGE",   "z_mm": 5800}},
+    {{"name": "ROOF",    "z_mm": 6000}}
   ]
 }
-If no level markers are visible anywhere on the page, return: {"view_type": "ELEVATION", "levels": []}"""
+If no level markers are visible anywhere on the page, return: {{"view_type": "ELEVATION", "levels": []}}"""
 
 
-FALLBACK_GRID_PROMPT = """This is a structural drawing. Looking at all visible column grid lines, identify the grid reference system. Grid lines may be labeled with letters (A,B,C) or numbers (1,2,3) or both. Extract all grid labels and their approximate spacing in mm.
+FALLBACK_GRID_PROMPT = """This is a structural drawing. Looking at all visible column grid lines, identify the grid reference system.
+
+{analysis_context}
 
 Return JSON using the same schema:
 {
@@ -106,6 +113,7 @@ def _score_page(pdf_path: str, page: int) -> int:
         return len(re.findall(
             r'\b[A-H]\b|\b[1-9]\b|GRID|LEVEL\s*\d|RL\s*[\d.]|FL\d|EL[\d.]'
             r'|FFL|TOS|EAVE|RIDGE|HAUNCH|PARAPET|ROOF|GND|GROUND'
+            r'|TẦNG|CỐT|MÁI|TRỤC'            # Vietnamese
             r'|\b\d{3,5}\b',   # bare mm numbers often in elevation dims
             text, re.IGNORECASE,
         ))
@@ -209,22 +217,26 @@ def _extract_spatial_from_text(pdf_path: str, plan_pages: list, elev_pages: list
                         try: elev_scale = int(ratio)
                         except ValueError: pass
 
-                # Find LEVEL XX labels
+                # Find LEVEL XX labels (also Vietnamese "TẦNG XX", "CỐT", "MÁI")
                 for j, w in enumerate(words):
-                    m = _re.match(r"^LEVEL$", w["text"])
-                    if m and j+1 < len(words):
+                    txt = w["text"].strip().upper()
+                    # English: "LEVEL 01", "LEVEL 1"
+                    if txt == "LEVEL" and j+1 < len(words):
                         num_w = words[j+1]
                         key = f"LEVEL {num_w['text']}"
-                        if _re.match(r"^\d{2}$", num_w["text"]):
+                        if _re.match(r"^\d{1,2}$", num_w["text"]):
                             if key not in level_pos:
                                 level_pos[key] = w["top"]
+                    # Vietnamese: "TẦNG 1", "CỐT +0.00", "MÁI"
+                    if txt in ("TẦNG", "CỐT", "MÁI"):
+                        label = txt if txt == "MÁI" else f"{txt} {words[j+1]['text']}" if j+1 < len(words) else txt
+                        if label not in level_pos:
+                            level_pos[label] = w["top"]
 
             # Convert level Y-positions to Z heights using page scale
             if level_pos and elev_scale:
                 MM_PER_PT = 25.4 / 72   # 1 PDF point = 0.3528 mm
                 sorted_lvls = sorted(level_pos.items(), key=lambda x: x[1])
-                # Lowest Y in PDF = highest real level (Y flipped)
-                # Assign base_z=0 to lowest level in the drawing
                 ref_lvl, ref_y = sorted_lvls[-1]  # highest y-pt = lowest real level
                 for lname, ly in sorted_lvls:
                     dy_pts = ref_y - ly          # positive = above ref
@@ -250,11 +262,9 @@ def _extract_spatial_from_text(pdf_path: str, plan_pages: list, elev_pages: list
             if all_bays:
                 from collections import Counter
                 counts = Counter(all_bays)
-                # Take top-2 most common values ≥ 3 occurrences
                 candidates = [v for v, c in counts.most_common(5) if c >= 2 and v >= 3000]
                 if candidates:
                     bay = candidates[0]
-                    # Build 4-line grids using that bay
                     result["grids_x"] = [
                         {"name": str(i+1), "x_mm": i * bay} for i in range(4)
                     ]
@@ -275,6 +285,12 @@ def parse_spatial_pages(
 ) -> dict:
     all_results = []
 
+    # ── Load PDF analysis context (adapts to convention) ────────────────────
+    analysis_context = build_plan_context()
+    plan_prompt = PLAN_PROMPT.replace("{analysis_context}", analysis_context)
+    elev_prompt = ELEVATION_PROMPT.replace("{analysis_context}", analysis_context)
+    fallback_prompt = FALLBACK_GRID_PROMPT.replace("{analysis_context}", analysis_context)
+
     # ── Phase 0: pdfplumber text extraction ──────────────────────────────────
     text_result = _extract_spatial_from_text(pdf_path, plan_pages, elevation_pages)
     if text_result["levels"] or text_result["grids_x"]:
@@ -293,7 +309,7 @@ def parse_spatial_pages(
         for pg in top_plans:
             regions = segment_page_regions(pdf_path, pg)
             try:
-                raw    = call_llm_json(PLAN_PROMPT, image_parts=[regions[0]])
+                raw    = call_llm_json(plan_prompt, image_parts=[regions[0]])
                 parsed = json.loads(raw)
                 if parsed.get("grids_x") or parsed.get("grids_y"):
                     all_results.append(parsed)
@@ -316,7 +332,7 @@ def parse_spatial_pages(
         for pg in remaining_plans:
             regions = segment_page_regions(pdf_path, pg)
             try:
-                raw    = call_llm_json(PLAN_PROMPT, image_parts=[regions[0]])
+                raw    = call_llm_json(plan_prompt, image_parts=[regions[0]])
                 parsed = json.loads(raw)
                 if parsed.get("grids_x") or parsed.get("grids_y"):
                     all_results.append(parsed)
@@ -339,7 +355,7 @@ def parse_spatial_pages(
                 pass
         if fallback_images:
             try:
-                raw    = call_llm_json(FALLBACK_GRID_PROMPT, image_parts=fallback_images)
+                raw    = call_llm_json(fallback_prompt, image_parts=fallback_images)
                 parsed = json.loads(raw)
                 if parsed.get("grids_x") or parsed.get("grids_y"):
                     all_results.append(parsed)
@@ -351,7 +367,6 @@ def parse_spatial_pages(
                 rprint(f"  [red]Fallback grid extractor error: {e}[/]")
 
     # ── Elevation pages: up to 2 best pages, 1 API call each ─────────────────
-    # elevation_pages already contains section_view pages (see get_pages_by_role)
     if elevation_pages:
         top_elevs = select_top_pages(elevation_pages, pdf_path, max_n=4)
         rprint(
@@ -361,7 +376,7 @@ def parse_spatial_pages(
         for pg in top_elevs:
             regions = segment_page_regions(pdf_path, pg)
             try:
-                raw    = call_llm_json(ELEVATION_PROMPT, image_parts=[regions[0]])
+                raw    = call_llm_json(elev_prompt, image_parts=[regions[0]])
                 parsed = json.loads(raw)
                 if parsed.get("levels"):
                     all_results.append(parsed)

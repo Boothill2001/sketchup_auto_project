@@ -13,6 +13,7 @@ Unmapped members (confidence="unmapped") go to layer LOD300_UNMAPPED_NEEDS_REVIE
 """
 
 import json
+import re
 from pathlib import Path
 from rich import print as rprint
 
@@ -20,9 +21,12 @@ from config import MAPPED_OUTPUT_FILE, CODER_OUTPUT_FILE
 from core.llm_wrapper import call_llm, call_llm_with_feedback
 
 
-# Source: AS/NZS 3679.1 & AS/NZS 1163 section tables
-AUSTRALIAN_STEEL_SECTIONS: dict[str, dict] = {
-    # ── UB — Universal Beam (old Australian format) ──────────────────────────
+# ============================================================================
+# STEEL SECTION LOOKUP TABLE
+# Source: AS/NZS 3679.1, AS/NZS 1163, TCVN 7571, JIS G3192, Vina-One catalogue
+# ============================================================================
+STEEL_SECTIONS: dict[str, dict] = {
+    # ── UB — Universal Beam (Australian old format) ──────────────────────────
     "UB36b": {"type": "UB", "d": 359, "bf": 172, "tf": 13.0, "tw": 8.0},
     "UB36a": {"type": "UB", "d": 356, "bf": 171, "tf": 11.5, "tw": 7.0},
     "UB30a": {"type": "UB", "d": 303, "bf": 165, "tf":  9.9, "tw": 6.1},
@@ -31,56 +35,208 @@ AUSTRALIAN_STEEL_SECTIONS: dict[str, dict] = {
     "UB20b": {"type": "UB", "d": 206, "bf": 133, "tf":  9.6, "tw": 6.2},
     "UB20a": {"type": "UB", "d": 203, "bf": 133, "tf":  7.8, "tw": 5.8},
     "UB15a": {"type": "UB", "d": 155, "bf": 102, "tf":  7.0, "tw": 4.5},
-    # ── UB — Universal Beam (metric format) ──────────────────────────────────
+    # ── UB — Universal Beam (metric) ─────────────────────────────────────────
     "360UB56.7": {"type": "UB", "d": 359, "bf": 172, "tf": 13.0, "tw": 8.0},
     "310UB40.4": {"type": "UB", "d": 304, "bf": 165, "tf":  8.7, "tw": 6.1},
     "250UB37.3": {"type": "UB", "d": 256, "bf": 146, "tf": 10.9, "tw": 6.4},
     "200UB29.8": {"type": "UB", "d": 207, "bf": 134, "tf":  9.6, "tw": 6.3},
     "150UB18.0": {"type": "UB", "d": 155, "bf": 102, "tf":  7.0, "tw": 4.5},
-    # ── UC — Universal Column (old format) ───────────────────────────────────
+
+    # ── UC — Universal Column (Australian old + metric) ──────────────────────
     "UC155d": {"type": "UC", "d": 158, "bf": 153, "tf": 10.0, "tw": 6.6},
     "UC155c": {"type": "UC", "d": 152, "bf": 152, "tf":  8.0, "tw": 5.0},
     "UC100a": {"type": "UC", "d":  97, "bf":  99, "tf":  7.8, "tw": 4.6},
-    # ── UC — Universal Column (metric format) ────────────────────────────────
     "150UC30.0": {"type": "UC", "d": 158, "bf": 153, "tf": 10.0, "tw": 6.6},
     "100UC14.8": {"type": "UC", "d":  97, "bf":  99, "tf":  7.8, "tw": 4.6},
-    # ── PFC — Parallel Flange Channel (old CH format) ────────────────────────
-    "CH35a": {"type": "PFC", "d": 380, "bf": 100, "tf": 17.5, "tw": 10.0},
-    "CH35b": {"type": "PFC", "d": 380, "bf": 100, "tf": 17.5, "tw": 10.0},
-    "CH30a": {"type": "PFC", "d": 310, "bf":  86, "tf": 14.8, "tw":  9.1},
-    "CH13c": {"type": "PFC", "d": 125, "bf":  65, "tf":  9.5, "tw":  6.5},
-    "CH40b": {"type": "PFC", "d": 430, "bf": 100, "tf": 19.0, "tw": 11.5},
-    # ── PFC — Parallel Flange Channel (metric format) ────────────────────────
-    "380PFC": {"type": "PFC", "d": 380, "bf": 100, "tf": 17.5, "tw": 10.0},
-    "310PFC": {"type": "PFC", "d": 310, "bf":  86, "tf": 14.8, "tw":  9.1},
-    "125PFC": {"type": "PFC", "d": 125, "bf":  65, "tf":  9.5, "tw":  6.5},
-    # ── RHS / SHS — Rectangular / Square Hollow Section ─────────────────────
-    "SH30b":      {"type": "RHS", "d": 300, "b": 100, "t": 6.0},
-    "SH20a":      {"type": "RHS", "d": 200, "b":  75, "t": 4.0},
-    "SH08d":      {"type": "SHS", "d":  89, "b":  89, "t": 3.5},
-    "SH07g":      {"type": "SHS", "d":  75, "b":  75, "t": 3.0},
-    "SH07f":      {"type": "SHS", "d":  75, "b":  75, "t": 2.5},
-    "150x50x5RHS": {"type": "RHS", "d": 150, "b":  50, "t": 5.0},
-    "100x50x4RHS": {"type": "RHS", "d": 100, "b":  50, "t": 4.0},
-    # ── FB — Flat Bar (dimensions must come from drawing callout) ────────────
+
+    # ── PFC — Parallel Flange Channel ────────────────────────────────────────
+    "CH35a":     {"type": "PFC", "d": 380, "bf": 100, "tf": 17.5, "tw": 10.0},
+    "CH30a":     {"type": "PFC", "d": 310, "bf":  86, "tf": 14.8, "tw":  9.1},
+    "CH13c":     {"type": "PFC", "d": 125, "bf":  65, "tf":  9.5, "tw":  6.5},
+    "380PFC":    {"type": "PFC", "d": 380, "bf": 100, "tf": 17.5, "tw": 10.0},
+    "310PFC":    {"type": "PFC", "d": 310, "bf":  86, "tf": 14.8, "tw":  9.1},
+    "125PFC":    {"type": "PFC", "d": 125, "bf":  65, "tf":  9.5, "tw":  6.5},
+
+    # ── RHS / SHS — Hollow Sections ──────────────────────────────────────────
+    "SH30b":         {"type": "RHS", "d": 300, "b": 100, "t": 6.0},
+    "SH20a":         {"type": "RHS", "d": 200, "b":  75, "t": 4.0},
+    "SH08d":         {"type": "SHS", "d":  89, "b":  89, "t": 3.5},
+    "SH07g":         {"type": "SHS", "d":  75, "b":  75, "t": 3.0},
+    "150x50x5RHS":   {"type": "RHS", "d": 150, "b":  50, "t": 5.0},
+    "100x50x4RHS":   {"type": "RHS", "d": 100, "b":  50, "t": 4.0},
+
+    # ── FB — Flat Bar ────────────────────────────────────────────────────────
     "FB": {"type": "FB", "d": None, "b": None, "t": None},
+
+    # ════════════════════════════════════════════════════════════════════════
+    # TCVN / JIS / VINA-ONE — Vietnamese & Asian structural steel sections
+    # ════════════════════════════════════════════════════════════════════════
+
+    # ── I-shape (depth x flange-width x web x flange-thk) ────────────────────
+    # Vina-One / Posco SS400 I-beams — common in VN structural drawings
+    "I200x100x5.5x8":   {"type": "UB", "d": 200, "bf": 100, "tf": 8.0, "tw": 5.5},
+    "I250x125x6x9":     {"type": "UB", "d": 250, "bf": 125, "tf": 9.0, "tw": 6.0},
+    "I300x150x6.5x9":   {"type": "UB", "d": 300, "bf": 150, "tf": 9.0, "tw": 6.5},
+    "I350x175x7x11":    {"type": "UB", "d": 350, "bf": 175, "tf": 11.0, "tw": 7.0},
+    "I400x200x8x13":    {"type": "UB", "d": 400, "bf": 200, "tf": 13.0, "tw": 8.0},
+    "I450x200x9x14":    {"type": "UB", "d": 450, "bf": 200, "tf": 14.0, "tw": 9.0},
+    "I500x200x10x16":   {"type": "UB", "d": 500, "bf": 200, "tf": 16.0, "tw": 10.0},
+    "I600x200x11x17":   {"type": "UB", "d": 600, "bf": 200, "tf": 17.0, "tw": 11.0},
+
+    # ── H-shape (depth x width x web x flange-thk) ───────────────────────────
+    # Wide-flange beams/columns widely used in VN
+    "H100x100x6x8":     {"type": "UC", "d": 100, "bf": 100, "tf": 8.0, "tw": 6.0},
+    "H150x150x7x10":    {"type": "UC", "d": 150, "bf": 150, "tf": 10.0, "tw": 7.0},
+    "H200x200x8x12":    {"type": "UC", "d": 200, "bf": 200, "tf": 12.0, "tw": 8.0},
+    "H250x250x9x14":    {"type": "UC", "d": 250, "bf": 250, "tf": 14.0, "tw": 9.0},
+    "H300x300x10x15":   {"type": "UC", "d": 300, "bf": 300, "tf": 15.0, "tw": 10.0},
+    "H350x350x12x19":   {"type": "UC", "d": 350, "bf": 350, "tf": 19.0, "tw": 12.0},
+    "H400x400x13x21":   {"type": "UC", "d": 400, "bf": 400, "tf": 21.0, "tw": 13.0},
+
+    # ── C/U-channel (depth x flange-width x web x flange-thk) ────────────────
+    "C100x50x5x7.5":    {"type": "PFC", "d": 100, "bf": 50, "tf": 7.5, "tw": 5.0},
+    "C150x75x5.5x7.5":  {"type": "PFC", "d": 150, "bf": 75, "tf": 7.5, "tw": 5.5},
+    "C200x80x6x9":      {"type": "PFC", "d": 200, "bf": 80, "tf": 9.0, "tw": 6.0},
+    "C250x90x7x10":     {"type": "PFC", "d": 250, "bf": 90, "tf": 10.0, "tw": 7.0},
+    "C300x90x9x11":     {"type": "PFC", "d": 300, "bf": 90, "tf": 11.0, "tw": 9.0},
+    "U100x50x5x7.5":    {"type": "PFC", "d": 100, "bf": 50, "tf": 7.5, "tw": 5.0},
+    "U150x75x5.5x7.5":  {"type": "PFC", "d": 150, "bf": 75, "tf": 7.5, "tw": 5.5},
+    "U200x80x6x9":      {"type": "PFC", "d": 200, "bf": 80, "tf": 9.0, "tw": 6.0},
+
+    # ── L-shape / V-shape (equal leg angle) ──────────────────────────────────
+    "L50x50x5":    {"type": "angle", "d": 50,  "bf": 50,  "tf": 5.0, "tw": 5.0},
+    "L75x75x6":    {"type": "angle", "d": 75,  "bf": 75,  "tf": 6.0, "tw": 6.0},
+    "L100x100x8":  {"type": "angle", "d": 100, "bf": 100, "tf": 8.0, "tw": 8.0},
+    "L120x120x10": {"type": "angle", "d": 120, "bf": 120, "tf": 10.0, "tw": 10.0},
+
+    # ── Box/Rectangular hollow (width x depth x thickness) ───────────────────
+    "RHS100x50x4":   {"type": "RHS", "d": 100, "b": 50,  "t": 4.0},
+    "RHS150x100x5":  {"type": "RHS", "d": 150, "b": 100, "t": 5.0},
+    "RHS200x100x6":  {"type": "RHS", "d": 200, "b": 100, "t": 6.0},
+    "SHS50x50x3":    {"type": "SHS", "d":  50, "b":  50, "t": 3.0},
+    "SHS100x100x5":  {"type": "SHS", "d": 100, "b": 100, "t": 5.0},
+    "SHS150x150x6":  {"type": "SHS", "d": 150, "b": 150, "t": 6.0},
 }
+
+
+# ============================================================================
+# SECTION PATTERN PARSER — handles Vietnamese/Asian naming conventions
+#   I200x100x5.5x8 → d=200, bf=100, tw=5.5, tf=8
+#   H250x250x9x14  → d=250, bf=250, tw=9, tf=14
+#   C200x75x6x9    → d=200, bf=75, tw=6, tf=9
+#   L75x75x6       → equal angle, leg=75, leg=75, t=6
+#   RHS150x100x5   → d=150, b=100, t=5
+#   SHS100x100x5   → d=100, b=100, t=5
+#   200UC46        → d=200, UC type (UB/UC old format without full dims)
+#   310UB40.4      → d=310, UB type
+# ============================================================================
+
+_SECTION_PATTERNS = [
+    # I-shape: I<d>x<bf>x<tw>x<tf>
+    (re.compile(r'^I\s*(\d+)\s*[xX]\s*(\d+)\s*[xX]\s*([\d.]+)\s*[xX]\s*([\d.]+)\s*$', re.IGNORECASE),
+     lambda m: {"type": "UB", "d": int(m[1]), "bf": int(m[2]),
+                "tw": float(m[3]), "tf": float(m[4])}),
+
+    # H-shape: H<d>x<bf>x<tw>x<tf>
+    (re.compile(r'^H\s*(\d+)\s*[xX]\s*(\d+)\s*[xX]\s*([\d.]+)\s*[xX]\s*([\d.]+)\s*$', re.IGNORECASE),
+     lambda m: {"type": "UC", "d": int(m[1]), "bf": int(m[2]),
+                "tw": float(m[3]), "tf": float(m[4])}),
+
+    # C/U-channel: [CU]\s*<d>x<bf>x<tw>x<tf>
+    (re.compile(r'^[CU]\s*(\d+)\s*[xX]\s*(\d+)\s*[xX]\s*([\d.]+)\s*[xX]\s*([\d.]+)\s*$', re.IGNORECASE),
+     lambda m: {"type": "PFC", "d": int(m[1]), "bf": int(m[2]),
+                "tw": float(m[3]), "tf": float(m[4])}),
+
+    # L/V angle: [LV]\s*<d>x<bf>x<t>  (equal leg)
+    (re.compile(r'^[LV]\s*(\d+)\s*[xX]\s*(\d+)\s*[xX]\s*([\d.]+)\s*$', re.IGNORECASE),
+     lambda m: {"type": "angle", "d": int(m[1]), "bf": int(m[2]),
+                "tw": float(m[3]), "tf": float(m[3])}),
+
+    # RHS: RHS<d>x<b>x<t>  (rectangular hollow)
+    (re.compile(r'^RHS\s*(\d+)\s*[xX]\s*(\d+)\s*[xX]\s*([\d.]+)\s*$', re.IGNORECASE),
+     lambda m: {"type": "RHS", "d": int(m[1]), "b": int(m[2]), "t": float(m[3])}),
+
+    # SHS: SHS<d>x<d>x<t>  (square hollow)
+    (re.compile(r'^SHS\s*(\d+)\s*[xX]\s*\1\s*[xX]\s*([\d.]+)\s*$', re.IGNORECASE),
+     lambda m: {"type": "SHS", "d": int(m[1]), "b": int(m[1]), "t": float(m[2])}),
+    # SHS variant: SHS<d>x<t>
+    (re.compile(r'^SHS\s*(\d+)\s*[xX]\s*([\d.]+)\s*$', re.IGNORECASE),
+     lambda m: {"type": "SHS", "d": int(m[1]), "b": int(m[1]), "t": float(m[2])}),
+
+    # UB/UC metric: <depth>UB<mass> or <depth>UC<mass>
+    (re.compile(r'^(\d+)\s*UB\s*([\d.]+)\s*$', re.IGNORECASE),
+     lambda m: {"type": "UB", "d": int(m[1]), "bf": int(m[1]) // 2, "tf": 8.0, "tw": 5.0}),
+    (re.compile(r'^(\d+)\s*UC\s*([\d.]+)\s*$', re.IGNORECASE),
+     lambda m: {"type": "UC", "d": int(m[1]), "bf": int(m[1]) // 2, "tf": 8.0, "tw": 5.0}),
+
+    # UB/UC old format: UB<depth><suffix> or UC<depth><suffix>
+    (re.compile(r'^UB\s*(\d+)\s*([a-zA-Z]*)\s*$', re.IGNORECASE),
+     lambda m: {"type": "UB", "d": int(m[1]) * 10, "bf": int(m[1]) * 5, "tf": 8.0, "tw": 5.0}),
+    (re.compile(r'^UC\s*(\d+)\s*([a-zA-Z]*)\s*$', re.IGNORECASE),
+     lambda m: {"type": "UC", "d": int(m[1]) * 10, "bf": int(m[1]) * 5, "tf": 8.0, "tw": 5.0}),
+
+    # CH old format: CH<num><suffix> (depth ≈ num*10)
+    (re.compile(r'^CH\s*(\d+)\s*([a-zA-Z]*)\s*$', re.IGNORECASE),
+     lambda m: {"type": "PFC", "d": int(m[1]) * 10, "bf": int(m[1]) * 2.5, "tf": 6.0, "tw": 4.0}),
+
+    # Generic: just digits like "200UC46" pre-parsed but failed exact match
+    # → use approximate: d ≈ first number, infer rest
+    (re.compile(r'^(\d+)\s*UB([\d.]+)$', re.IGNORECASE),
+     lambda m: {"type": "UB", "d": int(m[1]), "bf": int(m[1]) * 2 // 3, "tf": 8.0, "tw": 5.0}),
+]
+
+
+def _parse_section_pattern(section_str: str) -> dict | None:
+    """Try to parse a section string using common Vietnamese/Asian patterns."""
+    if not section_str:
+        return None
+    key = section_str.strip().replace(" ", "")
+    for pattern, resolver in _SECTION_PATTERNS:
+        m = pattern.match(key)
+        if m:
+            return resolver(m)
+    return None
 
 
 def lookup_section(section_str: str) -> dict | None:
     """
-    Look up a section designation in AUSTRALIAN_STEEL_SECTIONS.
-    Returns the dims dict if found, else None.
+    Look up a section designation in STEEL_SECTIONS.
+    Falls back to pattern-based parsing for Vietnamese/Asian naming conventions.
+    Returns the dims dict if found/parsed, else None.
     """
     if not section_str:
         return None
+
     key = section_str.strip()
-    result = AUSTRALIAN_STEEL_SECTIONS.get(key)
+
+    # 1. Exact match
+    result = STEEL_SECTIONS.get(key)
     if result is not None:
         return result
-    # Try stripping trailing dots or extra whitespace variants
+
+    # 2. Strip trailing dots
     key2 = key.rstrip(".")
-    return AUSTRALIAN_STEEL_SECTIONS.get(key2)
+    result = STEEL_SECTIONS.get(key2)
+    if result is not None:
+        return result
+
+    # 3. Try normalizing spaces (e.g., "I 200 x 100 x 5.5 x 8" → "I200x100x5.5x8")
+    normalized = key.replace(" ", "")
+    result = STEEL_SECTIONS.get(normalized)
+    if result is not None:
+        return result
+
+    # 4. Pattern-based parsing (Vietnamese/Asian conventions)
+    result = _parse_section_pattern(key)
+    if result is not None:
+        return result
+
+    # 5. Fallback: try normalized version with pattern parser
+    result = _parse_section_pattern(normalized)
+    if result is not None:
+        return result
+
+    return None
 
 
 RUBY_HEADER = """\
@@ -116,7 +272,7 @@ puts _saved ? "Model saved: #{_skp_path}" : "Save FAILED: #{_skp_path}"
 
 CODER_PROMPT = """You are an Expert SketchUp Ruby API Developer generating LOD 300 structural elements.
 
-Australian steel section lookup is pre-loaded — when you see old-format designations like UB36b, UC155d, CH35a, use these exact dimensions:
+Steel section lookup is pre-loaded — when you see designations like UB36b, UC155d, I200x100x5.5x8, H250x250x9x14, use these exact dimensions:
 {section_lookup_hint}
 
 Member data (JSON):
@@ -138,15 +294,13 @@ STRICT RULES — follow every one or the script will fail:
 5. Build the 2D cross-section face AT start_pt on a plane NORMAL to `vec`:
    - I/UB/UC sections: draw top flange, web, bottom flange as one closed polygon.
      Use actual flange width (bf), web height (d - 2*tf), flange thickness (tf), web thickness (tw).
-     Parse these from the section string. If unknown, use proportional defaults:
-     d = section_depth, bf = d*0.5, tf = d*0.06, tw = d*0.03.
-   - RHS/SHS: outer rect minus inner rect (draw solid, SketchUp will show as box; note hollow).
+   - RHS/SHS: outer rect minus inner rect (draw solid, SketchUp will show as box).
    - CHS: 24-sided polygon approximation using Math::PI and radius.
    - PL/FB: simple rectangle (width x thickness).
    Use `Geom::Transformation.new` with a local coordinate system aligned to `vec`.
    Transform face points into world space before drawing.
 6. Get the face: `face = g_ents.grep(Sketchup::Face).first`
-7. Extrude: `face.pushpull(length)` (SketchUp's pushpull takes internal units — already in inches from step 1+3).
+7. Extrude: `face.pushpull(length)`
 8. Layer assignment:
    layer_name = {layer_name}
    grp.layer = get_or_create_layer(layers, layer_name)
@@ -214,9 +368,12 @@ CROSS-SECTION RULES:
   points: [0,0],[b,0],[b,d],[0,d]
 
 - CHS (outer_radius r, thickness t): 24-sided polygon approximation:
-  (1..24).map { |i| a = 2*Math::PI*i/24; [r*Math::cos(a), r*Math::sin(a)] }
+  (1..24).map {{ |i| a = 2*Math::PI*i/24; [r*Math::cos(a), r*Math::sin(a)] }}
 
 - PL/FB (width w, thickness t): rectangle [0,0],[w,0],[w,t],[0,t]
+
+- ANGLE (V/L shape, leg1 bf, leg2 d, thickness t):
+  points: [0,0],[bf,0],[bf,t],[t,t],[t,d],[0,d]
 
 - UNKNOWN section: use rectangle 100mm x 100mm as placeholder
 

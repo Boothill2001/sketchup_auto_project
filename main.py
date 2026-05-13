@@ -26,6 +26,7 @@ from rich import print as rprint
 from config import MAX_AUDIT_RETRIES, CODER_OUTPUT_FILE, SCANNER_OUTPUT_FILE, USE_TEXT_EXTRACTION_FIRST
 from core.llm_wrapper       import validate_keys, get_cache_stats
 from core.pdf_utils         import get_page_count
+from agents.analyze_pdf     import analyze_pdf as run_phase0_analysis, load_analysis
 from agents.scanner         import scan_pdf, get_pages_by_role
 from agents.glossary_agent  import build_glossary
 from agents.schedule_parser import parse_schedule_pages
@@ -184,6 +185,11 @@ def _run(pdf_path: str) -> dict:
     rprint(f"  ║ Auth: {_quota_remaining}")
     rprint(f"  ║ Status: {_status}")
     rprint("  ╚════════════════╝")
+
+    # Phase 0 — PDF Convention Analysis (NEW — feeds all downstream agents)
+    _phase("PHASE 0 — PDF ANALYSIS: Convention Detection")
+    analysis = run_phase0_analysis(str(pdf))
+    _phase_gap()
 
     # Phase 1 — Scanner
     _phase("PHASE 1 — SCANNER: Drawing Index Classification")
