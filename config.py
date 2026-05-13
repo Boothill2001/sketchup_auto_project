@@ -71,7 +71,7 @@ SCANNER_MAX_WORKERS = 1
 LOD_LEVEL = 300
 
 # ---- AUDITOR RETRY SETTINGS ----
-MAX_AUDIT_RETRIES = 2  # How many times Coder re-runs if Auditor finds issues
+MAX_AUDIT_RETRIES = 1  # One retry max — LLM corrections often make geometry WORSE
 
 # ---- LLM RESPONSE CACHE ----
 LLM_CACHE_ENABLED = True   # set False to disable for debugging

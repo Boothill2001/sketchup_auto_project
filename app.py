@@ -98,6 +98,13 @@ with left:
         st.success(f"Cleared {n} cache file(s).")
     st.divider()
 
+    force_fresh = st.toggle(
+        "🔄 Force Fresh Run",
+        value=False,
+        help="Clear all cached data and re-run every pipeline phase from scratch. "
+             "Keeps glossary.json (expensive to rebuild).",
+    )
+
     run_disabled = uploaded_file is None
     run_btn = st.button(
         "▶  Start Conversion",
@@ -205,6 +212,24 @@ if run_btn and uploaded_file:
         result_holder.update(res)
         log_q.put("__DONE__")
 
+    # Force-fresh: wipe LLM cache + output JSONs (keep glossary.json)
+    if force_fresh:
+        _proj_root  = Path(__file__).parent
+        n_llm       = clear_cache()
+        _out_dir    = _proj_root / "data" / "output_json"
+        _cleared    = []
+        if _out_dir.exists():
+            for _jf in _out_dir.glob("*.json"):
+                if _jf.name != "glossary.json":
+                    _jf.unlink(missing_ok=True)
+                    _cleared.append(_jf.name)
+        with tab_dash:
+            status_slot.info(
+                f"🔄 Force fresh run — cleared {n_llm} LLM cache file(s) + "
+                f"{len(_cleared)} output file(s)"
+                + (f": {', '.join(_cleared)}" if _cleared else "")
+            )
+
     thread = threading.Thread(target=_run, daemon=True)
     thread.start()
 
@@ -288,9 +313,11 @@ if run_btn and uploaded_file:
 
         # Download buttons (always show if .rb exists, even on audit warn)
         if ruby_path and Path(ruby_path).exists():
-            rb_bytes = Path(ruby_path).read_bytes()
-            rb_name  = f"lod300_{uploaded_file.name.replace('.pdf', '')}.rb"
-            skp_path = Path(SKP_OUTPUT_FILE)
+            _pdf_stem   = uploaded_file.name.replace(".pdf", "")
+            _ts         = datetime.now().strftime("%Y%m%d_%H%M")
+            rb_bytes    = Path(ruby_path).read_bytes()
+            rb_name     = f"LOD300_{_pdf_stem}.rb"
+            skp_path    = Path(SKP_OUTPUT_FILE)
             with download_slot.container():
                 st.divider()
                 st.markdown("#### 📥 Download Output Files")
@@ -308,7 +335,7 @@ if run_btn and uploaded_file:
                 combined_path = Path(CODER_OUTPUT_FILE).parent / "lod300_combined.rb"
                 if combined_path.exists():
                     combined_bytes = combined_path.read_bytes()
-                    combined_name = f"lod300_combined_{uploaded_file.name.replace('.pdf', '')}.rb"
+                    combined_name  = f"LOD300_{_pdf_stem}_combined.rb"
                     st.download_button(
                         label=f"⬇️  Download  {combined_name} (Steel + Architecture)",
                         data=combined_bytes,
@@ -324,10 +351,11 @@ if run_btn and uploaded_file:
                 if skp_path.exists():
                     skp_bytes = skp_path.read_bytes()
                     skp_mb    = len(skp_bytes) / (1024 * 1024)
+                    skp_name  = f"LOD300_{_pdf_stem}_{_ts}.skp"
                     st.download_button(
-                        label="⬇️  Download  lod300_model.skp",
+                        label=f"⬇️  Download  {skp_name}",
                         data=skp_bytes,
-                        file_name="lod300_model.skp",
+                        file_name=skp_name,
                         mime="application/octet-stream",
                         use_container_width=True,
                     )

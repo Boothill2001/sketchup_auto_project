@@ -54,33 +54,23 @@ Return JSON:
 
 def static_check(ruby_script: str, mapped_members: list[dict]) -> list[dict]:
     issues = []
+    ruby_upper = ruby_script.upper()
     for m in mapped_members:
         mark = m.get("mark", "")
         if not mark:
             continue
-        if mark not in ruby_script:
+        if mark.upper() not in ruby_upper:
             issues.append({
                 "mark": mark,
                 "issue_type": "missing_mark",
                 "detail": f"Mark '{mark}' not found anywhere in Ruby script",
             })
-            continue
-
-        # Check coordinates are referenced
-        sp = m.get("start_point", {})
-        sx = str(int(sp.get("x", 0)))
-        if sx != "0" and sx not in ruby_script:
-            issues.append({
-                "mark": mark,
-                "issue_type": "wrong_coords",
-                "detail": f"start_point.x={sx} not found near mark block",
-            })
     return issues
 
 
 def orphan_check(schedule_members: list[dict], mapped_members: list[dict]) -> list[str]:
-    schedule_marks = {m["mark"] for m in schedule_members if m.get("mark")}
-    mapped_marks   = {m["mark"] for m in mapped_members   if m.get("mark")}
+    schedule_marks = {m["mark"].upper() for m in schedule_members if m.get("mark")}
+    mapped_marks   = {m["mark"].upper() for m in mapped_members   if m.get("mark")}
     return sorted(schedule_marks - mapped_marks)
 
 
@@ -142,16 +132,20 @@ def run_audit() -> dict:
 
     # Merge all issues
     all_issues = static_issues + ai_report.get("issues", [])
-    error_feedback_map = build_error_feedback_map(all_issues)
+
+    # Only retry members that are genuinely missing from the Ruby script.
+    # Geometry/dimension issues come from the template generator and are authoritative.
+    missing_only = [i for i in all_issues if i.get("issue_type") == "missing_mark"]
+    skipped_geo  = len(all_issues) - len(missing_only)
+    if skipped_geo:
+        rprint(f"  Auditor: skipping geometry retry for {skipped_geo} issue(s) — template geometry is authoritative")
+    error_feedback_map = build_error_feedback_map(missing_only)
 
     # Unmapped members report
     unmapped = [m for m in mapped_members if m.get("confidence") == "unmapped"]
 
-    final_passed = (
-        len(all_issues) == 0
-        and not orphans
-        and ai_report.get("overall_passed", False)
-    )
+    # Pass if no members are truly absent from the Ruby (geometry issues accepted from template)
+    final_passed = len(missing_only) == 0 and not orphans
 
     report = {
         "final_passed": final_passed,

@@ -287,9 +287,10 @@ def _run(pdf_path: str) -> dict:
             break
         error_map = audit.get("error_feedback_map", {})
         if not error_map:
+            rprint("  Auditor: skipping geometry retry — template geometry is authoritative")
             break
-        _phase(f"RETRY {retry_num}/{MAX_AUDIT_RETRIES} — CODER AUTO-CORRECTION")
-        rprint(f"  Fixing {len(error_map)} member(s)...")
+        _phase(f"RETRY {retry_num}/{MAX_AUDIT_RETRIES} — CODER AUTO-CORRECTION (missing marks only)")
+        rprint(f"  Fixing {len(error_map)} truly missing member(s)...")
         script = build_ruby_script(mapped_members, error_feedback_map=error_map)
         save_ruby_script(script)
         audit = run_audit()
