@@ -316,7 +316,7 @@ if run_btn and uploaded_file:
             _pdf_stem   = uploaded_file.name.replace(".pdf", "")
             _ts         = datetime.now().strftime("%Y%m%d_%H%M")
             rb_bytes    = Path(ruby_path).read_bytes()
-            rb_name     = f"LOD300_{_pdf_stem}.rb"
+            rb_name     = f"LOD300_{_pdf_stem}_{_ts}.rb"
             skp_path    = Path(SKP_OUTPUT_FILE)
             with download_slot.container():
                 st.divider()
@@ -335,7 +335,7 @@ if run_btn and uploaded_file:
                 combined_path = Path(CODER_OUTPUT_FILE).parent / "lod300_combined.rb"
                 if combined_path.exists():
                     combined_bytes = combined_path.read_bytes()
-                    combined_name  = f"LOD300_{_pdf_stem}_combined.rb"
+                    combined_name  = f"LOD300_{_pdf_stem}_combined_{_ts}.rb"
                     st.download_button(
                         label=f"⬇️  Download  {combined_name} (Steel + Architecture)",
                         data=combined_bytes,
