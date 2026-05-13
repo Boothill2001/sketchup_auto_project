@@ -34,6 +34,11 @@ from agents.spatial_parser  import parse_spatial_pages
 from agents.mapper          import run_mapper
 from agents.coder           import build_ruby_script, save_ruby_script
 from agents.auditor         import run_audit
+from agents.architectural_extractor import extract_architectural_elements
+from agents.reconstructor_3d import (
+    build_architectural_ruby, save_architectural_ruby, merge_ruby_scripts,
+    ARCH_RUBY_OUTPUT_FILE,
+)
 
 
 # ── Rich → log_fn bridge ────────────────────────────────────────────────────
@@ -245,6 +250,27 @@ def _run(pdf_path: str) -> dict:
     _phase("PHASE 5 — CODER: Ruby LOD 300 Script Generation")
     script = build_ruby_script(mapped_members)
     save_ruby_script(script)
+
+    # Phase 5b — Architectural Extraction + 3D Reconstruction (NEW)
+    _phase_gap()
+    _phase("PHASE 5b — ARCHITECTURAL: Wall, Slab, Door/Window Extraction + 3D")
+    rprint("  Extracting architectural elements from plans & elevations...")
+    arch_elements = extract_architectural_elements(str(pdf))
+    rprint(f"  Walls: {len(arch_elements.get('walls', []))} | "
+           f"Slabs: {len(arch_elements.get('slabs', []))} | "
+           f"Doors: {len(arch_elements.get('doors', []))} | "
+           f"Windows: {len(arch_elements.get('windows', []))} | "
+           f"Stairs: {len(arch_elements.get('stairs', []))}")
+    rprint("  Generating architectural Ruby script...")
+    arch_script = build_architectural_ruby(arch_elements)
+    arch_rb_path = save_architectural_ruby(arch_script)
+    rprint(f"  Architectural Ruby: {arch_rb_path}")
+    rprint("  Merging structural + architectural Ruby scripts...")
+    merged_rb = merge_ruby_scripts(
+        str(CODER_OUTPUT_FILE), arch_rb_path,
+        str(Path(CODER_OUTPUT_FILE).parent / "lod300_combined.rb")
+    )
+    rprint(f"  Final combined LOD300 model: {merged_rb}")
 
     # Phase 6 — Auditor + auto-feedback loop
     _phase("PHASE 6 — AUDITOR: Cross-Validation")

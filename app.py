@@ -60,7 +60,7 @@ with h2:
     st.markdown('<p class="main-title">PDF to SketchUp LOD 300 Converter</p>', unsafe_allow_html=True)
     st.markdown(
         '<p class="sub-caption">Multi-Agent AI &nbsp;·&nbsp; Gemini 2.5 Flash &nbsp;·&nbsp; '
-        'Structural Steel → Ruby Script</p>',
+        'Structural Steel + Architectural Elements → Ruby Script</p>',
         unsafe_allow_html=True,
     )
 
@@ -142,11 +142,13 @@ with right:
 PHASE_ICONS = {
     "SCANNER": "🔍", "GLOSSARY": "📖", "SCHEDULE": "📋",
     "SPATIAL": "📐", "MAPPER": "🗺️",  "CODER": "💻",
-    "AUDITOR": "🔎", "RETRY": "🔄",   "COMPLETE": "✅", "ERROR": "❌",
+    "ARCHITECTURAL": "🏛", "AUDITOR": "🔎", "RETRY": "🔄",
+    "COMPLETE": "✅", "ERROR": "❌",
 }
 PHASE_WEIGHTS = {
-    "SCANNER": 10, "GLOSSARY": 5, "SCHEDULE": 20,
-    "SPATIAL": 15, "MAPPER": 25, "CODER": 15, "AUDITOR": 10,
+    "SCANNER": 8, "GLOSSARY": 3, "SCHEDULE": 18,
+    "SPATIAL": 12, "MAPPER": 20, "CODER": 12,
+    "ARCHITECTURAL": 15, "AUDITOR": 12,
 }
 
 def _icon(line: str) -> str:
@@ -264,6 +266,17 @@ if run_btn and uploaded_file:
                 c4.metric("Audit",           "✅ Pass" if result_holder.get("audit_passed") else "⚠️ Warn")
                 c5.metric("API Calls Saved", get_cache_stats()["hits"])
 
+            # Architectural metrics (from result_holder)
+            arch_count = result_holder.get("arch_count", 0)
+            if arch_count > 0:
+                st.markdown("#### 🏛 Architectural Elements")
+                w1, w2, w3, w4, w5 = st.columns(5)
+                w1.metric("Walls", result_holder.get("arch_walls", 0))
+                w2.metric("Slabs", result_holder.get("arch_slabs", 0))
+                w3.metric("Doors", result_holder.get("arch_doors", 0))
+                w4.metric("Windows", result_holder.get("arch_windows", 0))
+                w5.metric("Stairs", result_holder.get("arch_stairs", 0))
+
             unmapped_marks = result_holder.get("unmapped_marks", [])
             if unmapped_marks:
                 warning_slot.markdown(
@@ -281,15 +294,31 @@ if run_btn and uploaded_file:
             with download_slot.container():
                 st.divider()
                 st.markdown("#### 📥 Download Output Files")
+
+                # 1. Steel-only .rb
                 st.download_button(
-                    label=f"⬇️  Download  {rb_name}",
+                    label=f"⬇️  Download  {rb_name} (Steel Only)",
                     data=rb_bytes,
                     file_name=rb_name,
                     mime="text/plain",
                     use_container_width=True,
                 )
+
+                # 2. Combined Steel + Architectural .rb
+                combined_path = Path(CODER_OUTPUT_FILE).parent / "lod300_combined.rb"
+                if combined_path.exists():
+                    combined_bytes = combined_path.read_bytes()
+                    combined_name = f"lod300_combined_{uploaded_file.name.replace('.pdf', '')}.rb"
+                    st.download_button(
+                        label=f"⬇️  Download  {combined_name} (Steel + Architecture)",
+                        data=combined_bytes,
+                        file_name=combined_name,
+                        mime="text/plain",
+                        use_container_width=True,
+                    )
+
                 st.caption(
-                    f"SketchUp: **Extensions → Ruby Console** → `load 'path/to/{rb_name}'`  "
+                    f"SketchUp: **Extensions → Ruby Console** → `load 'path/to/{combined_name if combined_path.exists() else rb_name}'`  "
                     f"&nbsp;·&nbsp; {datetime.now().strftime('%Y-%m-%d %H:%M')}"
                 )
                 if skp_path.exists():
