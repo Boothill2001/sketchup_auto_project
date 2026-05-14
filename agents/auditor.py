@@ -107,14 +107,35 @@ def run_audit() -> dict:
     static_issues = static_check(ruby_script, mapped_members)
     rprint(f"  Static issues: {len(static_issues)}")
 
-    # 3. AI audit
+    # 2b. Filter orphans: skip section-designation-looking marks
+    #     e.g., CH35C, UB36C, C1..C16 are section codes / RC bare marks,
+    #     not member marks that mapper would produce.
+    _section_pattern = re.compile(
+        r'^(UB\d+[A-Z]|UC\d+[A-Z]|CH\d+[A-Z]|SH\d+[A-Z]|'
+        r'\d+PFC|\d+UB|\d+UC|'
+        r'C\d+$|'           # RC bare mark (C1, C2...)
+        r'[A-Z]\d+[a-z]?\s*\(U\))$'  # SH15B (U) etc
+    )
+    real_orphans = [o for o in orphans if not _section_pattern.match(o)]
+    skipped_orphans = len(orphans) - len(real_orphans)
+    if skipped_orphans:
+        rprint(f"  Orphan filter: skipped {skipped_orphans} section-like marks (not member marks): "
+               f"{[o for o in orphans if _section_pattern.match(o)]}")
+    orphans = real_orphans
+
+    # 3. AI audit — use larger snippet + all marks to avoid false positives
     rprint("[bold red]Auditor:[/] Running AI validation...")
     ai_report = {}
     try:
+        # Build a marks-only summary so AI can grep the full script
+        marks_summary = [{"mark": m.get("mark"), "type": m.get("type")}
+                         for m in mapped_members]
         prompt = AI_AUDIT_PROMPT.replace(
-            "{mapped_json}", json.dumps({"mapped_members": mapped_members[:30]}, indent=2)[:4000]
+            "{mapped_json}", json.dumps({"members": marks_summary}, indent=2)[:2000]
         ).replace(
-            "{ruby_snippet}", ruby_script[:5000]
+            "{ruby_snippet}",
+            # Send first 10000 + MIDDLE chunk + last 5000 to cover distributed marks
+            ruby_script[:10000] + "\n\n... [snip middle] ...\n\n" + ruby_script[-8000:]
         )
         raw = call_llm_json(prompt)
         try:

@@ -450,7 +450,7 @@ def parse_spatial_pages(
         elev_results.append(text_result)
 
     if elevation_pages:
-        top_elevs = select_top_pages(elevation_pages, pdf_path, max_n=4)
+        top_elevs = select_top_pages(elevation_pages, pdf_path, max_n=2)
         rprint(f"[bold green]Spatial Parser:[/] Elevation pages {[p+1 for p in top_elevs]} "
                f"(top {len(top_elevs)} of {len(elevation_pages)})...")
         for pg in top_elevs:

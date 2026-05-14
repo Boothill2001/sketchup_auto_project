@@ -12,6 +12,7 @@ Usage:
 
 import sys
 import io
+import os
 import re
 import json
 import math
@@ -19,6 +20,11 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Callable
+
+# On Windows, force stdout to UTF-8 so Rich's _win32_console path can encode Unicode
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 import rich
 from rich import print as rprint
@@ -178,18 +184,18 @@ def _run(pdf_path: str) -> dict:
     _est_total       = _scanner_calls + _glossary_calls + _schedule_calls + _spatial_calls + _mapper_calls + 1 + 1
 
     _quota_remaining = "Vertex AI (no daily cap)"
-    _status          = "✓ OK"
+    _status          = "[OK]"
 
-    rprint("  ╔══ API BUDGET ══╗")
-    rprint(f"  ║ Estimated calls this run: ~{_est_total}")
+    rprint("  +-- API BUDGET --+")
+    rprint(f"  | Estimated calls this run: ~{_est_total}")
     rprint(
-        f"  ║   Scanner ~{_scanner_calls} | Glossary ~{_glossary_calls} | "
+        f"  |   Scanner ~{_scanner_calls} | Glossary ~{_glossary_calls} | "
         f"Schedule ~{_schedule_calls} | Spatial ~{_spatial_calls} | "
         f"Mapper ~{_mapper_calls} | Coder+Auditor ~2"
     )
-    rprint(f"  ║ Auth: {_quota_remaining}")
-    rprint(f"  ║ Status: {_status}")
-    rprint("  ╚════════════════╝")
+    rprint(f"  | Auth: {_quota_remaining}")
+    rprint(f"  | Status: {_status}")
+    rprint("  +----------------+")
 
     # Phase 0 — PDF Convention Analysis (NEW — feeds all downstream agents)
     _phase("PHASE 0 — PDF ANALYSIS: Convention Detection")
@@ -311,6 +317,13 @@ def _run(pdf_path: str) -> dict:
     rprint(f"  Cache stats   : {_stats['hits']} hits, {_stats['misses']} misses "
            f"(saved {_stats['hits']} API calls today)")
 
+    _arch_walls   = len(arch_elements.get("walls", []))
+    _arch_slabs   = len(arch_elements.get("slabs", []))
+    _arch_doors   = len(arch_elements.get("doors", []))
+    _arch_windows = len(arch_elements.get("windows", []))
+    _arch_stairs  = len(arch_elements.get("stairs", []))
+    _arch_count   = _arch_walls + _arch_slabs + _arch_doors + _arch_windows + _arch_stairs
+
     return {
         "ruby_path":              ruby_path,
         "members_total":          len(members),
@@ -319,6 +332,12 @@ def _run(pdf_path: str) -> dict:
         "unmapped_marks":         unmapped_marks,
         "audit_passed":           audit["final_passed"],
         "architectural_included": _arch_included,
+        "arch_count":             _arch_count,
+        "arch_walls":             _arch_walls,
+        "arch_slabs":             _arch_slabs,
+        "arch_doors":             _arch_doors,
+        "arch_windows":           _arch_windows,
+        "arch_stairs":            _arch_stairs,
         "error":                  None,
     }
 

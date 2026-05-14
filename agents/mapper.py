@@ -302,7 +302,11 @@ def _vision_plan_pass(
         found_labels = []
         for p in placements:
             mark = p.get("mark")
-            conf = float(p.get("confidence", 0))
+            raw_conf = p.get("confidence", 0)
+            try:
+                conf = float(raw_conf)
+            except (ValueError, TypeError):
+                conf = 0.0
             if not mark or conf <= 0 or mark not in all_marks:
                 continue
             if mark not in results or conf > results[mark]["confidence"]:
@@ -469,14 +473,124 @@ def _resolve_elev_z(
 
 # ─── Main Mapper Function ─────────────────────────────────────────────────────
 
+def _expand_multi_grid_members(members: list[dict]) -> list[dict]:
+    """
+    Expand members with multi-grid grid_reference (e.g. "1/B,C,D; 2/B,C,D")
+    into individual members, one per grid intersection.
+    Preserves quantity and appends _N suffix to mark for uniqueness.
+    Returns expanded list.
+    """
+    expanded = []
+    for m in members:
+        gref = m.get("grid_reference", "")
+        qty = m.get("quantity", 1)
+        # Only expand if multi-grid reference with semicolons or commas
+        if not gref or ";" not in str(gref):
+            expanded.append(m)
+            continue
+
+        # Parse "1/B,C,D; 2/B,C,D; 3/B,C,D; 4/B,C,D"
+        segments = [seg.strip() for seg in str(gref).split(";") if seg.strip()]
+        if len(segments) <= 1:
+            # "1/B,C,D" — single X node, expand Y-axis commas
+            x_part = segments[0].split("/")[0].strip() if "/" in segments[0] else ""
+            y_list = segments[0].split("/")[1].split(",") if "/" in segments[0] else segments[0].split(",")
+            for i, y in enumerate(y_list):
+                y = y.strip()
+                clone = dict(m)
+                clone["grid_reference"] = f"{x_part}/{y}" if x_part else y
+                clone["_sub_index"] = i
+                clone["_expansion_source"] = "comma-y"
+                expanded.append(clone)
+        else:
+            # Multi-segment: "1/B,C,D; 2/B,C,D"
+            for seg in segments:
+                if "/" in seg:
+                    x_part = seg.split("/")[0].strip()
+                    y_list = seg.split("/")[1].split(",")
+                    for i, y in enumerate(y_list):
+                        clone = dict(m)
+                        clone["grid_reference"] = f"{x_part}/{y.strip()}"
+                        clone["_sub_index"] = i
+                        clone["_expansion_source"] = "semicolon"
+                        expanded.append(clone)
+                else:
+                    # Bare coordinate without slash
+                    clone = dict(m)
+                    clone["grid_reference"] = seg
+                    clone["_sub_index"] = 0
+                    clone["_expansion_source"] = "bare"
+                    expanded.append(clone)
+
+    return expanded
+
+
+def _split_column_by_levels(
+    mark: str,
+    base_member: dict,
+    x: float,
+    y: float,
+    levels: list,
+    source: str = "vision",
+) -> list[dict]:
+    """
+    Split a column into N segments, one per consecutive level pair.
+    e.g. Base→FL1, FL1→FL2, FL2→FL3, FL3→Roof.
+    Returns list of member dicts with Z set per segment.
+    """
+    if len(levels) < 2:
+        return [{
+            "mark": mark,
+            "section": base_member.get("section", ""),
+            "type": base_member.get("type", "column"),
+            "start_point": {"x": x, "y": y, "z": levels[0]["z_mm"] if levels else 0},
+            "end_point": {"x": x, "y": y, "z": (levels[-1]["z_mm"] if levels else 13500)},
+            "rotation_degrees": 90,
+            "grid_ref": base_member.get("grid_ref", f"x={x:.0f},y={y:.0f}"),
+            "level_ref": "UNDEFINED",
+            "confidence": base_member.get("confidence", "low"),
+            "source": source,
+            "material": base_member.get("material", ""),
+            "width_mm": base_member.get("width_mm"),
+            "depth_mm": base_member.get("depth_mm"),
+            "thickness_mm": base_member.get("thickness_mm"),
+        }]
+
+    segments = []
+    for i in range(len(levels) - 1):
+        l_lo = levels[i]
+        l_hi = levels[i + 1]
+        seg_mark = f"{mark}_{l_lo['name']}_{l_hi['name']}"
+        segments.append({
+            "mark": seg_mark,
+            "section": base_member.get("section", ""),
+            "type": "column",
+            "start_point": {"x": x, "y": y, "z": l_lo["z_mm"]},
+            "end_point": {"x": x, "y": y, "z": l_hi["z_mm"]},
+            "rotation_degrees": 90,
+            "grid_ref": base_member.get("grid_ref", f"x={x:.0f},y={y:.0f}"),
+            "level_ref": f"{l_lo['name']} to {l_hi['name']}",
+            "confidence": base_member.get("confidence", "low"),
+            "source": source,
+            "material": base_member.get("material", ""),
+            "width_mm": base_member.get("width_mm"),
+            "depth_mm": base_member.get("depth_mm"),
+            "thickness_mm": base_member.get("thickness_mm"),
+        })
+    return segments
+
+
 def run_mapper(pdf_path: str, plan_pages: list[int], elevation_pages: list[int]) -> list[dict]:
     with open(SCHEDULE_OUTPUT_FILE, "r", encoding="utf-8") as f:
         schedule = json.load(f)
     with open(SPATIAL_OUTPUT_FILE, "r", encoding="utf-8") as f:
         spatial = json.load(f)
 
-    members = schedule.get("members", [])
-    schedule_marks = {m["mark"] for m in members if m.get("mark")}
+    raw_members = schedule.get("members", [])
+    members = _expand_multi_grid_members(raw_members)
+    rprint(f"[bold blue]Mapper:[/] {len(raw_members)} schedule members -> {len(members)} after grid expansion")
+
+    schedule_marks = {m["mark"] for m in raw_members if m.get("mark")}
 
     rprint(f"[bold blue]Mapper:[/] Mapping {len(members)} members to 3D space...")
 
@@ -550,6 +664,24 @@ def run_mapper(pdf_path: str, plan_pages: list[int], elevation_pages: list[int])
                         "end_point":   {"x": x1, "y": y1, "z": ez},
                         "rotation_degrees": 90,
                         "grid_ref": vref, "level_ref": _lv_ref, "confidence": conf_str,
+                    })
+                elif mtype == "wall":
+                    # Wall: planar element — start→end defines its footprint, height = ez-sz
+                    mapped.append({
+                        "mark": mark, "section": member.get("section", ""), "type": mtype,
+                        "start_point": {"x": x1, "y": y1, "z": sz},
+                        "end_point":   {"x": x2, "y": y2, "z": ez},
+                        "rotation_degrees": 0,
+                        "grid_ref": f"{vp.get('start_grid_x','?')}-{vp.get('start_grid_y','?')} to {vp.get('end_grid_x','?')}-{vp.get('end_grid_y','?')}", "level_ref": f"z={sz} to z={ez}", "confidence": conf_str,
+                    })
+                elif mtype == "slab":
+                    # Slab: horizontal planar element at level z
+                    mapped.append({
+                        "mark": mark, "section": member.get("section", ""), "type": mtype,
+                        "start_point": {"x": x1, "y": y1, "z": sz},
+                        "end_point":   {"x": x2, "y": y2, "z": sz},  # same z = horizontal
+                        "rotation_degrees": 0,
+                        "grid_ref": f"{vp.get('start_grid_x','?')}-{vp.get('start_grid_y','?')} to {vp.get('end_grid_x','?')}-{vp.get('end_grid_y','?')}", "level_ref": f"z={sz}", "confidence": conf_str,
                     })
                 else:
                     eref = f"{vp.get('start_grid_x','?')}-{vp.get('start_grid_y','?')} to {vp.get('end_grid_x','?')}-{vp.get('end_grid_y','?')}"
@@ -650,6 +782,29 @@ def run_mapper(pdf_path: str, plan_pages: list[int], elevation_pages: list[int])
                     "rotation_degrees": 0,
                     "grid_ref": f"{_pa['ref']} to {_pb['ref']}", "level_ref": f"z={fl1_z}", "confidence": "low",
                 })
+            elif mtype == "wall":
+                # RC wall: coerce to two adjacent grid points on X axis at base_z→fl1_z
+                _pa = all_pts[_coerce_other_idx % len(all_pts)]
+                _pb = all_pts[(_coerce_other_idx + 1) % len(all_pts)]
+                _coerce_other_idx += 1
+                mapped.append({
+                    "mark": mark, "section": member.get("section", ""), "type": mtype,
+                    "start_point": {"x": _pa["x"], "y": _pa["y"], "z": base_z},
+                    "end_point":   {"x": _pb["x"], "y": _pb["y"], "z": fl1_z},
+                    "rotation_degrees": 0,
+                    "grid_ref": f"{_pa['ref']} to {_pb['ref']}", "level_ref": f"z={base_z} to z={fl1_z}", "confidence": "low",
+                })
+            elif mtype == "slab":
+                # RC slab: single grid point, slab horizontal at the level
+                _cp = all_pts[_coerce_other_idx % len(all_pts)]
+                _coerce_other_idx += 1
+                mapped.append({
+                    "mark": mark, "section": member.get("section", ""), "type": mtype,
+                    "start_point": {"x": _cp["x"], "y": _cp["y"], "z": fl1_z},
+                    "end_point":   {"x": _cp["x"] + 3000, "y": _cp["y"] + 3000, "z": fl1_z},
+                    "rotation_degrees": 0,
+                    "grid_ref": _cp["ref"], "level_ref": f"z={fl1_z}", "confidence": "low",
+                })
             else:
                 _cp = all_pts[_coerce_other_idx % len(all_pts)]
                 _coerce_other_idx += 1
@@ -664,18 +819,121 @@ def run_mapper(pdf_path: str, plan_pages: list[int], elevation_pages: list[int])
             mapped.append(_sentinel_member(member))
         coerced_count += 1
 
+    # ── Inject source + material dims into every mapped member ────────────────
+    source_index = {}
+    for m in members:
+        source_index[m.get("mark", "")] = m
+
+    for mm in mapped:
+        mark = mm.get("mark", "")
+        src = source_index.get(mark) or {}
+        mm["source"] = mm.get("source", "vision" if mm.get("confidence") == "high" else "fallback")
+        mm["material"] = mm.get("material") or src.get("material", "")
+        mm["width_mm"] = mm.get("width_mm") or src.get("width_mm")
+        mm["depth_mm"] = mm.get("depth_mm") or src.get("depth_mm")
+        mm["thickness_mm"] = mm.get("thickness_mm") or src.get("thickness_mm")
+
+    # ── Split columns by floor levels ─────────────────────────────────────────
+    final_mapped = []
+    for mm in mapped:
+        mtype = mm.get("type", "").lower()
+        if mtype == "column" and len(levels) >= 2:
+            segments = _split_column_by_levels(
+                mark=mm.get("mark", "?"),
+                base_member=mm,
+                x=mm["start_point"]["x"],
+                y=mm["start_point"]["y"],
+                levels=levels,
+                source=mm.get("source", "unknown"),
+            )
+            final_mapped.extend(segments)
+        else:
+            final_mapped.append(mm)
+
+    rprint(f"  Column level splitting: {len(mapped)} pre-split -> {len(final_mapped)} post-split")
+
+    # ── Re-inject dimensions for composed marks that lost dims during split ─────
+    import re as _dim_re
+    _composed_rgx = _dim_re.compile(r'^(.+?)_(Base|FL\d)_')
+    _dim_fixed = 0
+    for _mm in final_mapped:
+        _has_width  = _mm.get("width_mm") or _mm.get("width")
+        _has_depth  = _mm.get("depth_mm") or _mm.get("depth")
+        _has_thick  = _mm.get("thickness_mm")
+        if _has_width or _has_depth or _has_thick:
+            continue  # already has dimensions
+
+        _mark = _mm.get("mark", "")
+        _base_match = _composed_rgx.match(_mark)
+        if not _base_match:
+            continue
+
+        _base_mark = _base_match.group(1)
+        _src = source_index.get(_base_mark) or {}
+        if not _src:
+            # Try section-code lookup (e.g., C → C1 inherits C's dims)
+            _section_clean = _dim_re.sub(r'\d+', '', _base_mark)  # C1 → C
+            for _k, _v in source_index.items():
+                if _dim_re.sub(r'\d+', '', _k) == _section_clean and (_v.get("width_mm") or _v.get("depth_mm")):
+                    _src = _v
+                    break
+
+        _w = _src.get("width_mm") or _src.get("width")
+        _d = _src.get("depth_mm") or _src.get("depth")
+        _t = _src.get("thickness_mm") or _src.get("thickness")
+        if _w or _d or _t:
+            _mm["width_mm"] = _mm.get("width_mm") or _w
+            _mm["depth_mm"] = _mm.get("depth_mm") or _d
+            _mm["thickness_mm"] = _mm.get("thickness_mm") or _t
+            _dim_fixed += 1
+
+    if _dim_fixed:
+        rprint(f"  Dim injection fix: {_dim_fixed} composed marks got dims from base marks")
+
+    # ── RC wall dimension defaults (if still None after all lookups) ────────────
+    _DEFAULT_WALL_T = 350  # mm, typical RC shear wall
+    _DEFAULT_BEAM_W = 300
+    _DEFAULT_BEAM_D = 300
+    _DEFAULT_COL_W  = 400
+    _DEFAULT_COL_D  = 400
+    _default_fixed = 0
+    for _mm in final_mapped:
+        _mat = str(_mm.get("material", "")).upper()
+        if "RC" not in _mat and "CONCRETE" not in _mat:
+            continue
+        _typ = str(_mm.get("type", "")).lower()
+        if _typ == "wall" and not _mm.get("thickness_mm"):
+            _mm["thickness_mm"] = _DEFAULT_WALL_T
+            _default_fixed += 1
+        elif _typ == "beam":
+            if not _mm.get("width_mm"):
+                _mm["width_mm"] = _DEFAULT_BEAM_W
+            if not _mm.get("depth_mm"):
+                _mm["depth_mm"] = _DEFAULT_BEAM_D
+            _default_fixed += 1
+        elif _typ == "column":
+            if not _mm.get("width_mm"):
+                _mm["width_mm"] = _DEFAULT_COL_W
+            if not _mm.get("depth_mm"):
+                _mm["depth_mm"] = _DEFAULT_COL_D
+            _default_fixed += 1
+
+    if _default_fixed:
+        rprint(f"  RC defaults applied: {_default_fixed} members (wall t={_DEFAULT_WALL_T}, col {_DEFAULT_COL_W}x{_DEFAULT_COL_D})")
+
     # ── Final summary ──────────────────────────────────────────────────────────
-    total = len(members)
+    total = len(final_mapped)
     rprint(
-        f"\n[bold green]Mapper final:[/] {vision_placed}/{total} vision-placed "
+        f"\n[bold green]Mapper final:[/] {vision_placed}/{len(members)} vision-placed "
         f"| {text_placed} text-locator "
         f"| {grid_fallback + coerced_count} grid-coerced "
         f"| 0 unmapped"
+        f"| {total} total members after split"
     )
 
     Path(MAPPED_OUTPUT_FILE).parent.mkdir(parents=True, exist_ok=True)
     with open(MAPPED_OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump({"mapped_members": mapped}, f, indent=2, ensure_ascii=False)
+        json.dump({"mapped_members": final_mapped}, f, indent=2, ensure_ascii=False)
 
     rprint(f"Mapped data → {MAPPED_OUTPUT_FILE}")
-    return mapped
+    return final_mapped

@@ -1,108 +1,267 @@
 {
   "final_passed": false,
-  "total_schedule_members": 52,
-  "total_mapped_members": 52,
-  "unmapped_count": 36,
-  "unmapped_marks": [
-    "C3",
-    "C6",
-    "CH*35c",
-    "SH08d",
-    "C15",
-    "SH10f",
-    "RH25b",
-    "C11",
-    "SH15b",
-    "C12",
-    "C8",
-    "UB36b",
-    "C10",
-    "CH32a",
-    "C7",
-    "EA15a",
-    "CH35c",
-    "UB35c",
-    "CH40b",
-    "CH35a",
-    "UB36c",
-    "C2",
-    "C14",
-    "SH30b",
-    "SH30b FR",
-    "C1",
-    "C13",
-    "UA15a",
-    "SH10d",
-    "C16",
-    "C4",
-    "UB20d",
-    "C5",
-    "UB20a",
-    "SH15a",
-    "SH15b (U)"
+  "total_schedule_members": 78,
+  "total_mapped_members": 150,
+  "unmapped_count": 0,
+  "unmapped_marks": [],
+  "orphan_marks": [
+    "C",
+    "COL_A",
+    "COL_B",
+    "COL_C",
+    "COL_D",
+    "COL_G2",
+    "COL_G3",
+    "COL_G4",
+    "RC PILE"
   ],
-  "orphan_marks": [],
   "static_issues": [],
   "ai_issues": [
     {
-      "mark": "PF20a",
-      "issue_type": "missing_mark",
-      "detail": "Member 'PF20a' block not found or incomplete in the Ruby script."
+      "mark": "C2_FL3_Roof",
+      "issue_type": "syntax_error",
+      "detail": "Ruby block for member 'C2_FL3_Roof' is incomplete/truncated in the provided script."
     },
     {
-      "mark": "C3",
+      "mark": "C3_Base_FL1",
       "issue_type": "missing_mark",
-      "detail": "Member 'C3' block not found or incomplete in the Ruby script."
+      "detail": "Member mark 'C3_Base_FL1' not found in the provided Ruby script."
     },
     {
-      "mark": "2WL",
+      "mark": "C3_FL1_FL2",
       "issue_type": "missing_mark",
-      "detail": "Member '2WL' block not found or incomplete in the Ruby script."
+      "detail": "Member mark 'C3_FL1_FL2' not found in the provided Ruby script."
     },
     {
-      "mark": "C6",
+      "mark": "C3_FL2_FL3",
       "issue_type": "missing_mark",
-      "detail": "Member 'C6' block not found or incomplete in the Ruby script."
+      "detail": "Member mark 'C3_FL2_FL3' not found in the provided Ruby script."
     },
     {
-      "mark": "CH*35c",
+      "mark": "C3_FL3_Roof",
       "issue_type": "missing_mark",
-      "detail": "Member 'CH*35c' block not found or incomplete in the Ruby script."
+      "detail": "Member mark 'C3_FL3_Roof' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C4_Base_FL1",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C4_Base_FL1' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C4_FL1_FL2",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C4_FL1_FL2' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C4_FL2_FL3",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C4_FL2_FL3' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C4_FL3_Roof",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C4_FL3_Roof' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C5_Base_FL1",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C5_Base_FL1' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C5_FL1_FL2",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C5_FL1_FL2' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C5_FL2_FL3",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C5_FL2_FL3' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C5_FL3_Roof",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C5_FL3_Roof' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C6_Base_FL1",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C6_Base_FL1' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C6_FL1_FL2",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C6_FL1_FL2' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C6_FL2_FL3",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C6_FL2_FL3' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C6_FL3_Roof",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C6_FL3_Roof' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C7_Base_FL1",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C7_Base_FL1' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C7_FL1_FL2",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C7_FL1_FL2' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C7_FL2_FL3",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C7_FL2_FL3' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C7_FL3_Roof",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C7_FL3_Roof' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C8_Base_FL1",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C8_Base_FL1' not found in the provided Ruby script."
     }
   ],
   "all_issues": [
     {
-      "mark": "PF20a",
-      "issue_type": "missing_mark",
-      "detail": "Member 'PF20a' block not found or incomplete in the Ruby script."
+      "mark": "C2_FL3_Roof",
+      "issue_type": "syntax_error",
+      "detail": "Ruby block for member 'C2_FL3_Roof' is incomplete/truncated in the provided script."
     },
     {
-      "mark": "C3",
+      "mark": "C3_Base_FL1",
       "issue_type": "missing_mark",
-      "detail": "Member 'C3' block not found or incomplete in the Ruby script."
+      "detail": "Member mark 'C3_Base_FL1' not found in the provided Ruby script."
     },
     {
-      "mark": "2WL",
+      "mark": "C3_FL1_FL2",
       "issue_type": "missing_mark",
-      "detail": "Member '2WL' block not found or incomplete in the Ruby script."
+      "detail": "Member mark 'C3_FL1_FL2' not found in the provided Ruby script."
     },
     {
-      "mark": "C6",
+      "mark": "C3_FL2_FL3",
       "issue_type": "missing_mark",
-      "detail": "Member 'C6' block not found or incomplete in the Ruby script."
+      "detail": "Member mark 'C3_FL2_FL3' not found in the provided Ruby script."
     },
     {
-      "mark": "CH*35c",
+      "mark": "C3_FL3_Roof",
       "issue_type": "missing_mark",
-      "detail": "Member 'CH*35c' block not found or incomplete in the Ruby script."
+      "detail": "Member mark 'C3_FL3_Roof' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C4_Base_FL1",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C4_Base_FL1' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C4_FL1_FL2",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C4_FL1_FL2' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C4_FL2_FL3",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C4_FL2_FL3' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C4_FL3_Roof",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C4_FL3_Roof' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C5_Base_FL1",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C5_Base_FL1' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C5_FL1_FL2",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C5_FL1_FL2' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C5_FL2_FL3",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C5_FL2_FL3' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C5_FL3_Roof",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C5_FL3_Roof' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C6_Base_FL1",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C6_Base_FL1' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C6_FL1_FL2",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C6_FL1_FL2' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C6_FL2_FL3",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C6_FL2_FL3' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C6_FL3_Roof",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C6_FL3_Roof' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C7_Base_FL1",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C7_Base_FL1' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C7_FL1_FL2",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C7_FL1_FL2' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C7_FL2_FL3",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C7_FL2_FL3' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C7_FL3_Roof",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C7_FL3_Roof' not found in the provided Ruby script."
+    },
+    {
+      "mark": "C8_Base_FL1",
+      "issue_type": "missing_mark",
+      "detail": "Member mark 'C8_Base_FL1' not found in the provided Ruby script."
     }
   ],
   "error_feedback_map": {
-    "PF20a": "[missing_mark] Member 'PF20a' block not found or incomplete in the Ruby script.",
-    "C3": "[missing_mark] Member 'C3' block not found or incomplete in the Ruby script.",
-    "2WL": "[missing_mark] Member '2WL' block not found or incomplete in the Ruby script.",
-    "C6": "[missing_mark] Member 'C6' block not found or incomplete in the Ruby script.",
-    "CH*35c": "[missing_mark] Member 'CH*35c' block not found or incomplete in the Ruby script."
+    "C3_Base_FL1": "[missing_mark] Member mark 'C3_Base_FL1' not found in the provided Ruby script.",
+    "C3_FL1_FL2": "[missing_mark] Member mark 'C3_FL1_FL2' not found in the provided Ruby script.",
+    "C3_FL2_FL3": "[missing_mark] Member mark 'C3_FL2_FL3' not found in the provided Ruby script.",
+    "C3_FL3_Roof": "[missing_mark] Member mark 'C3_FL3_Roof' not found in the provided Ruby script.",
+    "C4_Base_FL1": "[missing_mark] Member mark 'C4_Base_FL1' not found in the provided Ruby script.",
+    "C4_FL1_FL2": "[missing_mark] Member mark 'C4_FL1_FL2' not found in the provided Ruby script.",
+    "C4_FL2_FL3": "[missing_mark] Member mark 'C4_FL2_FL3' not found in the provided Ruby script.",
+    "C4_FL3_Roof": "[missing_mark] Member mark 'C4_FL3_Roof' not found in the provided Ruby script.",
+    "C5_Base_FL1": "[missing_mark] Member mark 'C5_Base_FL1' not found in the provided Ruby script.",
+    "C5_FL1_FL2": "[missing_mark] Member mark 'C5_FL1_FL2' not found in the provided Ruby script.",
+    "C5_FL2_FL3": "[missing_mark] Member mark 'C5_FL2_FL3' not found in the provided Ruby script.",
+    "C5_FL3_Roof": "[missing_mark] Member mark 'C5_FL3_Roof' not found in the provided Ruby script.",
+    "C6_Base_FL1": "[missing_mark] Member mark 'C6_Base_FL1' not found in the provided Ruby script.",
+    "C6_FL1_FL2": "[missing_mark] Member mark 'C6_FL1_FL2' not found in the provided Ruby script.",
+    "C6_FL2_FL3": "[missing_mark] Member mark 'C6_FL2_FL3' not found in the provided Ruby script.",
+    "C6_FL3_Roof": "[missing_mark] Member mark 'C6_FL3_Roof' not found in the provided Ruby script.",
+    "C7_Base_FL1": "[missing_mark] Member mark 'C7_Base_FL1' not found in the provided Ruby script.",
+    "C7_FL1_FL2": "[missing_mark] Member mark 'C7_FL1_FL2' not found in the provided Ruby script.",
+    "C7_FL2_FL3": "[missing_mark] Member mark 'C7_FL2_FL3' not found in the provided Ruby script.",
+    "C7_FL3_Roof": "[missing_mark] Member mark 'C7_FL3_Roof' not found in the provided Ruby script.",
+    "C8_Base_FL1": "[missing_mark] Member mark 'C8_Base_FL1' not found in the provided Ruby script."
   },
-  "ai_summary": "5 out of 10 members passed all checks. 5 members were not found in the Ruby script."
+  "ai_summary": "9 out of 31 mapped members passed all checks; 22 members failed due to missing marks or incomplete Ruby blocks."
 }

@@ -41,6 +41,7 @@ RUBY_OUTPUT_DIR = os.path.join(BASE_DIR, "output", "final_ruby_scripts")
 # ---- AGENT OUTPUT FILES ----
 SCANNER_OUTPUT_FILE        = os.path.join(OUTPUT_JSON_DIR, "drawing_index.json")
 GLOSSARY_OUTPUT_FILE       = os.path.join(OUTPUT_JSON_DIR, "glossary.json")
+PARSER_OUTPUT_FILE         = os.path.join(OUTPUT_JSON_DIR, "steel_schedule.json")
 SCHEDULE_OUTPUT_FILE       = os.path.join(OUTPUT_JSON_DIR, "steel_schedule.json")
 SPATIAL_OUTPUT_FILE        = os.path.join(OUTPUT_JSON_DIR, "spatial_data.json")
 MAPPED_OUTPUT_FILE         = os.path.join(OUTPUT_JSON_DIR, "mapped_members.json")

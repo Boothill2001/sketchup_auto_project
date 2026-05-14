@@ -1,0 +1,80 @@
+"""Reproduce schedule parsing from cache to find the 0-members bug."""
+import json, os
+import sys
+sys.path.insert(0, '.')
+
+from agents.schedule_parser import _safe_parse_json, _repair_json
+
+cache_dir = "data/llm_cache"
+results = []
+
+for fn in sorted(os.listdir(cache_dir)):
+    if not fn.endswith(".json"):
+        continue
+    fp = os.path.join(cache_dir, fn)
+    with open(fp, "r", encoding="utf-8") as fh:
+        d = json.load(fh)
+    resp = d.get("response", "")
+    
+    # Only look at schedule extraction responses (those with page_source + members array)
+    if '"page_source"' not in resp or '"members"' not in resp:
+        continue
+
+    import re
+    ps_match = re.search(r'"page_source"\s*:\s*(\d+)', resp)
+    page_src = int(ps_match.group(1)) if ps_match else -1
+    
+    # Skip page -1 (analysis context) and page 1 (general notes, not real schedules)
+    if page_src <= 1:
+        continue
+
+    # Simulate what call_llm_json does - strip fences
+    raw = resp.strip()
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+        raw = raw.rsplit("```", 1)[0].strip()
+    
+    # Now try to parse
+    parsed = _safe_parse_json(raw, f"page {page_src}")
+    member_count = len(parsed.get("members", []))
+    
+    # Check if any members have real dimensions
+    has_dims = any(
+        m.get("width_mm") or m.get("depth_mm") or m.get("thickness_mm")
+        for m in parsed.get("members", [])
+    )
+    
+    status = "PASS" if member_count > 0 else "FAIL"
+    dim_status = "WITH DIMS" if has_dims else "NO DIMS"
+    print(f"[{status}] Page {page_src}: {member_count} members parsed ({dim_status}) | {fn}")
+    
+    if member_count == 0:
+        # Debug: check if raw JSON is valid
+        print(f"  -&gt; Debug: raw length={len(raw)}, first 200 chars:")
+        print(f"    {raw[:200]}")
+        # Try direct parse
+        repaired = _repair_json(raw)
+        print(f"  -&gt; After repair, first 200 chars:")
+        print(f"    {repaired[:200]}")
+        try:
+            direct = json.loads(repaired)
+            print(f"  -&gt; Direct parse: {len(direct.get('members',[]))}")
+        except Exception as e:
+            print(f"  -&gt; Direct parse FAILED: {e}")
+    else:
+        # Show first member
+        first = parsed["members"][0]
+    print(f"  -> Sample: mark={first.get('mark')}, type={first.get('type')}, "
+              f"w={first.get('width_mm')}, d={first.get('depth_mm')}")
+
+    results.append((page_src, member_count, has_dims, fn))
+
+# Summary
+total = sum(r[1] for r in results)
+with_dims = sum(1 for r in results if r[2])
+total_pages = len(results)
+print(f"\n{'='*60}")
+print(f"SUMMARY: {total_pages} schedule pages processed, {total} total members")
+print(f"Pages with real dimensions: {with_dims}/{total_pages}")

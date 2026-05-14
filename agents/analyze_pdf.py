@@ -88,9 +88,9 @@ def analyze_pdf(pdf_path: str) -> dict:
     Feeds all downstream agents.
     Returns the analysis dict.
     """
-    rprint("\n[bold cyan]══════════════════════════════════════════════════════")
-    rprint("[bold cyan]AGENT 0 — PDF Analysis (Convention Detection)[/]")
-    rprint("[bold cyan]══════════════════════════════════════════════════════[/]")
+    rprint("\n[bold cyan]" + "=" * 56)
+    rprint("[bold cyan]AGENT 0 - PDF Analysis (Convention Detection)[/]")
+    rprint("[bold cyan]" + "=" * 56 + "[/]")
 
     try:
         total_pages = get_page_count(pdf_path)

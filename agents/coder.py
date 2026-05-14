@@ -35,7 +35,9 @@ STEEL_SECTIONS: dict[str, dict] = {
     "UB25a": {"type": "UB", "d": 254, "bf": 146, "tf":  8.6, "tw": 5.8},
     "UB20b": {"type": "UB", "d": 206, "bf": 133, "tf":  9.6, "tw": 6.2},
     "UB20a": {"type": "UB", "d": 203, "bf": 133, "tf":  7.8, "tw": 5.8},
+    "UB20d": {"type": "UB", "d": 203, "bf": 133, "tf":  7.8, "tw": 5.8},
     "UB15a": {"type": "UB", "d": 155, "bf": 102, "tf":  7.0, "tw": 4.5},
+    "UB36c": {"type": "UB", "d": 356, "bf": 171, "tf": 11.5, "tw": 7.0},
     # ── UB — Universal Beam (metric) ─────────────────────────────────────────
     "360UB56.7": {"type": "UB", "d": 359, "bf": 172, "tf": 13.0, "tw": 8.0},
     "310UB40.4": {"type": "UB", "d": 304, "bf": 165, "tf":  8.7, "tw": 6.1},
@@ -52,9 +54,14 @@ STEEL_SECTIONS: dict[str, dict] = {
 
     # ── PFC — Parallel Flange Channel ────────────────────────────────────────
     "CH35a":     {"type": "PFC", "d": 380, "bf": 100, "tf": 17.5, "tw": 10.0},
+    "CH35c":     {"type": "PFC", "d": 380, "bf": 100, "tf": 17.5, "tw": 10.0},
+    "CH40a":     {"type": "PFC", "d": 400, "bf": 110, "tf": 18.0, "tw": 10.5},
+    "CH40b":     {"type": "PFC", "d": 400, "bf": 110, "tf": 18.0, "tw": 10.5},
     "CH30a":     {"type": "PFC", "d": 310, "bf":  86, "tf": 14.8, "tw":  9.1},
     "CH13c":     {"type": "PFC", "d": 125, "bf":  65, "tf":  9.5, "tw":  6.5},
+    "CH32a":     {"type": "PFC", "d": 320, "bf":  90, "tf": 15.0, "tw":  9.0},
     "380PFC":    {"type": "PFC", "d": 380, "bf": 100, "tf": 17.5, "tw": 10.0},
+    "400PFC":    {"type": "PFC", "d": 400, "bf": 110, "tf": 18.0, "tw": 10.5},
     "310PFC":    {"type": "PFC", "d": 310, "bf":  86, "tf": 14.8, "tw":  9.1},
     "125PFC":    {"type": "PFC", "d": 125, "bf":  65, "tf":  9.5, "tw":  6.5},
 
@@ -157,6 +164,44 @@ STEEL_SECTIONS: dict[str, dict] = {
     "SHS50x50x3":    {"type": "SHS", "d":  50, "b":  50, "t": 3.0},
     "SHS100x100x5":  {"type": "SHS", "d": 100, "b": 100, "t": 5.0},
     "SHS150x150x6":  {"type": "SHS", "d": 150, "b": 150, "t": 6.0},
+
+    # ════════════════════════════════════════════════════════════════════════
+    # RC (Reinforced Concrete) SECTIONS — parsed from structural PDF schedules
+    # Format: WIDTHxDEPTH for columns/beams, FOOTING/CORBEL/RETAINING WALL as-is
+    # These are standard RC member sizes commonly found in VN structural drawings
+    # ════════════════════════════════════════════════════════════════════════
+    "250x600":       {"type": "RC_beam",  "d": 600, "bf": 250, "tf": None, "tw": None},
+    "300x600":       {"type": "RC_beam",  "d": 600, "bf": 300, "tf": None, "tw": None},
+    "400x400":       {"type": "RC_col",   "d": 400, "bf": 400, "tf": None, "tw": None},
+    "400x350":       {"type": "RC_col",   "d": 400, "bf": 350, "tf": None, "tw": None},
+    "250x250":       {"type": "RC_col",   "d": 250, "bf": 250, "tf": None, "tw": None},
+    "600x600":       {"type": "RC_col",   "d": 600, "bf": 600, "tf": None, "tw": None},
+    "D600":          {"type": "RC_beam",  "d": 600, "bf": 300, "tf": None, "tw": None},
+    "x300":          {"type": "RC_beam",  "d": 300, "bf": 200, "tf": None, "tw": None},
+    "FOOTING":       {"type": "RC_footing", "d": 300, "bf": 300, "tf": None, "tw": None},
+    "CORBEL":        {"type": "RC_corbel",  "d": 300, "bf": 150, "tf": None, "tw": None},
+    "RETAINING WALL":{"type": "RC_wall",    "d": 350, "bf": 350, "tf": None, "tw": None},
+    "PT SLAB/BEAM":  {"type": "RC_slab",    "d": 150, "bf": None, "tf": None, "tw": None},
+    "RF1":           {"type": "RC_slab",    "d": 150, "bf": None, "tf": None, "tw": None},
+    "SLAB_L1":       {"type": "RC_slab",    "d": 150, "bf": None, "tf": None, "tw": None},
+    "SLAB_L2":       {"type": "RC_slab",    "d": 150, "bf": None, "tf": None, "tw": None},
+    "RC Pile":       {"type": "RC_pile",    "d": 400, "bf": 400, "tf": None, "tw": None},
+    "RC Pit Wall":   {"type": "RC_wall",    "d": 300, "bf": 300, "tf": None, "tw": None},
+    "LW1":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "LW3":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "LW6":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "HB1":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "HB2":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "HB3":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "HB4":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "HB5":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "HB6":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "HB7":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "HB8":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "2WL":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "4WL":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "5WL":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
+    "7WL":           {"type": "RC_beam",    "d": 300, "bf": 200, "tf": None, "tw": None},
 }
 
 
@@ -223,20 +268,39 @@ _SECTION_PATTERNS = [
     (re.compile(r'^(\d+)\s*SHS\s*$', re.IGNORECASE),
      lambda m: {"type": "SHS", "d": int(m[1]), "b": int(m[1]), "t": 5.0}),
 
-    # UB/UC old format: UB<depth><suffix> or UC<depth><suffix>
-    (re.compile(r'^UB\s*(\d+)\s*([a-zA-Z]*)\s*$', re.IGNORECASE),
-     lambda m: {"type": "UB", "d": int(m[1]) * 10, "bf": int(m[1]) * 5, "tf": 8.0, "tw": 5.0}),
-    (re.compile(r'^UC\s*(\d+)\s*([a-zA-Z]*)\s*$', re.IGNORECASE),
-     lambda m: {"type": "UC", "d": int(m[1]) * 10, "bf": int(m[1]) * 5, "tf": 8.0, "tw": 5.0}),
+    # ── OLD AUSTRALIAN FORMAT: prefix + number + variant letter ──────────────
+    # SH30b, UB36c, CH13c, UC155d, RB16a, Z25d, PF20a, etc.
+    (re.compile(r'^SH\s*(\d+)\s*([a-zA-Z])\s*$', re.IGNORECASE),
+     lambda m: {"type": "RHS", "d": int(m[1]) * 10, "b": max(75, int(m[1]) * 3), "t": 6.0}),
+    (re.compile(r'^UB\s*(\d+)\s*([a-zA-Z])\s*$', re.IGNORECASE),
+     lambda m: {"type": "UB", "d": int(m[1]) * 10, "bf": int(m[1]) * 6, "tf": max(8.0, int(m[1]) * 0.35), "tw": max(5.0, int(m[1]) * 0.22)}),
+    (re.compile(r'^UC\s*(\d+)\s*([a-zA-Z])\s*$', re.IGNORECASE),
+     lambda m: {"type": "UC", "d": int(m[1]) * 10, "bf": int(m[1]) * 10, "tf": max(8.0, int(m[1]) * 0.35), "tw": max(5.0, int(m[1]) * 0.22)}),
+    (re.compile(r'^CH\s*(\d+)\s*([a-zA-Z])\s*$', re.IGNORECASE),
+     lambda m: {"type": "PFC", "d": int(m[1]) * 10, "bf": int(m[1]) * 2.5, "tf": max(6.0, int(m[1]) * 0.40), "tw": max(4.0, int(m[1]) * 0.25)}),
+    # Z purlin: Z<num><letter>
+    (re.compile(r'^Z\s*(\d+)\s*([a-zA-Z])\s*$', re.IGNORECASE),
+     lambda m: {"type": "Z", "d": int(m[1]) * 10, "bf": max(60, int(m[1]) * 2.5), "tf": 2.0, "tw": 2.0}),
+    # RB round bar / rod brace: RB<num><letter>
+    (re.compile(r'^RB\s*(\d+)\s*([a-zA-Z])\s*$', re.IGNORECASE),
+     lambda m: {"type": "CHS", "d": int(m[1]) * 10, "bf": 0, "t": max(6.0, int(m[1]) * 0.5)}),
+    # PF portal frame: PF<num><letter>
+    (re.compile(r'^PF\s*(\d+)\s*([a-zA-Z])\s*$', re.IGNORECASE),
+     lambda m: {"type": "UB", "d": int(m[1]) * 10, "bf": int(m[1]) * 6, "tf": max(8.0, int(m[1]) * 0.35), "tw": max(5.0, int(m[1]) * 0.22)}),
+    # SH old format: SH<num><letter> (SHS/RHS hollow section)
+    (re.compile(r'^SH\s*(\d+)\s*([a-zA-Z]*)\s*$', re.IGNORECASE),
+     lambda m: {"type": "RHS", "d": int(m[1]) * 10, "b": max(75, int(m[1]) * 3), "t": 6.0}),
+    # LW lintel wall beam
+    (re.compile(r'^LW\s*(\d+)\s*([a-zA-Z]*)\s*$', re.IGNORECASE),
+     lambda m: {"type": "PFC", "d": int(m[1]) * 10, "bf": int(m[1]) * 3, "tf": 6.0, "tw": 4.0}),
+    # WL wall beam / lintel (number first)
+    (re.compile(r'^(\d+)\s*WL\s*$', re.IGNORECASE),
+     lambda m: {"type": "PFC", "d": int(m[1]) * 25, "bf": int(m[1]) * 8, "tf": 6.0, "tw": 4.0}),
 
-    # CH old format: CH<num><suffix> (depth ≈ num*10)
-    (re.compile(r'^CH\s*(\d+)\s*([a-zA-Z]*)\s*$', re.IGNORECASE),
-     lambda m: {"type": "PFC", "d": int(m[1]) * 10, "bf": int(m[1]) * 2.5, "tf": 6.0, "tw": 4.0}),
-
-    # Generic: just digits like "200UC46" pre-parsed but failed exact match
-    # -> use approximate: d ≈ first number, infer rest
-    (re.compile(r'^(\d+)\s*UB([\d.]+)$', re.IGNORECASE),
-     lambda m: {"type": "UB", "d": int(m[1]), "bf": int(m[1]) * 2 // 3, "tf": 8.0, "tw": 5.0}),
+    # Bare type codes: just "SH", "UB", "CH", "UC", "SHS", "RHS" 
+    # These are section column values from old Australian schedules where
+    # the actual size is in the MARK column (e.g. mark="30b", section="SH" → SH30b)
+    # Handled via _infer_section_from_mark() rather than here
 ]
 
 
@@ -252,16 +316,54 @@ def _parse_section_pattern(section_str: str) -> dict | None:
     return None
 
 
-def lookup_section(section_str: str) -> dict | None:
+def _infer_section_from_mark(mark_str: str, section_code: str) -> str | None:
+    """
+    Old Australian schedules often have bare type codes in the SECTION column
+    (e.g. "SH", "UB", "CH") while the actual size is in the MARK column
+    (e.g. mark="30b", section="SH" → the real designation is "SH30b").
+
+    Combine them and return the composite key if the section column looks like
+    a bare type code. Returns None if section is already a full designation.
+    """
+    if not mark_str or not section_code:
+        return None
+
+    mark = str(mark_str).strip()
+    sec = str(section_code).strip().upper()
+
+    # List of bare type codes that signal old Australian convention
+    BARE_CODES = {"SH", "UB", "UC", "CH", "PFC", "SHS", "RHS", "FB", "RB", "Z", "PF", "LW", "WL"}
+
+    # Only combine if section looks like a bare code AND mark has digits
+    if sec not in BARE_CODES:
+        return None
+
+    # Check mark has at least one digit (e.g., "30b" has "30")
+    if not any(c.isdigit() for c in mark):
+        return None
+
+    # Build composite key: section_code + mark (e.g. "SH" + "30b" = "SH30b")
+    composite = sec + mark
+    return composite
+
+
+def lookup_section(section_str: str, mark_str: str | None = None) -> dict | None:
     """
     Look up a section designation in STEEL_SECTIONS.
     Falls back to pattern-based parsing for Vietnamese/Asian naming conventions.
+    If mark_str is provided, also tries combining mark+section for old AU format.
     Returns the dims dict if found/parsed, else None.
     """
     if not section_str:
         return None
 
-    key = section_str.strip()
+    raw = section_str.strip()
+    # ── Strip trailing qualifiers: " (U)", " Under", " Under Only", etc. ──────
+    import re as _re_clean
+    key = _re_clean.sub(r'\s*\([^)]*\)\s*$', '', raw).strip()
+    key = _re_clean.sub(r'\s+Under(\s+Only)?\s*$', '', key, flags=_re_clean.IGNORECASE).strip()
+    if key != raw:
+        rprint(f"  Section clean: {raw!r} -> {key!r}")
 
     # 1. Exact match
     result = STEEL_SECTIONS.get(key)
@@ -290,6 +392,19 @@ def lookup_section(section_str: str) -> dict | None:
     if result is not None:
         return result
 
+    # 6. OLD AUSTRALIAN INFERENCE: combine mark + bare section code
+    #    e.g., mark="30b" + section="SH" → "SH30b" → lookup STEEL_SECTIONS
+    if mark_str:
+        composite = _infer_section_from_mark(mark_str, key)
+        if composite:
+            result = STEEL_SECTIONS.get(composite)
+            if result is not None:
+                return result
+            # Also try pattern parser with composite
+            result = _parse_section_pattern(composite)
+            if result is not None:
+                return result
+
     return None
 
 
@@ -303,13 +418,38 @@ def _estimate_depth(section_str: str) -> int:
     return int(m.group(1)) if m else 100
 
 
-def _section_rect(dims: dict, mtype: str, section_str: str) -> tuple[list, str]:
+def _section_rect(dims: dict, mtype: str, section_str: str, member: dict | None = None) -> tuple[list, str]:
     """
     Return (pts_2d, log) for a solid rectangular cross-section.
     pts_2d is a list of (x, y) tuples in mm, centred on origin.
     All members use solid rect for LOD300 (no hollow shell needed).
+
+    For RC members, dims from schedule (width_mm, depth_mm, thickness_mm) take priority.
     """
     sec_type = dims.get("type", "")
+
+    # ── RC member: use dimensions directly from schedule ─────────────────
+    member_dims = member or {}
+    material = member_dims.get("material", "")
+
+    if material == "RC" or (isinstance(sec_type, str) and sec_type.startswith("RC")):
+        if mtype == "wall":
+            thk = member_dims.get("thickness_mm") or 200
+            # Wall cross-section: thickness wide, 1mm tall placeholder (height = ez-sz)
+            pts = [(0, 0), (thk, 0), (thk, 1), (0, 1)]
+            log = f"RC wall t={thk}mm"
+        elif mtype == "slab":
+            thk = member_dims.get("thickness_mm") or 150
+            # Slab cross-section: 1mm placeholder (extruded length = span)
+            pts = [(0, 0), (1, 0), (1, thk), (0, thk)]
+            log = f"RC slab t={thk}mm"
+        else:
+            w = member_dims.get("width_mm") or 300
+            d = member_dims.get("depth_mm") or w
+            half_w, half_d = w / 2, d / 2
+            pts = [(-half_w, -half_d), (half_w, -half_d), (half_w, half_d), (-half_w, half_d)]
+            log = f"RC {w}×{d}mm"
+        return pts, log
 
     if sec_type in ("SHS", "RHS"):
         b = dims.get("b", dims.get("d", 100))
@@ -355,7 +495,7 @@ def _pts_to_ruby(pts: list) -> str:
     return "[" + ", ".join(f"[{x:g}, {y:g}]" for x, y in pts) + "]"
 
 
-def _layer_for(mtype: str, conf: str, sz: float, ez: float) -> str:
+def _layer_for(mtype: str, conf: str, sz: float, ez: float, material: str = "") -> str:
     if conf == "unmapped" or sz == -9999 or ez == -9999:
         return "LOD300_UNMAPPED_NEEDS_REVIEW"
     mt = mtype.lower()
@@ -367,6 +507,11 @@ def _layer_for(mtype: str, conf: str, sz: float, ez: float) -> str:
         return "STR-Braces"
     if mt in ("plate", "flatbar", "gusset", "baseplat"):
         return "STR-Plates"
+    if mt == "wall":
+        return "STR-Walls"
+    if mt == "slab":
+        return "STR-Slabs"
+    # RC members use same layers as steel (columns go to STR-Columns, etc.)
     return "STR-Beams"
 
 
@@ -436,7 +581,8 @@ def _build_member_ruby(member: dict) -> str:
     sx = float(sp.get("x", 0)); sy = float(sp.get("y", 0)); sz = float(sp.get("z", 0))
     ex = float(ep.get("x", 0)); ey = float(ep.get("y", 0)); ez = float(ep.get("z", 0))
 
-    layer = _layer_for(mtype, conf, sz, ez)
+    material = member.get("material", "")
+    layer = _layer_for(mtype, conf, sz, ez, material)
     if layer == "LOD300_UNMAPPED_NEEDS_REVIEW":
         sx, sy, sz, ex, ey, ez = 0.0, 0.0, 0.0, 0.0, 0.0, 3000.0
 
@@ -471,10 +617,13 @@ def _build_member_ruby(member: dict) -> str:
                 ex = sx  # North-South dominant
             rprint(f"  Coder fix: {mark!r} diagonal snapped to cardinal axis")
 
-    pts, log_msg = _section_rect(dims, mtype, section)
+    material = member.get("material", "")
+    pts, log_msg = _section_rect(dims, mtype, section, member)
     if not dims:
         rprint(f"  Section {section!r} not in library — {log_msg}")
     pts_ruby = _pts_to_ruby(pts)
+
+    mat_var = "_concrete_mat" if material.upper() in ("RC", "CONCRETE") else "_steel_mat"
 
     return (
         f"# ---- {mark} | {section} | {mtype} ----\n"
@@ -493,7 +642,7 @@ def _build_member_ruby(member: dict) -> str:
         f"    _face = _ge.add_face(_raw.map {{ |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) }})\n"
         f"    _face.pushpull(_len) if _face\n"
         f"    _grp.layer = get_or_create_layer(layers, \"{layer}\")\n"
-        f"    _grp.material = _steel_mat\n"
+        f"    _grp.material = {mat_var}\n"
         f"    _grp.set_attribute(\"IFC\", \"Mark\",    \"{mark}\")\n"
         f"    _grp.set_attribute(\"IFC\", \"Section\", \"{section}\")\n"
         f"    _grp.set_attribute(\"IFC\", \"Type\",    \"{mtype}\")\n"
@@ -524,7 +673,8 @@ end
 
 # ── Layers ────────────────────────────────────────────────────────────────────
 ["STR-Columns", "STR-Beams", "STR-Braces", "STR-Plates",
- "STR-Foundations", "STR-Slabs", "LOD300_UNMAPPED_NEEDS_REVIEW"].each do |lname|
+ "STR-Walls", "STR-Slabs", "STR-Foundations",
+ "LOD300_UNMAPPED_NEEDS_REVIEW"].each do |lname|
   get_or_create_layer(layers, lname)
 end
 
@@ -745,6 +895,49 @@ def _generate_ruby_for_batch(batch: list[dict]) -> str:
     return raw
 
 
+def _infer_rc_dimensions(members: list[dict]) -> None:
+    """
+    For RC members with missing width_mm/depth_mm, infer from peer RC members
+    grouped by page_source. Uses the most common dimensions on the same page,
+    falling back to 400x400mm for columns, 300x600mm for beams.
+    """
+    from collections import Counter
+    
+    # Group RC members by page_source
+    rc_by_page: dict[int, list[dict]] = {}
+    for m in members:
+        if m.get("material") == "RC" and m.get("type") in ("column", "beam"):
+            ps = m.get("page_source", -1)
+            rc_by_page.setdefault(ps, []).append(m)
+    
+    for page, rc_members in rc_by_page.items():
+        # Collect known dimensions from peers on this page
+        col_dims = [(m.get("width_mm"), m.get("depth_mm")) for m in rc_members
+                    if m.get("type") == "column" and m.get("width_mm") and m.get("depth_mm")]
+        beam_dims = [(m.get("width_mm"), m.get("depth_mm")) for m in rc_members
+                     if m.get("type") == "beam" and m.get("width_mm") and m.get("depth_mm")]
+        
+        col_mode = Counter(col_dims).most_common(1)
+        beam_mode = Counter(beam_dims).most_common(1)
+        
+        default_col = col_mode[0][0] if col_mode else (400, 400)
+        default_beam = beam_mode[0][0] if beam_mode else (300, 600)
+        
+        # Fill missing dimensions on the same page
+        for m in rc_members:
+            mtype = m.get("type")
+            if mtype == "column" and (not m.get("width_mm") or not m.get("depth_mm")):
+                m["width_mm"] = default_col[0]
+                m["depth_mm"] = default_col[1]
+                m["section"] = f"{default_col[0]}x{default_col[1]}"
+                rprint(f"  RC infer: {m.get('mark')!r} column -> {default_col[0]}x{default_col[1]}mm (page {page})")
+            elif mtype == "beam" and (not m.get("width_mm") or not m.get("depth_mm")):
+                m["width_mm"] = default_beam[0]
+                m["depth_mm"] = default_beam[1]
+                m["section"] = f"{default_beam[0]}x{default_beam[1]}"
+                rprint(f"  RC infer: {m.get('mark')!r} beam -> {default_beam[0]}x{default_beam[1]}mm (page {page})")
+
+
 def build_ruby_script(mapped_members: list[dict], error_feedback_map: dict | None = None) -> str:
     """
     Build the full Ruby script.
@@ -757,10 +950,15 @@ def build_ruby_script(mapped_members: list[dict], error_feedback_map: dict | Non
     error_feedback_map = error_feedback_map or {}
     total = len(mapped_members)
 
+    # ── RC dimension inference: fill missing dimensions from page peers ──────
+    _infer_rc_dimensions(mapped_members)
+
     # ── Section lookup: inject _section_dims before generation ───────────────
     hit_count = 0
     for member in mapped_members:
-        dims = lookup_section(member.get("section", ""))
+        section = member.get("section", "")
+        mark = member.get("mark", "")
+        dims = lookup_section(section, mark_str=mark if mark else None)
         if dims is not None:
             member["_section_dims"] = dims
             hit_count += 1

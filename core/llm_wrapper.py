@@ -214,7 +214,7 @@ def call_llm(
     last_error = None
     for attempt in range(retries):
         try:
-            rprint(f"  [dim]LLM call → Vertex AI (attempt {attempt+1}/{retries})[/]")
+            rprint(f"  [dim]LLM call -> Vertex AI (attempt {attempt+1}/{retries})[/]")
             response = _client.models.generate_content(
                 model=GEMINI_MODEL,
                 contents=_build_contents(prompt, image_parts),
@@ -231,7 +231,7 @@ def call_llm(
             if LLM_CACHE_ENABLED and cache_key:
                 _cache_misses += 1
                 _cache_save(cache_key, GEMINI_MODEL, text, _call_type)
-                rprint(f"  [dim]Cache MISS → saved [{cache_key[:8]}][/]")
+                rprint(f"  [dim]Cache MISS -> saved [{cache_key[:8]}][/]")
             return text
 
         except Exception as e:

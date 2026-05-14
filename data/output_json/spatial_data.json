@@ -1,38 +1,38 @@
 {
   "grids_x": [
     {
-      "name": "A",
+      "name": "1",
       "x_mm": 0
     },
     {
-      "name": "B",
-      "x_mm": 6000
+      "name": "2",
+      "x_mm": 4200
     },
     {
-      "name": "C",
-      "x_mm": 12000
+      "name": "3",
+      "x_mm": 9150
     },
     {
-      "name": "D",
-      "x_mm": 18000
+      "name": "4",
+      "x_mm": 13350
     }
   ],
   "grids_y": [
     {
-      "name": "1",
+      "name": "A",
       "y_mm": 0
     },
     {
-      "name": "2",
-      "y_mm": 6000
+      "name": "B",
+      "y_mm": 5912
     },
     {
-      "name": "3",
-      "y_mm": 12000
+      "name": "C",
+      "y_mm": 11825
     },
     {
-      "name": "4",
-      "y_mm": 18000
+      "name": "D",
+      "y_mm": 17738
     }
   ],
   "levels": [
@@ -56,5 +56,6 @@
       "name": "Roof",
       "z_mm": 13500
     }
-  ]
+  ],
+  "grid_confidence": 0.95
 }
