@@ -11,6 +11,7 @@ Speed optimisations (new):
   - Composite thumbnail grid: ALL pages classified in 1-2 API calls
   - 72 DPI thumbnails — enough for layout-level classification
   - Fallback to sequential per-page if composite parse fails
+  - Phase 0 analysis context injected into all prompts
 
 Output: data/output_json/drawing_index.json
 """
@@ -24,11 +25,15 @@ from rich import print as rprint
 from config import SCANNER_OUTPUT_FILE
 from core.llm_wrapper import call_llm_json
 from core.pdf_utils import get_page_count, render_page_fast, build_thumbnail_grid
+from core.analysis_context import build_context_string
 
 
 # ── Per-page prompt (fallback) ────────────────────────────────────────────────
 
 CLASSIFY_PROMPT = """You are a Senior Structural Detailer reviewing an engineering drawing sheet.
+
+{context}
+
 Classify this page and extract key metadata.
 
 Return JSON with this exact schema:
@@ -46,24 +51,33 @@ Return JSON with this exact schema:
   "page_subtype": "<one of: steelwork_detail | rc_schedule | footing_plan | roof_framing | wall_bracing | null>"
 }
 
+CRITICAL: This is a VIETNAMESE structural drawing set. RC (Reinforced Concrete) schedules are the PRIMARY content.
+Look EXTREMELY carefully for TABLES — any page with rows and columns of data.
+
 Priority rules (apply the FIRST matching rule):
-1. Table with columns MARK / SIZE / SECTION / QTY / LENGTH → steel_schedule (even if the page also has details)
-2. List of abbreviations, symbols, or material specifications table → glossary
-3. Grid bubbles (A,B,C / 1,2,3) with dimension chains and no vertical elevation markers → plan_view
-4. Vertical section showing floor levels / datum triangles / RL values with heights → elevation_view
-5. Cross-section cut through structural elements (slabs, walls, beams) → section_view
-6. Detail drawings of bolted/welded connections, splice plates, base plates → connection_detail
-7. Drawing number index, sheet list, or table of contents → drawing_index
-8. General text notes / specification clauses → general_note
-9. steelwork_detail: page shows section drawings or connection details of steel members (UB, UC, RHS, SHS, CHS shapes drawn as cross-sections or isometric), but NO table with MARK/SIZE/QTY columns → type=connection_detail, page_subtype=steelwork_detail
-10. rc_schedule: table listing concrete member marks (C1,C2,B1,B2...) with dimensions (width x depth), rebar bars (N12, N16, N20...), concrete grade (f'c) → type=steel_schedule, page_subtype=rc_schedule
-11. footing_plan: plan view showing pad footings, strip footings, raft slab with reinforcement callouts → type=plan_view, page_subtype=footing_plan"""
+1. ANY page with a TABLE (multiple rows with aligned text columns) showing member labels like C1,C2,C3,B1,B2,S1,S2 or columns like MARK/KÍCH THƯỚC/SIZE/QTY → type=steel_schedule, page_subtype=rc_schedule. A TABLE dominates — even if page also has details.
+2. Page is dominated by a large GRID of cells (like spreadsheet/table) → type=steel_schedule, page_subtype=rc_schedule
+3. List of abbreviations, symbols, or material specifications table → glossary
+4. Grid bubbles (A,B,C / 1,2,3) with dimension chains and no vertical elevation markers → plan_view
+5. Vertical section showing floor levels / datum triangles / RL values with heights → elevation_view
+6. Cross-section cut through structural elements (slabs, walls, beams) → section_view
+7. Detail drawings of bolted/welded connections, splice plates, base plates → connection_detail
+8. Drawing number index, sheet list, or table of contents → drawing_index
+9. General text notes / specification clauses → general_note
+10. steelwork_detail: page shows section drawings or connection details of steel members, but NO table → type=connection_detail, page_subtype=steelwork_detail
+11. footing_plan: plan view showing pad footings, strip footings, raft slab with reinforcement callouts → type=plan_view, page_subtype=footing_plan
+
+IMPORTANT: Vietnamese RC schedules have concrete member marks (C1,C2,B1,B2,S1,S2,P1,P2...). Any page with these marks in a table = steel_schedule.
+IMPORTANT: If uncertain between plan_view and steel_schedule, and the page has table-like layout → pick steel_schedule.
+IMPORTANT: The material for RC member pages is "reinforced_concrete"."""
 
 
 # ── Composite grid prompt ─────────────────────────────────────────────────────
 
 CLASSIFY_GRID_PROMPT = """You are looking at a grid of PDF page thumbnails from a structural engineering drawing set.
 Each thumbnail is labeled P0, P1, P2... in the top-left corner — the number is the 0-indexed PDF page number.
+
+{context}
 
 Classify EVERY thumbnail visible in the grid.
 
@@ -187,13 +201,58 @@ PAGES_PER_RUN = 5
 
 
 def _classify_page(pdf_path: str, page_num: int, total: int) -> tuple[int, dict]:
+    """Classify a single page with Phase 0 analysis context injected.
+    Robust JSON parsing: tries json.loads, then json_repair, then heuristic extraction."""
     try:
         img = render_page_fast(pdf_path, page_num)
-        raw = call_llm_json(CLASSIFY_PROMPT, image_parts=[img])
-        parsed = json.loads(raw)
+        context = build_context_string()
+        prompt = CLASSIFY_PROMPT.format(context=context)
+        raw = call_llm_json(prompt, image_parts=[img])
+        parsed = _robust_parse_single_page(raw)
     except Exception as e:
         parsed = {**_ERROR_PAGE, "description": str(e)}
     return page_num, parsed
+
+
+def _robust_parse_single_page(raw: str) -> dict:
+    """Parse a single-page classification JSON — tries multiple strategies."""
+    # Strategy 1: Direct JSON parse
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+    # Strategy 2: json_repair
+    try:
+        from json_repair import repair_json
+        repaired = repair_json(raw)
+        obj = json.loads(repaired)
+        # Handle object-wrapper case
+        if isinstance(obj, dict):
+            for v in obj.values():
+                if isinstance(v, list) and len(v) > 0:
+                    obj = v[0]
+                    break
+            if isinstance(obj, list):
+                obj = obj[0] if len(obj) > 0 else {}
+        if isinstance(obj, dict):
+            return obj
+    except Exception:
+        pass
+    # Strategy 3: Extract properties via regex
+    props: dict = {}
+    role_match = __import__('re').search(r'"role"\s*:\s*"([^"]+)"', raw)
+    if role_match:
+        props["role"] = role_match.group(1)
+    mat_match = __import__('re').search(r'"structure_material"\s*:\s*"([^"]+)"', raw)
+    if mat_match:
+        props["structure_material"] = mat_match.group(1)
+    conf_match = __import__('re').search(r'"confidence"\s*:\s*"([^"]+)"', raw)
+    if conf_match:
+        props["confidence"] = conf_match.group(1)
+    if props:
+        props["description"] = f"heuristic extraction from malformed JSON"
+        return props
+    raise ValueError(f"Could not parse single-page response: {raw[:200]}")
 
 
 def _scan_pages_sequential(
@@ -275,6 +334,9 @@ def scan_pdf(pdf_path: str) -> dict:
         f"composite grid ({n_grids} API call{'s' if n_grids > 1 else ''})"
     )
 
+    # Build Phase 0 analysis context ONCE for all grids
+    context = build_context_string()
+
     # ── Composite grid approach ───────────────────────────────────────────────
     try:
         grids = build_thumbnail_grid(
@@ -287,7 +349,8 @@ def scan_pdf(pdf_path: str) -> dict:
                 f"  [dim]→ grid {grid_idx+1}/{len(grids)}: "
                 f"pages {page_nums[0]}–{page_nums[-1]} ({len(page_nums)} thumbnails)...[/]"
             )
-            raw         = call_llm_json(CLASSIFY_GRID_PROMPT, image_parts=[grid_img])
+            grid_prompt = CLASSIFY_GRID_PROMPT.format(context=context)
+            raw         = call_llm_json(grid_prompt, image_parts=[grid_img])
             grid_result = _parse_grid_response(raw, page_nums)
             index.update(grid_result)
             total_classified += len(grid_result)

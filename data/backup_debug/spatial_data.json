@@ -1,0 +1,27 @@
+{
+  "grids_x": [],
+  "grids_y": [],
+  "levels": [
+    {
+      "name": "Base",
+      "z_mm": 0
+    },
+    {
+      "name": "FL1",
+      "z_mm": 3500
+    },
+    {
+      "name": "FL2",
+      "z_mm": 7000
+    },
+    {
+      "name": "FL3",
+      "z_mm": 10500
+    },
+    {
+      "name": "Roof",
+      "z_mm": 13500
+    }
+  ],
+  "grid_confidence": 0.0
+}

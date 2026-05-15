@@ -5,6 +5,7 @@ Returns PIL.Image objects — compatible with all google-generativeai versions.
 """
 
 import math
+import re
 from pathlib import Path
 import fitz  # PyMuPDF
 import io
@@ -212,3 +213,166 @@ def extract_all_text(pdf_path: str) -> dict[int, str]:
     result = {i: doc[i].get_text("text") for i in range(len(doc))}
     doc.close()
     return result
+
+
+# ==========================================================================
+# FIX 1 — Deterministic RC dimension extraction from schedule pages
+# ==========================================================================
+
+def extract_text_blocks_with_bbox(pdf_path: str, page_number: int) -> list[dict]:
+    """
+    Extract text blocks with bounding boxes from a PDF page using PyMuPDF.
+    Returns list of {text, x0, y0, x1, y1} dicts sorted top-to-bottom, left-to-right.
+    Useful for deterministic parsing of table cells and RC dimensions.
+    """
+    doc = load_pdf(pdf_path)
+    page = doc[page_number]
+    blocks = page.get_text("dict")["blocks"]
+    doc.close()
+
+    text_blocks = []
+    for block in blocks:
+        if block["type"] == 0:  # text block
+            for line in block.get("lines", []):
+                line_text = ""
+                x0 = line["bbox"][0]
+                y0 = line["bbox"][1]
+                x1 = line["bbox"][2]
+                y1 = line["bbox"][3]
+                for span in line.get("spans", []):
+                    line_text += span["text"]
+                if line_text.strip():
+                    text_blocks.append({
+                        "text": line_text.strip(),
+                        "x0": x0,
+                        "y0": y0,
+                        "x1": x1,
+                        "y1": y1,
+                    })
+
+    # Sort by y then x (top-to-bottom, left-to-right reading order)
+    text_blocks.sort(key=lambda b: (b["y0"], b["x0"]))
+    return text_blocks
+
+
+def _group_blocks_into_rows(blocks: list[dict], y_tolerance: float = 15) -> list[list[dict]]:
+    """Group text blocks into rows by Y-coordinate proximity."""
+    if not blocks:
+        return []
+    rows = []
+    current_row = [blocks[0]]
+    current_y = blocks[0]["y0"]
+    for b in blocks[1:]:
+        if abs(b["y0"] - current_y) < y_tolerance:
+            current_row.append(b)
+        else:
+            rows.append(current_row)
+            current_row = [b]
+            current_y = b["y0"]
+    if current_row:
+        rows.append(current_row)
+    return rows
+
+
+def parse_rc_dimensions_from_schedule(pdf_path: str, schedule_pages: list[int]) -> dict[str, dict]:
+    """
+    Deterministic extraction of RC member dimensions from schedule pages.
+    Uses PyMuPDF text blocks with bounding boxes to match:
+      - Column schedule: mark -> width_mm x depth_mm (or diameter_mm for circular)
+      - Beam schedule: mark -> width_mm x depth_mm
+      - Wall schedule: mark -> thickness_mm
+      - Slab schedule: mark -> thickness_mm
+
+    Returns dict: { "C1": {"width_mm": 500, "depth_mm": 500}, ... }
+    """
+    results: dict[str, dict] = {}
+
+    # Regex for dimension patterns (e.g. "500x500", "300x600", "300×600")
+    dim_pattern = re.compile(r"(\d{3,4})\s*[xX×]\s*(\d{3,4})")
+
+    # Mark patterns
+    rc_col_mark = re.compile(
+        r"\b((?:C\s*O?\s*L?\s*_?\s*[A-D]?|C|COL|RC\s*PILE|RC\s*COL)\s*\d+[A-Za-z]?)\b",
+        re.IGNORECASE,
+    )
+    rc_beam_mark = re.compile(
+        r"\b((?:[BG]\s*|BM)\s*\d+[A-Za-z]?)\b",
+        re.IGNORECASE,
+    )
+    rc_wall_mark = re.compile(
+        r"\b((?:W\s*|WL)\s*\d+[A-Za-z]?)\b",
+        re.IGNORECASE,
+    )
+    rc_slab_mark = re.compile(
+        r"\b((?:S\s*|SL|PT)\s*\d+[A-Za-z]?)\b",
+        re.IGNORECASE,
+    )
+
+    for page_num in schedule_pages:
+        try:
+            blocks = extract_text_blocks_with_bbox(pdf_path, page_num)
+        except Exception:
+            continue
+
+        if not blocks:
+            continue
+
+        rows = _group_blocks_into_rows(blocks, y_tolerance=15)
+
+        for row in rows:
+            row_texts = [b["text"] for b in row]
+            row_str = " ".join(row_texts)
+
+            # Try column marks first
+            mark_match = rc_col_mark.search(row_str)
+            member_type = "column"
+            if not mark_match:
+                mark_match = rc_wall_mark.search(row_str)
+                member_type = "wall"
+            if not mark_match:
+                mark_match = rc_beam_mark.search(row_str)
+                member_type = "beam"
+            if not mark_match:
+                mark_match = rc_slab_mark.search(row_str)
+                member_type = "slab"
+
+            if not mark_match:
+                continue
+
+            mark = mark_match.group(1).strip().replace(" ", "").upper()
+
+            # Skip if already found
+            if mark in results:
+                continue
+
+            # Look for dimension pattern (WxH) in the row
+            dim_match = dim_pattern.search(row_str)
+            if dim_match:
+                w = int(dim_match.group(1))
+                d = int(dim_match.group(2))
+                results[mark] = {"width_mm": w, "depth_mm": d}
+                continue
+
+            # For walls/slabs: look for single thickness number
+            if member_type in ("wall", "slab"):
+                for text in row_texts:
+                    num_match = re.search(r"(\d{3,4})", text.strip())
+                    if num_match:
+                        val = int(num_match.group(1))
+                        if 100 <= val <= 600:  # plausible RC thickness
+                            results[mark] = {"thickness_mm": val}
+                            break
+            else:
+                # For columns/beams without "x" pattern
+                # Look for numbers in cells after the mark — first 2 substantive numbers
+                nums = []
+                for text in row_texts:
+                    found = re.findall(r"\b(\d{3,4})\b", text.strip())
+                    nums.extend(int(n) for n in found if 200 <= int(n) <= 2000)
+                if len(nums) >= 2:
+                    results[mark] = {"width_mm": nums[0], "depth_mm": nums[1]}
+                elif len(nums) == 1:
+                    # Single number — could be circular column (diameter)
+                    results[mark] = {"width_mm": nums[0], "depth_mm": nums[0]}
+
+    return results

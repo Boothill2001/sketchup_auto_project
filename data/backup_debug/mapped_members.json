@@ -1,0 +1,460 @@
+{
+  "mapped_members": [
+    {
+      "mark": "RC_PILE_GENERIC_Base_FL1",
+      "section": "Circular",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "Base to FL1",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "RC",
+      "width_mm": 400,
+      "depth_mm": 400,
+      "thickness_mm": null
+    },
+    {
+      "mark": "RC_PILE_GENERIC_FL1_FL2",
+      "section": "Circular",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 7000
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "FL1 to FL2",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "RC",
+      "width_mm": 400,
+      "depth_mm": 400,
+      "thickness_mm": null
+    },
+    {
+      "mark": "RC_PILE_GENERIC_FL2_FL3",
+      "section": "Circular",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 7000
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 10500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "FL2 to FL3",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "RC",
+      "width_mm": 400,
+      "depth_mm": 400,
+      "thickness_mm": null
+    },
+    {
+      "mark": "RC_PILE_GENERIC_FL3_Roof",
+      "section": "Circular",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 10500
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "FL3 to Roof",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "RC",
+      "width_mm": 400,
+      "depth_mm": 400,
+      "thickness_mm": null
+    },
+    {
+      "mark": "RC_COLUMN_RECT_GENERIC_Base_FL1",
+      "section": "Rectangular",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "Base to FL1",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "RC",
+      "width_mm": 300,
+      "depth_mm": 600,
+      "thickness_mm": null
+    },
+    {
+      "mark": "RC_COLUMN_RECT_GENERIC_FL1_FL2",
+      "section": "Rectangular",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 7000
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "FL1 to FL2",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "RC",
+      "width_mm": 300,
+      "depth_mm": 600,
+      "thickness_mm": null
+    },
+    {
+      "mark": "RC_COLUMN_RECT_GENERIC_FL2_FL3",
+      "section": "Rectangular",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 7000
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 10500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "FL2 to FL3",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "RC",
+      "width_mm": 300,
+      "depth_mm": 600,
+      "thickness_mm": null
+    },
+    {
+      "mark": "RC_COLUMN_RECT_GENERIC_FL3_Roof",
+      "section": "Rectangular",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 10500
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "FL3 to Roof",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "RC",
+      "width_mm": 300,
+      "depth_mm": 600,
+      "thickness_mm": null
+    },
+    {
+      "mark": "RC_BEAM_RECT_GENERIC",
+      "section": "Rectangular",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "RC",
+      "width_mm": 300,
+      "depth_mm": 600,
+      "thickness_mm": null
+    },
+    {
+      "mark": "STL_COLUMN_CHS_GENERIC_Base_FL1",
+      "section": "CHS",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "Base to FL1",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "S275",
+      "width_mm": 150,
+      "depth_mm": 150,
+      "thickness_mm": null
+    },
+    {
+      "mark": "STL_COLUMN_CHS_GENERIC_FL1_FL2",
+      "section": "CHS",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3500
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 7000
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "FL1 to FL2",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "S275",
+      "width_mm": 150,
+      "depth_mm": 150,
+      "thickness_mm": null
+    },
+    {
+      "mark": "STL_COLUMN_CHS_GENERIC_FL2_FL3",
+      "section": "CHS",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 7000
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 10500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "FL2 to FL3",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "S275",
+      "width_mm": 150,
+      "depth_mm": 150,
+      "thickness_mm": null
+    },
+    {
+      "mark": "STL_COLUMN_CHS_GENERIC_FL3_Roof",
+      "section": "CHS",
+      "type": "column",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 10500
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 13500
+      },
+      "rotation_degrees": 90,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "FL3 to Roof",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "S275",
+      "width_mm": 150,
+      "depth_mm": 150,
+      "thickness_mm": null
+    },
+    {
+      "mark": "STL_BEAM_CHS_GENERIC",
+      "section": "CHS",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "S275",
+      "width_mm": 150,
+      "depth_mm": 150,
+      "thickness_mm": null
+    },
+    {
+      "mark": "STL_BEAM_RHS_GENERIC",
+      "section": "RHS",
+      "type": "beam",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "S275",
+      "width_mm": 100,
+      "depth_mm": 150,
+      "thickness_mm": null
+    },
+    {
+      "mark": "STL_RAFTER_RHS_GENERIC",
+      "section": "RHS",
+      "type": "rafter",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "S275",
+      "width_mm": 50,
+      "depth_mm": 100,
+      "thickness_mm": null
+    },
+    {
+      "mark": "STL_BRACE_RHS_GENERIC",
+      "section": "RHS",
+      "type": "brace",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "S275",
+      "width_mm": 50,
+      "depth_mm": 75,
+      "thickness_mm": null
+    },
+    {
+      "mark": "STL_HANDRAIL_CHS_GENERIC",
+      "section": "CHS",
+      "type": "other",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "S275",
+      "width_mm": 50,
+      "depth_mm": 50,
+      "thickness_mm": null
+    },
+    {
+      "mark": "RB16A",
+      "section": "RB16A",
+      "type": "brace",
+      "start_point": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "end_point": {
+        "x": 0,
+        "y": 0,
+        "z": 3000
+      },
+      "rotation_degrees": 0,
+      "grid_ref": "UNMAPPED",
+      "level_ref": "UNMAPPED",
+      "confidence": "unmapped",
+      "source": "fallback",
+      "material": "S275",
+      "width_mm": 16,
+      "depth_mm": 16,
+      "thickness_mm": null
+    }
+  ]
+}

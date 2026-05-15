@@ -188,11 +188,29 @@ def load_glossary() -> dict:
 def parse_schedule_pages(pdf_path: str, schedule_pages: list[int]) -> list[dict]:
     if not schedule_pages:
         total = get_page_count(pdf_path)
-        schedule_pages = list(range(total))
+        # FIX v6: When scanner misses schedule pages, DERIVE smart fallback from PDF analysis
+        # Pages 0-1 are typically drawing index/cover — skip them.
+        # The real schedule is usually on pages 2-4.
+        analysis_dict = load_analysis_dict()
+        building_type = analysis_dict.get("building_type", "unknown")
+        
+        # Smart scan: skip cover pages, scan deeper into the PDF
+        if total <= 3:
+            schedule_pages = list(range(min(total, 3)))
+        else:
+            # Scan pages 2–6 (or up to total-1, whichever is less)
+            # This covers the typical structural schedule location in multi-page drawing sets
+            start_page = 2
+            end_page = min(total, start_page + 5)
+            schedule_pages = list(range(start_page, end_page))
+        
         rprint(
-            f"[yellow]Schedule Parser:[/] No schedule pages classified by scanner — "
-            f"falling back to all {total} pages (full scan)."
+            f"[yellow]Schedule Parser:[/] WARNING — No schedule pages classified by scanner. "
+            f"Derived smart fallback: scanning pages {[p+1 for p in schedule_pages]} of {total} "
+            f"(skipped drawing index/cover pages 1-2)."
         )
+        if building_type and building_type != "unknown":
+            rprint(f"  [dim]Building type from Phase 0: {building_type} — context will guide extraction.[/]")
 
     # ── Load PDF analysis context (adapts to convention) ────────────────────
     analysis_context = build_schedule_context()
@@ -206,8 +224,13 @@ def parse_schedule_pages(pdf_path: str, schedule_pages: list[int]) -> list[dict]
         "default_material": glossary.get("material_grades", {}).get("default_steel", "S275"),
     }, indent=2)
 
+    # ── FIX #3b: Track extraction quality metrics ───────────────────────────
     all_members: list[dict] = []
     seen_marks: set[str] = set()
+    total_vision_calls = 0
+    total_text_extractions = 0
+    members_from_vision = 0
+    members_from_text = 0
 
     for page_num in schedule_pages:
         rprint(f"[bold magenta]Schedule Parser:[/] Extracting page {page_num + 1}...")
@@ -238,6 +261,10 @@ def parse_schedule_pages(pdf_path: str, schedule_pages: list[int]) -> list[dict]
                 new_members = []
                 for m in members:
                     mark = (m.get("mark") or "").strip()
+                    # FILTER: reject rebar spacing patterns (φ8@200, φ10@150, etc.)
+                    if re.search(r'[φΦϕ⌀]|@\d+|spacing|stirrup|tie\b', mark, re.IGNORECASE):
+                        rprint(f"  [dim]Skipping rebar/pattern mark: {mark}[/]")
+                        continue
                     if mark and mark not in seen_marks:
                         seen_marks.add(mark)
                         m["page_source"] = page_num
@@ -245,6 +272,8 @@ def parse_schedule_pages(pdf_path: str, schedule_pages: list[int]) -> list[dict]
                     elif mark in seen_marks:
                         rprint(f"  [dim]Skipping duplicate mark: {mark}[/]")
                 all_members.extend(new_members)
+                members_from_text += len(new_members)
+                total_text_extractions += 1
                 rprint(f"  [green]+{len(new_members)} members[/] from page {page_num+1} (text-extracted)")
                 if new_members:
                     continue  # skip vision extraction for this page
@@ -264,6 +293,10 @@ def parse_schedule_pages(pdf_path: str, schedule_pages: list[int]) -> list[dict]
                 new_members = []
                 for m in members:
                     mark = (m.get("mark") or "").strip()
+                    # FILTER: reject rebar spacing patterns
+                    if re.search(r'[φΦϕ⌀]|@\d+|spacing|stirrup|tie\b', mark, re.IGNORECASE):
+                        rprint(f"  [dim]Skipping rebar/pattern mark: {mark}[/]")
+                        continue
                     if mark and mark not in seen_marks:
                         seen_marks.add(mark)
                         m["page_source"] = page_num
@@ -271,9 +304,70 @@ def parse_schedule_pages(pdf_path: str, schedule_pages: list[int]) -> list[dict]
                     elif mark in seen_marks:
                         rprint(f"  [dim]Skipping duplicate mark: {mark}[/]")
                 all_members.extend(new_members)
+                members_from_vision += len(new_members)
+                total_vision_calls += 1
                 rprint(f"  [green]+{len(new_members)} members[/] from {label}")
             except Exception as e:
                 rprint(f"  [red]Error on {label}: {e}[/]")
+
+    # ── FIX #3c: Quality guard — warn if extraction looks like hallucination ─
+    rprint("\n[bold cyan]Quality Guard:[/] Checking extraction quality...")
+    low_quality_count = 0
+    for m in all_members:
+        missing_count = sum(1 for k in ["width_mm", "depth_mm", "thickness_mm", "length_mm", "quantity"]
+                          if m.get(k) is None)
+        if missing_count >= 4:  # Missing almost all dimensional data
+            m["_quality_flag"] = "LOW: missing dimensions"
+            low_quality_count += 1
+    
+    if low_quality_count > len(all_members) * 0.5:
+        rprint(f"  [red]WARNING: {low_quality_count}/{len(all_members)} members have minimal dimensional data![/]")
+        rprint(f"  [red]  This likely indicates hallucination from non-schedule pages.[/]")
+        rprint(f"  [red]  Check scanner classification — schedule pages may be misidentified.[/]")
+        
+        # If EVERYTHING is low quality and from text-only, reject entirely
+        if members_from_vision == 0 and low_quality_count == len(all_members):
+            rprint(f"  [red]CRITICAL: All {len(all_members)} members are low quality from text-only extraction![/]")
+            rprint(f"  [red]  REJECTING extraction — no schedule data found in PDF.[/]")
+            rprint(f"  [red]  Manually verify: does this PDF have extractable schedule tables?[/]")
+            all_members = []
+    else:
+        rprint(f"  [green]OK:[/] {low_quality_count}/{len(all_members)} members flagged low quality (acceptable)")
+    
+    # ── FIX #3d: Remove low-quality members from final output ────────────
+    if low_quality_count > 0:
+        before = len(all_members)
+        all_members = [m for m in all_members if m.get("_quality_flag") is None]
+        after = len(all_members)
+        if before != after:
+            rprint(f"  [yellow]Filtered:[/] removed {before - after} low-quality members (keeping {after})")
+    
+    # ── FIX 2: Deterministic RC dimension post-process ────────────────────────
+    if all_members:
+        rprint("\n[bold cyan]RC Dimension Post-Process:[/] Deterministic extraction from schedule pages...")
+    else:
+        rprint("\n[yellow]RC Dimension Post-Process:[/] Skipped — no members to process")
+    try:
+        from core.pdf_utils import parse_rc_dimensions_from_schedule
+        rc_dims = parse_rc_dimensions_from_schedule(pdf_path, schedule_pages)
+        filled_count = 0
+        for m in all_members:
+            mark = m.get("mark", "")
+            material = m.get("material", "").upper()
+            # Only fill if dimensions are missing AND material is RC/concrete
+            is_rc = material in ("RC", "CONCRETE", "REINFORCED CONCRETE", "")
+            dims_missing = m.get("width_mm") is None and m.get("depth_mm") is None
+            if is_rc and dims_missing and mark in rc_dims:
+                dims = rc_dims[mark]
+                m["width_mm"] = dims.get("width_mm")
+                m["depth_mm"] = dims.get("depth_mm")
+                if "thickness_mm" in dims:
+                    m["thickness_mm"] = dims["thickness_mm"]
+                filled_count += 1
+                rprint(f"  [green]+[/] {mark}: {dims.get('width_mm')}x{dims.get('depth_mm')}mm")
+        rprint(f"  [bold]Filled {filled_count} RC member dimensions[/] (from {len(rc_dims)} parsed items)")
+    except Exception as e:
+        rprint(f"  [yellow]RC dimension post-process skipped: {e}[/]")
 
     Path(SCHEDULE_OUTPUT_FILE).parent.mkdir(parents=True, exist_ok=True)
     schedule = {"total_members": len(all_members), "members": all_members}

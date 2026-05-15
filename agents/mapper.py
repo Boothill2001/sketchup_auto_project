@@ -609,6 +609,12 @@ def run_mapper(pdf_path: str, plan_pages: list[int], elevation_pages: list[int])
 
     if not gx_data or not gy_data:
         rprint("[yellow]  No grid data in spatial_data.json — pixel-based placement, accuracy reduced[/]")
+    else:
+        grid_conf = spatial.get("grid_confidence", 0)
+        if grid_conf < 0.5:
+            rprint(f"[yellow]  Grid data present but low confidence ({grid_conf:.2f}) — Phase 0 fallback or text-layer, accuracy reduced[/]")
+        else:
+            rprint(f"[dim]  Grid data confidence: {grid_conf:.2f}[/]")
 
     analysis_context = build_plan_context()
 
@@ -890,18 +896,68 @@ def run_mapper(pdf_path: str, plan_pages: list[int], elevation_pages: list[int])
     if _dim_fixed:
         rprint(f"  Dim injection fix: {_dim_fixed} composed marks got dims from base marks")
 
-    # ── RC wall dimension defaults (if still None after all lookups) ────────────
-    _DEFAULT_WALL_T = 350  # mm, typical RC shear wall
+    # ── FIX 3: RC dimension fallback — lookup from schedule instead of hardcode ──
+    # Build schedule dimension lookup from the loaded schedule data
+    _schedule_dim_lookup: dict[str, dict] = {}
+    for _sm in raw_members:
+        _smark = _sm.get("mark", "")
+        if _smark and (_sm.get("width_mm") or _sm.get("depth_mm") or _sm.get("thickness_mm")):
+            _schedule_dim_lookup[_smark] = {
+                "width_mm": _sm.get("width_mm"),
+                "depth_mm": _sm.get("depth_mm"),
+                "thickness_mm": _sm.get("thickness_mm"),
+            }
+
+    # Fallback defaults — only used as absolute last resort if nothing in schedule
+    _DEFAULT_WALL_T = 350
     _DEFAULT_BEAM_W = 300
     _DEFAULT_BEAM_D = 300
     _DEFAULT_COL_W  = 400
     _DEFAULT_COL_D  = 400
+    _schedule_filled = 0
     _default_fixed = 0
+
+    import re as _dim_fxre
+    _composed_strip_rgx = _dim_fxre.compile(r'^(.+?)_(?:Base|FL\d+|L\d+)_')
+
     for _mm in final_mapped:
         _mat = str(_mm.get("material", "")).upper()
         if "RC" not in _mat and "CONCRETE" not in _mat:
             continue
         _typ = str(_mm.get("type", "")).lower()
+
+        # Try schedule lookup first (by exact mark, then by base mark for composed marks)
+        _mark = _mm.get("mark", "")
+        _dims = _schedule_dim_lookup.get(_mark)
+        if not _dims:
+            _base_match = _composed_strip_rgx.match(_mark)
+            if _base_match:
+                _dims = _schedule_dim_lookup.get(_base_match.group(1))
+
+        if _dims:
+            _w = _dims.get("width_mm")
+            _d = _dims.get("depth_mm")
+            _t = _dims.get("thickness_mm")
+            if _typ == "wall":
+                if _t and not _mm.get("thickness_mm"):
+                    _mm["thickness_mm"] = _t
+                    _schedule_filled += 1
+            elif _typ in ("beam", "column"):
+                if _w and not _mm.get("width_mm"):
+                    _mm["width_mm"] = _w
+                if _d and not _mm.get("depth_mm"):
+                    _mm["depth_mm"] = _d
+                if _w or _d:
+                    _schedule_filled += 1
+            elif _typ == "slab":
+                if _t and not _mm.get("thickness_mm"):
+                    _mm["thickness_mm"] = _t
+                    _schedule_filled += 1
+            # If dimensions were applied from schedule, skip hardcoded fallback
+            if (_mm.get("width_mm") or _mm.get("depth_mm") or _mm.get("thickness_mm")):
+                continue
+
+        # ── Absolute last resort: hardcoded defaults ────────────────────────────
         if _typ == "wall" and not _mm.get("thickness_mm"):
             _mm["thickness_mm"] = _DEFAULT_WALL_T
             _default_fixed += 1
@@ -918,8 +974,10 @@ def run_mapper(pdf_path: str, plan_pages: list[int], elevation_pages: list[int])
                 _mm["depth_mm"] = _DEFAULT_COL_D
             _default_fixed += 1
 
+    if _schedule_filled:
+        rprint(f"  Schedule dim lookup: {_schedule_filled} RC members got dims from schedule")
     if _default_fixed:
-        rprint(f"  RC defaults applied: {_default_fixed} members (wall t={_DEFAULT_WALL_T}, col {_DEFAULT_COL_W}x{_DEFAULT_COL_D})")
+        rprint(f"  Hardcoded defaults (last resort): {_default_fixed} members (wall t={_DEFAULT_WALL_T}, col {_DEFAULT_COL_W}x{_DEFAULT_COL_D})")
 
     # ── Final summary ──────────────────────────────────────────────────────────
     total = len(final_mapped)

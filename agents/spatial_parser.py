@@ -267,13 +267,23 @@ def _run_two_pass_grid(pdf_path: str, plan_pages: list[int], analysis_context: s
     # ── No pages processed ───────────────────────────────────────────────────
     if not page_results:
         rprint("  [red]2-pass grid extraction: no plan pages produced results[/]")
+        rprint("  [yellow]→ Falling back to text-layer grid extraction...[/]")
+        text_grids = _extract_grids_from_text(pdf_path, plan_pages)
+        if text_grids["grids_x"] or text_grids["grids_y"]:
+            rprint(f"  [green]Text-layer grid: X={len(text_grids['grids_x'])} Y={len(text_grids['grids_y'])}[/]")
+            return text_grids
         return {"grids_x": [], "grids_y": [], "confidence": 0.0}
 
     max_conf = max(r["confidence"] for r in page_results)
     if max_conf < 0.5:
         rprint(f"  [red]Grid extraction confidence too low on all pages "
-               f"(max={max_conf:.2f}) — returning empty grids (no fabrication)[/]")
-        # Still log in required format
+               f"(max={max_conf:.2f}) — trying text-layer fallback[/]")
+        text_grids = _extract_grids_from_text(pdf_path, plan_pages)
+        if text_grids["grids_x"] or text_grids["grids_y"]:
+            rprint(f"  [green]Text-layer fallback: X={len(text_grids['grids_x'])} Y={len(text_grids['grids_y'])}[/]")
+            # Merge: keep text grids, preserve any vision-pass labels/positions as supplementary
+            return text_grids
+        rprint(f"  [red]Text-layer fallback also empty — returning empty grids (no fabrication)[/]")
         rprint(f"[yellow]Grid extraction:[/] confidence={max_conf:.2f} | X: [] | Y: []")
         return {"grids_x": [], "grids_y": [], "confidence": max_conf}
 
@@ -311,6 +321,176 @@ def _run_two_pass_grid(pdf_path: str, plan_pages: list[int], analysis_context: s
            f"X: [{x_str}] | Y: [{y_str}]")
 
     return {"grids_x": grids_x, "grids_y": grids_y, "confidence": overall_conf}
+
+
+# ── Text layer grid extraction (fallback when vision fails) ──────────────────
+
+def _extract_grids_from_text(pdf_path: str, plan_pages: list) -> dict:
+    """
+    Extract grid labels and compute positions from text layer on plan pages.
+    Used as fallback when 2-pass vision extraction returns confidence < 0.5.
+    
+    Strategy:
+    1. Find all grid bubble labels (A,B,C / 1,2,3) via pdfplumber text extraction
+    2. Cluster by axis (X vs Y) based on position on page
+    3. Use dimension chain text or estimate from text positions
+    
+    Returns: {"grids_x": [...], "grids_y": [...], "confidence": float}
+    """
+    result = {"grids_x": [], "grids_y": [], "confidence": 0.0}
+    
+    try:
+        import pdfplumber
+        import re
+        with pdfplumber.open(pdf_path) as pdf:
+            n = len(pdf.pages)
+            
+            for pg_i in plan_pages[:4]:
+                if pg_i >= n:
+                    continue
+                page = pdf.pages[pg_i]
+                pw, ph = float(page.width), float(page.height)
+                words = page.extract_words()
+                
+                # ── Strategy A: Find grid bubble labels (single A-Z, 1-99 at page borders) ─
+                x_candidates = {}  # label -> list of x positions
+                y_candidates = {}  # label -> list of y positions
+                
+                for w in words:
+                    t = w["text"].strip()
+                    cx = (w["x0"] + w["x1"]) / 2
+                    cy = (w["top"] + w["bottom"]) / 2
+                    
+                    # Grid labels: single character (A-Z, 1-99) near page border
+                    if re.match(r'^[A-Za-z]$', t):
+                        # Near top or bottom border → X-axis grid label
+                        if cy < ph * 0.15 or cy > ph * 0.85:
+                            x_candidates.setdefault(t.upper(), []).append(cx)
+                        # Near left or right border → Y-axis grid label
+                        elif cx < pw * 0.15 or cx > pw * 0.85:
+                            y_candidates.setdefault(t.upper(), []).append(cx)
+                    elif re.match(r'^\d{1,2}$', t):
+                        if cy < ph * 0.15 or cy > ph * 0.85:
+                            x_candidates.setdefault(t, []).append(cx)
+                        elif cx < pw * 0.15 or cx > pw * 0.85:
+                            y_candidates.setdefault(t, []).append(cy)
+                    # Also check Vietnamese "Trục A"
+                    elif t.upper().startswith("TRỤC") or t.upper().startswith("TRUC"):
+                        # Next word might be the label
+                        pass
+                
+                # ── Determine which axis has letters vs numbers ─
+                x_has_letters = any(re.match(r'^[A-Z]$', k) for k in x_candidates)
+                y_has_letters = any(re.match(r'^[A-Z]$', k) for k in y_candidates)
+                
+                # Swap if letters are on wrong axis (convention: X=numbers or letters)
+                if x_has_letters and not y_has_letters and not any(re.match(r'^\d+$', k) for k in y_candidates):
+                    # Letters on top/bottom: that's the X axis (or Y depending)
+                    pass  # Accept as-is
+                
+                # ── Build grids from candidates ─
+                if x_candidates and len(x_candidates) >= 2:
+                    # Estimate positions from text x-coordinates
+                    avg_xs = {label: sum(pxs)/len(pxs) for label, pxs in x_candidates.items()}
+                    sorted_x = sorted(avg_xs.items(), key=lambda kv: kv[1])
+                    
+                    # Try to find dimension chain text on this page
+                    dim_chain_x = _extract_dimension_chain_from_text(words, is_x_axis=True, page_width=pw, page_height=ph)
+                    
+                    if dim_chain_x and len(dim_chain_x) >= len(sorted_x) - 1:
+                        # Use dimension chain intervals for mm positions
+                        positions = [0.0]
+                        for d in dim_chain_x[:len(sorted_x)-1]:
+                            positions.append(positions[-1] + d)
+                        for i, (label, px) in enumerate(sorted_x):
+                            if i < len(positions):
+                                result["grids_x"].append({"name": label, "x_mm": int(round(positions[i]))})
+                    else:
+                        # Estimate from text positions: scale to typical floor plan
+                        x_px_values = [px for _, px in sorted_x]
+                        px_range = max(x_px_values) - min(x_px_values) if len(x_px_values) > 1 else 1
+                        mm_per_px = _estimate_mm_per_pixel(pw, ph)
+                        for label, px in sorted_x:
+                            x_mm = int(round((px - min(x_px_values)) / px_range * px_range * mm_per_px))
+                            result["grids_x"].append({"name": label, "x_mm": x_mm})
+                
+                if y_candidates and len(y_candidates) >= 2:
+                    avg_ys = {label: sum(pys)/len(pys) for label, pys in y_candidates.items()}
+                    sorted_y = sorted(avg_ys.items(), key=lambda kv: kv[1])
+                    
+                    dim_chain_y = _extract_dimension_chain_from_text(words, is_x_axis=False, page_width=pw, page_height=ph)
+                    
+                    if dim_chain_y and len(dim_chain_y) >= len(sorted_y) - 1:
+                        positions = [0.0]
+                        for d in dim_chain_y[:len(sorted_y)-1]:
+                            positions.append(positions[-1] + d)
+                        for i, (label, py) in enumerate(sorted_y):
+                            if i < len(positions):
+                                result["grids_y"].append({"name": label, "y_mm": int(round(positions[i]))})
+                    else:
+                        y_px_values = [py for _, py in sorted_y]
+                        px_range = max(y_px_values) - min(y_px_values) if len(y_px_values) > 1 else 1
+                        mm_per_px = _estimate_mm_per_pixel(pw, ph)
+                        for label, py in sorted_y:
+                            y_mm = int(round((py - min(y_px_values)) / px_range * px_range * mm_per_px))
+                            result["grids_y"].append({"name": label, "y_mm": y_mm})
+                
+                if result["grids_x"] or result["grids_y"]:
+                    result["confidence"] = 0.35  # Mark as low-confidence text extraction
+                    break  # Found grids on first viable page
+                    
+    except Exception:
+        pass
+    
+    return result
+
+
+def _extract_dimension_chain_from_text(words: list, is_x_axis: bool, page_width: float, page_height: float) -> list:
+    """
+    Find dimension chain numbers in text layer.
+    Looks for consecutive numbers (e.g. 6000, 7500, 6000) near page borders.
+    """
+    dims = []
+    try:
+        import re
+        
+        # Look for 3-5 digit numbers near page borders (typical grid dimensions in mm)
+        border_words = []
+        for w in words:
+            t = w["text"].strip()
+            cy = (w["top"] + w["bottom"]) / 2
+            cx = (w["x0"] + w["x1"]) / 2
+            
+            if is_x_axis and (cy < page_height * 0.12 or cy > page_height * 0.88):
+                if re.match(r'^\d{3,5}$', t):
+                    border_words.append((cx, int(t)))
+            elif not is_x_axis and (cx < page_width * 0.12 or cx > page_width * 0.88):
+                if re.match(r'^\d{3,5}$', t):
+                    border_words.append((cy, int(t)))
+        
+        if border_words:
+            border_words.sort(key=lambda x: x[0])
+            # Take consecutive series (ignore outliers)
+            dims = [v for _, v in border_words]
+            
+            # Filter: typical grid spacing is 2000-15000 mm
+            dims = [d for d in dims if 2000 <= d <= 15000]
+            
+    except Exception:
+        pass
+    
+    return dims
+
+
+def _estimate_mm_per_pixel(page_w: float, page_h: float) -> float:
+    """
+    Estimate mm per pixel for a structural drawing page.
+    Typical structural plan: A1 sheet (841x594mm) at 100-200 scale.
+    Returns conservative estimate.
+    """
+    # Assume the page represents ~30-50m of building
+    typical_mm_width = 40000  # 40m building width
+    return typical_mm_width / max(page_w, 1)
 
 
 # ── Text layer extraction (levels only — no fake grid) ──────────────────────
@@ -443,6 +623,28 @@ def parse_spatial_pages(
         grid_conf = grid_result["confidence"]
     else:
         rprint("[yellow]  No plan pages found — grid extraction skipped[/]")
+
+    # FIX v6: Phase 0 fallback — use grid labels from PDF analysis when vision+text both fail
+    if (not grids_x or not grids_y) and grid_conf < 0.5:
+        try:
+            from core.analysis_context import load_analysis_dict
+            analysis = load_analysis_dict()
+            pdf_labels_x = analysis.get("grid_labels_x", [])
+            pdf_labels_y = analysis.get("grid_labels_y", [])
+            if pdf_labels_x and pdf_labels_y:
+                typical_spacing = 8000  # 8m typical grid
+                grids_x = [{"name": str(lbl), "x_mm": i * typical_spacing}
+                           for i, lbl in enumerate(pdf_labels_x)]
+                grids_y = [{"name": str(lbl), "y_mm": i * typical_spacing}
+                           for i, lbl in enumerate(pdf_labels_y)]
+                grid_conf = 0.35  # low confidence (estimated)
+                rprint(f"[yellow]Phase 0 fallback:[/] using PDF analysis grid labels "
+                       f"X={pdf_labels_x} Y={pdf_labels_y} "
+                       f"with estimated {typical_spacing}mm spacing (confidence={grid_conf})")
+            else:
+                rprint("[red]Phase 0 fallback:[/] no grid labels in analysis either — grids remain empty[/]")
+        except Exception as e:
+            rprint(f"[red]Phase 0 fallback failed: {e}")
 
     # ── Elevation pages: LLM vision ──────────────────────────────────────────
     elev_results: list[dict] = []

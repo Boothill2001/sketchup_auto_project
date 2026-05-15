@@ -34,66 +34,14 @@ _concrete_mat = _mats["Concrete"] || _mats.add("Concrete")
 _concrete_mat.color = Sketchup::Color.new(180, 175, 165)
 
 
-# ---- CH13c | CH13c | beam ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP CH13c: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [65, 0], [65, 125], [0, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "CH13c")
-    _grp.set_attribute("IFC", "Section", "CH13c")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "CH13c"
-  end
-rescue => e
-  puts "SKIP CH13c: #{e.message}"
-end
-
-# ---- RB16a | RB16a | brace ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP RB16a: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-25, 0], [25, 0], [25, 16], [-25, 16]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Braces")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "RB16a")
-    _grp.set_attribute("IFC", "Section", "RB16a")
-    _grp.set_attribute("IFC", "Type",    "brace")
-    _grp.name = "RB16a"
-  end
-rescue => e
-  puts "SKIP RB16a: #{e.message}"
-end
-
-# ---- C1_Base_FL1 |  | column ----
+# ---- RC_PILE_GENERIC_Base_FL1 | Circular | column ----
 begin
   _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
-  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP C1_Base_FL1: zero-length (check mapper coords)"
+    puts "SKIP RC_PILE_GENERIC_Base_FL1: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
@@ -101,25 +49,25 @@ begin
     _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C1_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Mark",    "RC_PILE_GENERIC_Base_FL1")
+    _grp.set_attribute("IFC", "Section", "Circular")
     _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C1_Base_FL1"
+    _grp.name = "RC_PILE_GENERIC_Base_FL1"
   end
 rescue => e
-  puts "SKIP C1_Base_FL1: #{e.message}"
+  puts "SKIP RC_PILE_GENERIC_Base_FL1: #{e.message}"
 end
 
-# ---- C1_FL1_FL2 |  | column ----
+# ---- RC_PILE_GENERIC_FL1_FL2 | Circular | column ----
 begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 0.mm, 7000.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP C1_FL1_FL2: zero-length (check mapper coords)"
+    puts "SKIP RC_PILE_GENERIC_FL1_FL2: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
@@ -127,25 +75,25 @@ begin
     _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C1_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Mark",    "RC_PILE_GENERIC_FL1_FL2")
+    _grp.set_attribute("IFC", "Section", "Circular")
     _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C1_FL1_FL2"
+    _grp.name = "RC_PILE_GENERIC_FL1_FL2"
   end
 rescue => e
-  puts "SKIP C1_FL1_FL2: #{e.message}"
+  puts "SKIP RC_PILE_GENERIC_FL1_FL2: #{e.message}"
 end
 
-# ---- C1_FL2_FL3 |  | column ----
+# ---- RC_PILE_GENERIC_FL2_FL3 | Circular | column ----
 begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(0.mm, 0.mm, 10500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP C1_FL2_FL3: zero-length (check mapper coords)"
+    puts "SKIP RC_PILE_GENERIC_FL2_FL3: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
@@ -153,25 +101,25 @@ begin
     _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C1_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Mark",    "RC_PILE_GENERIC_FL2_FL3")
+    _grp.set_attribute("IFC", "Section", "Circular")
     _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C1_FL2_FL3"
+    _grp.name = "RC_PILE_GENERIC_FL2_FL3"
   end
 rescue => e
-  puts "SKIP C1_FL2_FL3: #{e.message}"
+  puts "SKIP RC_PILE_GENERIC_FL2_FL3: #{e.message}"
 end
 
-# ---- C1_FL3_Roof |  | column ----
+# ---- RC_PILE_GENERIC_FL3_Roof | Circular | column ----
 begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 0.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP C1_FL3_Roof: zero-length (check mapper coords)"
+    puts "SKIP RC_PILE_GENERIC_FL3_Roof: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
@@ -179,1741 +127,259 @@ begin
     _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C1_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Mark",    "RC_PILE_GENERIC_FL3_Roof")
+    _grp.set_attribute("IFC", "Section", "Circular")
     _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C1_FL3_Roof"
+    _grp.name = "RC_PILE_GENERIC_FL3_Roof"
   end
 rescue => e
-  puts "SKIP C1_FL3_Roof: #{e.message}"
+  puts "SKIP RC_PILE_GENERIC_FL3_Roof: #{e.message}"
 end
 
-# ---- C2_Base_FL1 |  | column ----
+# ---- RC_COLUMN_RECT_GENERIC_Base_FL1 | Rectangular | column ----
 begin
-  _sp  = Geom::Point3d.new(4200.mm, 0.mm, 0.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP C2_Base_FL1: zero-length (check mapper coords)"
+    puts "SKIP RC_COLUMN_RECT_GENERIC_Base_FL1: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
+    _raw = [[-150, -300], [150, -300], [150, 300], [-150, 300]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C2_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Mark",    "RC_COLUMN_RECT_GENERIC_Base_FL1")
+    _grp.set_attribute("IFC", "Section", "Rectangular")
     _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C2_Base_FL1"
+    _grp.name = "RC_COLUMN_RECT_GENERIC_Base_FL1"
   end
 rescue => e
-  puts "SKIP C2_Base_FL1: #{e.message}"
+  puts "SKIP RC_COLUMN_RECT_GENERIC_Base_FL1: #{e.message}"
 end
 
-# ---- C2_FL1_FL2 |  | column ----
+# ---- RC_COLUMN_RECT_GENERIC_FL1_FL2 | Rectangular | column ----
 begin
-  _sp  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 7000.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP C2_FL1_FL2: zero-length (check mapper coords)"
+    puts "SKIP RC_COLUMN_RECT_GENERIC_FL1_FL2: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
+    _raw = [[-150, -300], [150, -300], [150, 300], [-150, 300]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C2_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Mark",    "RC_COLUMN_RECT_GENERIC_FL1_FL2")
+    _grp.set_attribute("IFC", "Section", "Rectangular")
     _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C2_FL1_FL2"
+    _grp.name = "RC_COLUMN_RECT_GENERIC_FL1_FL2"
   end
 rescue => e
-  puts "SKIP C2_FL1_FL2: #{e.message}"
+  puts "SKIP RC_COLUMN_RECT_GENERIC_FL1_FL2: #{e.message}"
 end
 
-# ---- C2_FL2_FL3 |  | column ----
+# ---- RC_COLUMN_RECT_GENERIC_FL2_FL3 | Rectangular | column ----
 begin
-  _sp  = Geom::Point3d.new(4200.mm, 0.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 10500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP C2_FL2_FL3: zero-length (check mapper coords)"
+    puts "SKIP RC_COLUMN_RECT_GENERIC_FL2_FL3: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
+    _raw = [[-150, -300], [150, -300], [150, 300], [-150, 300]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C2_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Mark",    "RC_COLUMN_RECT_GENERIC_FL2_FL3")
+    _grp.set_attribute("IFC", "Section", "Rectangular")
     _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C2_FL2_FL3"
+    _grp.name = "RC_COLUMN_RECT_GENERIC_FL2_FL3"
   end
 rescue => e
-  puts "SKIP C2_FL2_FL3: #{e.message}"
+  puts "SKIP RC_COLUMN_RECT_GENERIC_FL2_FL3: #{e.message}"
 end
 
-# ---- C2_FL3_Roof |  | column ----
+# ---- RC_COLUMN_RECT_GENERIC_FL3_Roof | Rectangular | column ----
 begin
-  _sp  = Geom::Point3d.new(4200.mm, 0.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 13500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP C2_FL3_Roof: zero-length (check mapper coords)"
+    puts "SKIP RC_COLUMN_RECT_GENERIC_FL3_Roof: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
+    _raw = [[-150, -300], [150, -300], [150, 300], [-150, 300]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C2_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
+    _grp.set_attribute("IFC", "Mark",    "RC_COLUMN_RECT_GENERIC_FL3_Roof")
+    _grp.set_attribute("IFC", "Section", "Rectangular")
     _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C2_FL3_Roof"
+    _grp.name = "RC_COLUMN_RECT_GENERIC_FL3_Roof"
   end
 rescue => e
-  puts "SKIP C2_FL3_Roof: #{e.message}"
+  puts "SKIP RC_COLUMN_RECT_GENERIC_FL3_Roof: #{e.message}"
 end
 
-# ---- C3_Base_FL1 |  | column ----
+# ---- RC_BEAM_RECT_GENERIC | Rectangular | beam ----
 begin
-  _sp  = Geom::Point3d.new(9150.mm, 0.mm, 0.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 0.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP C3_Base_FL1: zero-length (check mapper coords)"
+    puts "SKIP RC_BEAM_RECT_GENERIC: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
+    _raw = [[-150, -300], [150, -300], [150, 300], [-150, 300]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C3_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C3_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C3_Base_FL1: #{e.message}"
-end
-
-# ---- C3_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 0.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C3_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C3_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C3_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C3_FL1_FL2: #{e.message}"
-end
-
-# ---- C3_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 0.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 0.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C3_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C3_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C3_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C3_FL2_FL3: #{e.message}"
-end
-
-# ---- C3_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 0.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 0.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C3_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C3_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C3_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C3_FL3_Roof: #{e.message}"
-end
-
-# ---- C4_Base_FL1 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 0.mm, 0.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C4_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C4_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C4_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C4_Base_FL1: #{e.message}"
-end
-
-# ---- C4_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 0.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C4_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C4_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C4_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C4_FL1_FL2: #{e.message}"
-end
-
-# ---- C4_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 0.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 0.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C4_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C4_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C4_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C4_FL2_FL3: #{e.message}"
-end
-
-# ---- C4_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 0.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 0.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C4_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C4_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C4_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C4_FL3_Roof: #{e.message}"
-end
-
-# ---- C5_Base_FL1 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 5912.mm, 0.mm)
-  _ep  = Geom::Point3d.new(0.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C5_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C5_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C5_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C5_Base_FL1: #{e.message}"
-end
-
-# ---- C5_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 5912.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C5_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C5_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C5_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C5_FL1_FL2: #{e.message}"
-end
-
-# ---- C5_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 5912.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(0.mm, 5912.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C5_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C5_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C5_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C5_FL2_FL3: #{e.message}"
-end
-
-# ---- C5_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 5912.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 5912.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C5_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C5_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C5_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C5_FL3_Roof: #{e.message}"
-end
-
-# ---- C6_Base_FL1 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 5912.mm, 0.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C6_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C6_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C6_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C6_Base_FL1: #{e.message}"
-end
-
-# ---- C6_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 5912.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C6_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C6_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C6_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C6_FL1_FL2: #{e.message}"
-end
-
-# ---- C6_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 5912.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 5912.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C6_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C6_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C6_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C6_FL2_FL3: #{e.message}"
-end
-
-# ---- C6_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 5912.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 5912.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C6_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C6_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C6_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C6_FL3_Roof: #{e.message}"
-end
-
-# ---- C7_Base_FL1 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 5912.mm, 0.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C7_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C7_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C7_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C7_Base_FL1: #{e.message}"
-end
-
-# ---- C7_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 5912.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C7_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C7_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C7_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C7_FL1_FL2: #{e.message}"
-end
-
-# ---- C7_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 5912.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 5912.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C7_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C7_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C7_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C7_FL2_FL3: #{e.message}"
-end
-
-# ---- C7_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 5912.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 5912.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C7_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C7_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C7_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C7_FL3_Roof: #{e.message}"
-end
-
-# ---- C8_Base_FL1 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 5912.mm, 0.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C8_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C8_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C8_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C8_Base_FL1: #{e.message}"
-end
-
-# ---- C8_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 5912.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C8_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C8_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C8_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C8_FL1_FL2: #{e.message}"
-end
-
-# ---- C8_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 5912.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 5912.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C8_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C8_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C8_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C8_FL2_FL3: #{e.message}"
-end
-
-# ---- C8_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 5912.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 5912.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C8_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C8_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C8_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C8_FL3_Roof: #{e.message}"
-end
-
-# ---- C10_Base_FL1 | 400x400 | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 11825.mm, 0.mm)
-  _ep  = Geom::Point3d.new(0.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C10_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C10_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "400x400")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C10_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C10_Base_FL1: #{e.message}"
-end
-
-# ---- C10_FL1_FL2 | 400x400 | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 11825.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C10_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C10_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "400x400")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C10_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C10_FL1_FL2: #{e.message}"
-end
-
-# ---- C10_FL2_FL3 | 400x400 | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 11825.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(0.mm, 11825.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C10_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C10_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "400x400")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C10_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C10_FL2_FL3: #{e.message}"
-end
-
-# ---- C10_FL3_Roof | 400x400 | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 11825.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 11825.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C10_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C10_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "400x400")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C10_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C10_FL3_Roof: #{e.message}"
-end
-
-# ---- C11_Base_FL1 | 400x350 | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 11825.mm, 0.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C11_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -175], [200, -175], [200, 175], [-200, 175]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C11_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "400x350")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C11_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C11_Base_FL1: #{e.message}"
-end
-
-# ---- C11_FL1_FL2 | 400x350 | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 11825.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C11_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -175], [200, -175], [200, 175], [-200, 175]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C11_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "400x350")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C11_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C11_FL1_FL2: #{e.message}"
-end
-
-# ---- C11_FL2_FL3 | 400x350 | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 11825.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 11825.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C11_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -175], [200, -175], [200, 175], [-200, 175]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C11_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "400x350")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C11_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C11_FL2_FL3: #{e.message}"
-end
-
-# ---- C11_FL3_Roof | 400x350 | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 11825.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 11825.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C11_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -175], [200, -175], [200, 175], [-200, 175]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C11_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "400x350")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C11_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C11_FL3_Roof: #{e.message}"
-end
-
-# ---- C12_Base_FL1 | 400x400 | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 5912.mm, 0.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C12_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C12_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "400x400")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C12_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C12_Base_FL1: #{e.message}"
-end
-
-# ---- C12_FL1_FL2 | 400x400 | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 5912.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C12_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C12_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "400x400")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C12_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C12_FL1_FL2: #{e.message}"
-end
-
-# ---- C12_FL2_FL3 | 400x400 | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 5912.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 5912.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C12_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C12_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "400x400")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C12_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C12_FL2_FL3: #{e.message}"
-end
-
-# ---- C12_FL3_Roof | 400x400 | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 5912.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 5912.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C12_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C12_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "400x400")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C12_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C12_FL3_Roof: #{e.message}"
-end
-
-# ---- C13_Base_FL1 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 11825.mm, 0.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C13_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C13_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C13_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C13_Base_FL1: #{e.message}"
-end
-
-# ---- C13_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 11825.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C13_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C13_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C13_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C13_FL1_FL2: #{e.message}"
-end
-
-# ---- C13_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 11825.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 11825.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C13_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C13_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C13_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C13_FL2_FL3: #{e.message}"
-end
-
-# ---- C13_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 11825.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 11825.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C13_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C13_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C13_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C13_FL3_Roof: #{e.message}"
-end
-
-# ---- C14_Base_FL1 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 17738.mm, 0.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C14_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C14_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C14_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C14_Base_FL1: #{e.message}"
-end
-
-# ---- C14_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 17738.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C14_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C14_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C14_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C14_FL1_FL2: #{e.message}"
-end
-
-# ---- C14_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 17738.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 17738.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C14_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C14_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C14_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C14_FL2_FL3: #{e.message}"
-end
-
-# ---- C14_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 17738.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 17738.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C14_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C14_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C14_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C14_FL3_Roof: #{e.message}"
-end
-
-# ---- C15_Base_FL1 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 17738.mm, 0.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C15_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C15_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C15_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C15_Base_FL1: #{e.message}"
-end
-
-# ---- C15_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 17738.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C15_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C15_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C15_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C15_FL1_FL2: #{e.message}"
-end
-
-# ---- C15_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 17738.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 17738.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C15_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C15_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C15_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C15_FL2_FL3: #{e.message}"
-end
-
-# ---- C15_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 17738.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 17738.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C15_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C15_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C15_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C15_FL3_Roof: #{e.message}"
-end
-
-# ---- C16_Base_FL1 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 17738.mm, 0.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C16_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C16_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C16_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C16_Base_FL1: #{e.message}"
-end
-
-# ---- C16_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 17738.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C16_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C16_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C16_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C16_FL1_FL2: #{e.message}"
-end
-
-# ---- C16_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 17738.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 17738.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C16_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C16_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C16_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C16_FL2_FL3: #{e.message}"
-end
-
-# ---- C16_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 17738.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 17738.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C16_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C16_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C16_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C16_FL3_Roof: #{e.message}"
-end
-
-# ---- CH* 35c (Stair 04 - 400mm) | CH* 35c | beam ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP CH* 35c (Stair 04 - 400mm): zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-25, 0], [25, 0], [25, 35], [-25, 35]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "CH* 35c (Stair 04 - 400mm)")
-    _grp.set_attribute("IFC", "Section", "CH* 35c")
+    _grp.set_attribute("IFC", "Mark",    "RC_BEAM_RECT_GENERIC")
+    _grp.set_attribute("IFC", "Section", "Rectangular")
     _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "CH* 35c (Stair 04 - 400mm)"
+    _grp.name = "RC_BEAM_RECT_GENERIC"
   end
 rescue => e
-  puts "SKIP CH* 35c (Stair 04 - 400mm): #{e.message}"
+  puts "SKIP RC_BEAM_RECT_GENERIC: #{e.message}"
 end
 
-# ---- CH* 35c (Stair 04 - 180mm) | CH* 35c | beam ----
+# ---- STL_COLUMN_CHS_GENERIC_Base_FL1 | CHS | column ----
 begin
-  _sp  = Geom::Point3d.new(0.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 17738.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP CH* 35c (Stair 04 - 180mm): zero-length (check mapper coords)"
+    puts "SKIP STL_COLUMN_CHS_GENERIC_Base_FL1: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-25, 0], [25, 0], [25, 35], [-25, 35]]
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "CH* 35c (Stair 04 - 180mm)")
-    _grp.set_attribute("IFC", "Section", "CH* 35c")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "CH* 35c (Stair 04 - 180mm)"
+    _grp.set_attribute("IFC", "Mark",    "STL_COLUMN_CHS_GENERIC_Base_FL1")
+    _grp.set_attribute("IFC", "Section", "CHS")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "STL_COLUMN_CHS_GENERIC_Base_FL1"
   end
 rescue => e
-  puts "SKIP CH* 35c (Stair 04 - 180mm): #{e.message}"
+  puts "SKIP STL_COLUMN_CHS_GENERIC_Base_FL1: #{e.message}"
 end
 
-# ---- LW6 | LW6 | beam ----
+# ---- STL_COLUMN_CHS_GENERIC_FL1_FL2 | CHS | column ----
 begin
-  _sp  = Geom::Point3d.new(4200.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 11825.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP LW6: zero-length (check mapper coords)"
+    puts "SKIP STL_COLUMN_CHS_GENERIC_FL1_FL2: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "LW6")
-    _grp.set_attribute("IFC", "Section", "LW6")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "LW6"
+    _grp.set_attribute("IFC", "Mark",    "STL_COLUMN_CHS_GENERIC_FL1_FL2")
+    _grp.set_attribute("IFC", "Section", "CHS")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "STL_COLUMN_CHS_GENERIC_FL1_FL2"
   end
 rescue => e
-  puts "SKIP LW6: #{e.message}"
+  puts "SKIP STL_COLUMN_CHS_GENERIC_FL1_FL2: #{e.message}"
 end
 
-# ---- LW3 (05-) | LW3 | beam ----
+# ---- STL_COLUMN_CHS_GENERIC_FL2_FL3 | CHS | column ----
 begin
-  _sp  = Geom::Point3d.new(4200.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 11825.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP LW3 (05-): zero-length (check mapper coords)"
+    puts "SKIP STL_COLUMN_CHS_GENERIC_FL2_FL3: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "LW3 (05-)")
-    _grp.set_attribute("IFC", "Section", "LW3")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "LW3 (05-)"
+    _grp.set_attribute("IFC", "Mark",    "STL_COLUMN_CHS_GENERIC_FL2_FL3")
+    _grp.set_attribute("IFC", "Section", "CHS")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "STL_COLUMN_CHS_GENERIC_FL2_FL3"
   end
 rescue => e
-  puts "SKIP LW3 (05-): #{e.message}"
+  puts "SKIP STL_COLUMN_CHS_GENERIC_FL2_FL3: #{e.message}"
 end
 
-# ---- LW1 | LW1 | beam ----
+# ---- STL_COLUMN_CHS_GENERIC_FL3_Roof | CHS | column ----
 begin
-  _sp  = Geom::Point3d.new(0.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 11825.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP LW1: zero-length (check mapper coords)"
+    puts "SKIP STL_COLUMN_CHS_GENERIC_FL3_Roof: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
+    _raw = [[-50, 0], [50, 0], [50, 100], [-50, 100]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "LW1")
-    _grp.set_attribute("IFC", "Section", "LW1")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "LW1"
+    _grp.set_attribute("IFC", "Mark",    "STL_COLUMN_CHS_GENERIC_FL3_Roof")
+    _grp.set_attribute("IFC", "Section", "CHS")
+    _grp.set_attribute("IFC", "Type",    "column")
+    _grp.name = "STL_COLUMN_CHS_GENERIC_FL3_Roof"
   end
 rescue => e
-  puts "SKIP LW1: #{e.message}"
+  puts "SKIP STL_COLUMN_CHS_GENERIC_FL3_Roof: #{e.message}"
 end
 
-# ---- 4WL | 4WL | beam ----
+# ---- STL_BEAM_CHS_GENERIC | CHS | beam ----
 begin
-  _sp  = Geom::Point3d.new(13350.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(17550.mm, 11825.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP 4WL: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "4WL")
-    _grp.set_attribute("IFC", "Section", "4WL")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "4WL"
-  end
-rescue => e
-  puts "SKIP 4WL: #{e.message}"
-end
-
-# ---- 5WL | 5WL | beam ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(17550.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP 5WL: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "5WL")
-    _grp.set_attribute("IFC", "Section", "5WL")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "5WL"
-  end
-rescue => e
-  puts "SKIP 5WL: #{e.message}"
-end
-
-# ---- 7WL | 7WL | beam ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(17550.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP 7WL: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "7WL")
-    _grp.set_attribute("IFC", "Section", "7WL")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "7WL"
-  end
-rescue => e
-  puts "SKIP 7WL: #{e.message}"
-end
-
-# ---- 2WL | 2WL | beam ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(17550.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP 2WL: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "2WL")
-    _grp.set_attribute("IFC", "Section", "2WL")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "2WL"
-  end
-rescue => e
-  puts "SKIP 2WL: #{e.message}"
-end
-
-# ---- W1 (U) |  | wall ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP W1 (U): zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [350, 0], [350, 1], [0, 1]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Walls")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "W1 (U)")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "wall")
-    _grp.name = "W1 (U)"
-  end
-rescue => e
-  puts "SKIP W1 (U): #{e.message}"
-end
-
-# ---- FB |  | plate ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP FB: zero-length (check mapper coords)"
+    puts "SKIP STL_BEAM_CHS_GENERIC: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
@@ -1921,2017 +387,145 @@ begin
     _raw = [[-25, 0], [25, 0], [25, 100], [-25, 100]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Plates")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
     _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "FB")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "plate")
-    _grp.name = "FB"
-  end
-rescue => e
-  puts "SKIP FB: #{e.message}"
-end
-
-# ---- W2 (U) |  | wall ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP W2 (U): zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [350, 0], [350, 1], [0, 1]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Walls")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "W2 (U)")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "wall")
-    _grp.name = "W2 (U)"
-  end
-rescue => e
-  puts "SKIP W2 (U): #{e.message}"
-end
-
-# ---- LW3 | x300 | beam ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP LW3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "LW3")
-    _grp.set_attribute("IFC", "Section", "x300")
+    _grp.set_attribute("IFC", "Mark",    "STL_BEAM_CHS_GENERIC")
+    _grp.set_attribute("IFC", "Section", "CHS")
     _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "LW3"
+    _grp.name = "STL_BEAM_CHS_GENERIC"
   end
 rescue => e
-  puts "SKIP LW3: #{e.message}"
+  puts "SKIP STL_BEAM_CHS_GENERIC: #{e.message}"
 end
 
-# ---- CH32a | CH32a | beam ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP CH32a: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [90, 0], [90, 320], [0, 320]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "CH32a")
-    _grp.set_attribute("IFC", "Section", "CH32a")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "CH32a"
-  end
-rescue => e
-  puts "SKIP CH32a: #{e.message}"
-end
-
-# ---- SH10e | SH10e | beam ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP SH10e: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-37.5, -50], [37.5, -50], [37.5, 50], [-37.5, 50]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "SH10e")
-    _grp.set_attribute("IFC", "Section", "SH10e")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "SH10e"
-  end
-rescue => e
-  puts "SKIP SH10e: #{e.message}"
-end
-
-# ---- UB20a | UB20a | beam ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP UB20a: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-66.5, 0], [66.5, 0], [66.5, 203], [-66.5, 203]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "UB20a")
-    _grp.set_attribute("IFC", "Section", "UB20a")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "UB20a"
-  end
-rescue => e
-  puts "SKIP UB20a: #{e.message}"
-end
-
-# ---- UB36c | UB36c | beam ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP UB36c: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-85.5, 0], [85.5, 0], [85.5, 356], [-85.5, 356]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "UB36c")
-    _grp.set_attribute("IFC", "Section", "UB36c")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "UB36c"
-  end
-rescue => e
-  puts "SKIP UB36c: #{e.message}"
-end
-
-# ---- b03HS | CH32a | beam ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP b03HS: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [90, 0], [90, 320], [0, 320]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "b03HS")
-    _grp.set_attribute("IFC", "Section", "CH32a")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "b03HS"
-  end
-rescue => e
-  puts "SKIP b03HS: #{e.message}"
-end
-
-# ---- b04HC | CH32a | beam ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP b04HC: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [90, 0], [90, 320], [0, 320]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "b04HC")
-    _grp.set_attribute("IFC", "Section", "CH32a")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "b04HC"
-  end
-rescue => e
-  puts "SKIP b04HC: #{e.message}"
-end
-
-# ---- c53 | SH10e | beam ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP c53: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-37.5, -50], [37.5, -50], [37.5, 50], [-37.5, 50]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "c53")
-    _grp.set_attribute("IFC", "Section", "SH10e")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "c53"
-  end
-rescue => e
-  puts "SKIP c53: #{e.message}"
-end
-
-# ---- c53*HC | SH10e | beam ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP c53*HC: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-37.5, -50], [37.5, -50], [37.5, 50], [-37.5, 50]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _steel_mat
-    _grp.set_attribute("IFC", "Mark",    "c53*HC")
-    _grp.set_attribute("IFC", "Section", "SH10e")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "c53*HC"
-  end
-rescue => e
-  puts "SKIP c53*HC: #{e.message}"
-end
-
-# ---- N12-200 CLOSED TIES | N12-200 | other ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 5912.mm, 0.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP N12-200 CLOSED TIES: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "N12-200 CLOSED TIES")
-    _grp.set_attribute("IFC", "Section", "N12-200")
-    _grp.set_attribute("IFC", "Type",    "other")
-    _grp.name = "N12-200 CLOSED TIES"
-  end
-rescue => e
-  puts "SKIP N12-200 CLOSED TIES: #{e.message}"
-end
-
-# ---- TRIMMERS | N16 MINIMUM | other ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(17550.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP TRIMMERS: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "TRIMMERS")
-    _grp.set_attribute("IFC", "Section", "N16 MINIMUM")
-    _grp.set_attribute("IFC", "Type",    "other")
-    _grp.name = "TRIMMERS"
-  end
-rescue => e
-  puts "SKIP TRIMMERS: #{e.message}"
-end
-
-# ---- HB1 | HB1 | beam ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP HB1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "HB1")
-    _grp.set_attribute("IFC", "Section", "HB1")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "HB1"
-  end
-rescue => e
-  puts "SKIP HB1: #{e.message}"
-end
-
-# ---- HB2 | HB2 | beam ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP HB2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "HB2")
-    _grp.set_attribute("IFC", "Section", "HB2")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "HB2"
-  end
-rescue => e
-  puts "SKIP HB2: #{e.message}"
-end
-
-# ---- HB3 | HB3 | beam ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP HB3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "HB3")
-    _grp.set_attribute("IFC", "Section", "HB3")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "HB3"
-  end
-rescue => e
-  puts "SKIP HB3: #{e.message}"
-end
-
-# ---- HB4 | HB4 | beam ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP HB4: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "HB4")
-    _grp.set_attribute("IFC", "Section", "HB4")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "HB4"
-  end
-rescue => e
-  puts "SKIP HB4: #{e.message}"
-end
-
-# ---- HB5 | HB5 | beam ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP HB5: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "HB5")
-    _grp.set_attribute("IFC", "Section", "HB5")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "HB5"
-  end
-rescue => e
-  puts "SKIP HB5: #{e.message}"
-end
-
-# ---- HB6 | HB6 | beam ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP HB6: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "HB6")
-    _grp.set_attribute("IFC", "Section", "HB6")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "HB6"
-  end
-rescue => e
-  puts "SKIP HB6: #{e.message}"
-end
-
-# ---- HB7 | HB7 | beam ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP HB7: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "HB7")
-    _grp.set_attribute("IFC", "Section", "HB7")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "HB7"
-  end
-rescue => e
-  puts "SKIP HB7: #{e.message}"
-end
-
-# ---- HB8 | HB8 | beam ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP HB8: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "HB8")
-    _grp.set_attribute("IFC", "Section", "HB8")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "HB8"
-  end
-rescue => e
-  puts "SKIP HB8: #{e.message}"
-end
-
-# ---- W1 |  | wall ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP W1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [350, 0], [350, 1], [0, 1]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Walls")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "W1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "wall")
-    _grp.name = "W1"
-  end
-rescue => e
-  puts "SKIP W1: #{e.message}"
-end
-
-# ---- W2 |  | wall ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP W2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [350, 0], [350, 1], [0, 1]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Walls")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "W2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "wall")
-    _grp.name = "W2"
-  end
-rescue => e
-  puts "SKIP W2: #{e.message}"
-end
-
-# ---- W3 |  | wall ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP W3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [350, 0], [350, 1], [0, 1]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Walls")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "W3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "wall")
-    _grp.name = "W3"
-  end
-rescue => e
-  puts "SKIP W3: #{e.message}"
-end
-
-# ---- COL_G2_Base_FL1 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 11825.mm, 0.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_G2_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_G2_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_G2_Base_FL1"
-  end
-rescue => e
-  puts "SKIP COL_G2_Base_FL1: #{e.message}"
-end
-
-# ---- COL_G2_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 11825.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_G2_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_G2_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_G2_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP COL_G2_FL1_FL2: #{e.message}"
-end
-
-# ---- COL_G2_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 11825.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 11825.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_G2_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_G2_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_G2_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP COL_G2_FL2_FL3: #{e.message}"
-end
-
-# ---- COL_G2_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 11825.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 11825.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_G2_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_G2_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_G2_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP COL_G2_FL3_Roof: #{e.message}"
-end
-
-# ---- COL_G3_Base_FL1 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 11825.mm, 0.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_G3_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_G3_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_G3_Base_FL1"
-  end
-rescue => e
-  puts "SKIP COL_G3_Base_FL1: #{e.message}"
-end
-
-# ---- COL_G3_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 11825.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_G3_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_G3_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_G3_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP COL_G3_FL1_FL2: #{e.message}"
-end
-
-# ---- COL_G3_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 11825.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 11825.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_G3_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_G3_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_G3_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP COL_G3_FL2_FL3: #{e.message}"
-end
-
-# ---- COL_G3_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 11825.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 11825.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_G3_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_G3_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_G3_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP COL_G3_FL3_Roof: #{e.message}"
-end
-
-# ---- COL_G4_Base_FL1 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 17738.mm, 0.mm)
-  _ep  = Geom::Point3d.new(0.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_G4_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_G4_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_G4_Base_FL1"
-  end
-rescue => e
-  puts "SKIP COL_G4_Base_FL1: #{e.message}"
-end
-
-# ---- COL_G4_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 17738.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_G4_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_G4_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_G4_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP COL_G4_FL1_FL2: #{e.message}"
-end
-
-# ---- COL_G4_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 17738.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(0.mm, 17738.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_G4_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_G4_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_G4_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP COL_G4_FL2_FL3: #{e.message}"
-end
-
-# ---- COL_G4_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 17738.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 17738.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_G4_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_G4_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_G4_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP COL_G4_FL3_Roof: #{e.message}"
-end
-
-# ---- BM_L1_G3-4 | 250x600 | beam ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP BM_L1_G3-4: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -300], [125, -300], [125, 300], [-125, 300]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "BM_L1_G3-4")
-    _grp.set_attribute("IFC", "Section", "250x600")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "BM_L1_G3-4"
-  end
-rescue => e
-  puts "SKIP BM_L1_G3-4: #{e.message}"
-end
-
-# ---- BM_L2_G2-3 |  | beam ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP BM_L2_G2-3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "BM_L2_G2-3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "BM_L2_G2-3"
-  end
-rescue => e
-  puts "SKIP BM_L2_G2-3: #{e.message}"
-end
-
-# ---- BM_L2_G3-4 |  | beam ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP BM_L2_G3-4: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "BM_L2_G3-4")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "BM_L2_G3-4"
-  end
-rescue => e
-  puts "SKIP BM_L2_G3-4: #{e.message}"
-end
-
-# ---- COL_D_Base_FL1 | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 17738.mm, 0.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_D_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_D_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_D_Base_FL1"
-  end
-rescue => e
-  puts "SKIP COL_D_Base_FL1: #{e.message}"
-end
-
-# ---- COL_D_FL1_FL2 | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 17738.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_D_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_D_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_D_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP COL_D_FL1_FL2: #{e.message}"
-end
-
-# ---- COL_D_FL2_FL3 | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 17738.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 17738.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_D_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_D_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_D_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP COL_D_FL2_FL3: #{e.message}"
-end
-
-# ---- COL_D_FL3_Roof | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 17738.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 17738.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_D_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_D_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_D_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP COL_D_FL3_Roof: #{e.message}"
-end
-
-# ---- COL_C_Base_FL1 | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 17738.mm, 0.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_C_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_C_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_C_Base_FL1"
-  end
-rescue => e
-  puts "SKIP COL_C_Base_FL1: #{e.message}"
-end
-
-# ---- COL_C_FL1_FL2 | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 17738.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_C_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_C_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_C_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP COL_C_FL1_FL2: #{e.message}"
-end
-
-# ---- COL_C_FL2_FL3 | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 17738.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 17738.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_C_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_C_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_C_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP COL_C_FL2_FL3: #{e.message}"
-end
-
-# ---- COL_C_FL3_Roof | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 17738.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 17738.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_C_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_C_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_C_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP COL_C_FL3_Roof: #{e.message}"
-end
-
-# ---- COL_B_Base_FL1 | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 17738.mm, 0.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_B_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_B_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_B_Base_FL1"
-  end
-rescue => e
-  puts "SKIP COL_B_Base_FL1: #{e.message}"
-end
-
-# ---- COL_B_FL1_FL2 | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 17738.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_B_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_B_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_B_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP COL_B_FL1_FL2: #{e.message}"
-end
-
-# ---- COL_B_FL2_FL3 | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 17738.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 17738.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_B_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_B_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_B_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP COL_B_FL2_FL3: #{e.message}"
-end
-
-# ---- COL_B_FL3_Roof | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 17738.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 17738.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_B_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_B_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_B_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP COL_B_FL3_Roof: #{e.message}"
-end
-
-# ---- COL_A_Base_FL1 | 250x250 | column ----
+# ---- STL_BEAM_RHS_GENERIC | RHS | beam ----
 begin
   _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
-  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_A_Base_FL1: zero-length (check mapper coords)"
+    puts "SKIP STL_BEAM_RHS_GENERIC: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
+    _raw = [[-25, 0], [25, 0], [25, 100], [-25, 100]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_A_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_A_Base_FL1"
-  end
-rescue => e
-  puts "SKIP COL_A_Base_FL1: #{e.message}"
-end
-
-# ---- COL_A_FL1_FL2 | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 0.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_A_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_A_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_A_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP COL_A_FL1_FL2: #{e.message}"
-end
-
-# ---- COL_A_FL2_FL3 | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(0.mm, 0.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_A_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_A_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_A_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP COL_A_FL2_FL3: #{e.message}"
-end
-
-# ---- COL_A_FL3_Roof | 250x250 | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 0.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 0.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP COL_A_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -125], [125, -125], [125, 125], [-125, 125]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "COL_A_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "250x250")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "COL_A_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP COL_A_FL3_Roof: #{e.message}"
-end
-
-# ---- BM_L2_CD | D600 | beam ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP BM_L2_CD: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -300], [150, -300], [150, 300], [-150, 300]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "BM_L2_CD")
-    _grp.set_attribute("IFC", "Section", "D600")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "STL_BEAM_RHS_GENERIC")
+    _grp.set_attribute("IFC", "Section", "RHS")
     _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "BM_L2_CD"
+    _grp.name = "STL_BEAM_RHS_GENERIC"
   end
 rescue => e
-  puts "SKIP BM_L2_CD: #{e.message}"
+  puts "SKIP STL_BEAM_RHS_GENERIC: #{e.message}"
 end
 
-# ---- BM_L2_BC | D600 | beam ----
+# ---- STL_RAFTER_RHS_GENERIC | RHS | rafter ----
 begin
-  _sp  = Geom::Point3d.new(13350.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP BM_L2_BC: zero-length (check mapper coords)"
+    puts "SKIP STL_RAFTER_RHS_GENERIC: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -300], [150, -300], [150, 300], [-150, 300]]
+    _raw = [[-25, 0], [25, 0], [25, 100], [-25, 100]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "BM_L2_BC")
-    _grp.set_attribute("IFC", "Section", "D600")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "BM_L2_BC"
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "STL_RAFTER_RHS_GENERIC")
+    _grp.set_attribute("IFC", "Section", "RHS")
+    _grp.set_attribute("IFC", "Type",    "rafter")
+    _grp.name = "STL_RAFTER_RHS_GENERIC"
   end
 rescue => e
-  puts "SKIP BM_L2_BC: #{e.message}"
+  puts "SKIP STL_RAFTER_RHS_GENERIC: #{e.message}"
 end
 
-# ---- BM_L2_AB | D600 | beam ----
+# ---- STL_BRACE_RHS_GENERIC | RHS | brace ----
 begin
-  _sp  = Geom::Point3d.new(0.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 5912.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP BM_L2_AB: zero-length (check mapper coords)"
+    puts "SKIP STL_BRACE_RHS_GENERIC: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -300], [150, -300], [150, 300], [-150, 300]]
+    _raw = [[-25, 0], [25, 0], [25, 100], [-25, 100]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "BM_L2_AB")
-    _grp.set_attribute("IFC", "Section", "D600")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "BM_L2_AB"
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "STL_BRACE_RHS_GENERIC")
+    _grp.set_attribute("IFC", "Section", "RHS")
+    _grp.set_attribute("IFC", "Type",    "brace")
+    _grp.name = "STL_BRACE_RHS_GENERIC"
   end
 rescue => e
-  puts "SKIP BM_L2_AB: #{e.message}"
+  puts "SKIP STL_BRACE_RHS_GENERIC: #{e.message}"
 end
 
-# ---- BM_L1_CD |  | beam ----
+# ---- STL_HANDRAIL_CHS_GENERIC | CHS | other ----
 begin
-  _sp  = Geom::Point3d.new(4200.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 5912.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP BM_L1_CD: zero-length (check mapper coords)"
+    puts "SKIP STL_HANDRAIL_CHS_GENERIC: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
+    _raw = [[-25, 0], [25, 0], [25, 100], [-25, 100]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "BM_L1_CD")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "BM_L1_CD"
-  end
-rescue => e
-  puts "SKIP BM_L1_CD: #{e.message}"
-end
-
-# ---- BM_L1_BC |  | beam ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP BM_L1_BC: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "BM_L1_BC")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "BM_L1_BC"
-  end
-rescue => e
-  puts "SKIP BM_L1_BC: #{e.message}"
-end
-
-# ---- BM_L1_AB |  | beam ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP BM_L1_AB: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "BM_L1_AB")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "BM_L1_AB"
-  end
-rescue => e
-  puts "SKIP BM_L1_AB: #{e.message}"
-end
-
-# ---- SLAB_L1 |  | slab ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(3000.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP SLAB_L1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [1, 0], [1, 150], [0, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Slabs")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "SLAB_L1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "slab")
-    _grp.name = "SLAB_L1"
-  end
-rescue => e
-  puts "SKIP SLAB_L1: #{e.message}"
-end
-
-# ---- SLAB_L2 |  | slab ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(7200.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP SLAB_L2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [1, 0], [1, 150], [0, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Slabs")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "SLAB_L2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "slab")
-    _grp.name = "SLAB_L2"
-  end
-rescue => e
-  puts "SKIP SLAB_L2: #{e.message}"
-end
-
-# ---- BM_G3-4 | 250x600 | beam ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP BM_G3-4: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-125, -300], [125, -300], [125, 300], [-125, 300]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "BM_G3-4")
-    _grp.set_attribute("IFC", "Section", "250x600")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "BM_G3-4"
-  end
-rescue => e
-  puts "SKIP BM_G3-4: #{e.message}"
-end
-
-# ---- C_Base_FL1 | 600x600 | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 5912.mm, 0.mm)
-  _ep  = Geom::Point3d.new(0.mm, 5912.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-300, -300], [300, -300], [300, 300], [-300, 300]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "600x600")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C_Base_FL1"
-  end
-rescue => e
-  puts "SKIP C_Base_FL1: #{e.message}"
-end
-
-# ---- C_FL1_FL2 | 600x600 | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 5912.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 5912.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-300, -300], [300, -300], [300, 300], [-300, 300]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "600x600")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP C_FL1_FL2: #{e.message}"
-end
-
-# ---- C_FL2_FL3 | 600x600 | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 5912.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(0.mm, 5912.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-300, -300], [300, -300], [300, 300], [-300, 300]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "600x600")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP C_FL2_FL3: #{e.message}"
-end
-
-# ---- C_FL3_Roof | 600x600 | column ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 5912.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(0.mm, 5912.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP C_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-300, -300], [300, -300], [300, 300], [-300, 300]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "C_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "600x600")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "C_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP C_FL3_Roof: #{e.message}"
-end
-
-# ---- RF1 |  | slab ----
-begin
-  _sp  = Geom::Point3d.new(13350.mm, 11825.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(16350.mm, 11825.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP RF1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [1, 0], [1, 150], [0, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Slabs")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "RF1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "slab")
-    _grp.name = "RF1"
-  end
-rescue => e
-  puts "SKIP RF1: #{e.message}"
-end
-
-# ---- RC Pit Wall |  | wall ----
-begin
-  _sp  = Geom::Point3d.new(0.mm, 17738.mm, 0.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP RC Pit Wall: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [350, 0], [350, 1], [0, 1]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Walls")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "RC Pit Wall")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "wall")
-    _grp.name = "RC Pit Wall"
-  end
-rescue => e
-  puts "SKIP RC Pit Wall: #{e.message}"
-end
-
-# ---- RC Pile_Base_FL1 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 0.mm, 0.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP RC Pile_Base_FL1: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "RC Pile_Base_FL1")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "RC Pile_Base_FL1"
-  end
-rescue => e
-  puts "SKIP RC Pile_Base_FL1: #{e.message}"
-end
-
-# ---- RC Pile_FL1_FL2 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 7000.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP RC Pile_FL1_FL2: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "RC Pile_FL1_FL2")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "RC Pile_FL1_FL2"
-  end
-rescue => e
-  puts "SKIP RC Pile_FL1_FL2: #{e.message}"
-end
-
-# ---- RC Pile_FL2_FL3 |  | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 0.mm, 7000.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 10500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP RC Pile_FL2_FL3: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "RC Pile_FL2_FL3")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "RC Pile_FL2_FL3"
-  end
-rescue => e
-  puts "SKIP RC Pile_FL2_FL3: #{e.message}"
-end
-
-# ---- RC Pile_FL3_Roof |  | column ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 0.mm, 10500.mm)
-  _ep  = Geom::Point3d.new(4200.mm, 0.mm, 13500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP RC Pile_FL3_Roof: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-200, -200], [200, -200], [200, 200], [-200, 200]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Columns")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "RC Pile_FL3_Roof")
-    _grp.set_attribute("IFC", "Section", "")
-    _grp.set_attribute("IFC", "Type",    "column")
-    _grp.name = "RC Pile_FL3_Roof"
-  end
-rescue => e
-  puts "SKIP RC Pile_FL3_Roof: #{e.message}"
-end
-
-# ---- PT SLAB/BEAM | PT SLAB/BEAM | slab ----
-begin
-  _sp  = Geom::Point3d.new(4200.mm, 17738.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(7200.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP PT SLAB/BEAM: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [1, 0], [1, 150], [0, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Slabs")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "PT SLAB/BEAM")
-    _grp.set_attribute("IFC", "Section", "PT SLAB/BEAM")
-    _grp.set_attribute("IFC", "Type",    "slab")
-    _grp.name = "PT SLAB/BEAM"
-  end
-rescue => e
-  puts "SKIP PT SLAB/BEAM: #{e.message}"
-end
-
-# ---- RETAINING WALL | RETAINING WALL | wall ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 0.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP RETAINING WALL: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[0, 0], [300, 0], [300, 1], [0, 1]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Walls")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "RETAINING WALL")
-    _grp.set_attribute("IFC", "Section", "RETAINING WALL")
-    _grp.set_attribute("IFC", "Type",    "wall")
-    _grp.name = "RETAINING WALL"
-  end
-rescue => e
-  puts "SKIP RETAINING WALL: #{e.message}"
-end
-
-# ---- FOOTING | FOOTING | other ----
-begin
-  _sp  = Geom::Point3d.new(9150.mm, 17738.mm, 0.mm)
-  _ep  = Geom::Point3d.new(9150.mm, 17738.mm, 3500.mm)
-  _vec = _sp.vector_to(_ep)
-  _len = _sp.distance(_ep)
-  if _len < 1.mm || !_vec.valid?
-    puts "SKIP FOOTING: zero-length (check mapper coords)"
-  else
-    _grp = ents.add_group
-    _ge  = _grp.entities
-    _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -150], [150, -150], [150, 150], [-150, 150]]
-    _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
-    _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "FOOTING")
-    _grp.set_attribute("IFC", "Section", "FOOTING")
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "STL_HANDRAIL_CHS_GENERIC")
+    _grp.set_attribute("IFC", "Section", "CHS")
     _grp.set_attribute("IFC", "Type",    "other")
-    _grp.name = "FOOTING"
+    _grp.name = "STL_HANDRAIL_CHS_GENERIC"
   end
 rescue => e
-  puts "SKIP FOOTING: #{e.message}"
+  puts "SKIP STL_HANDRAIL_CHS_GENERIC: #{e.message}"
 end
 
-# ---- RETAINING WALL CORBEL | CORBEL | beam ----
+# ---- RB16A | RB16A | brace ----
 begin
-  _sp  = Geom::Point3d.new(9150.mm, 0.mm, 3500.mm)
-  _ep  = Geom::Point3d.new(13350.mm, 0.mm, 3500.mm)
+  _sp  = Geom::Point3d.new(0.mm, 0.mm, 0.mm)
+  _ep  = Geom::Point3d.new(0.mm, 0.mm, 3000.mm)
   _vec = _sp.vector_to(_ep)
   _len = _sp.distance(_ep)
   if _len < 1.mm || !_vec.valid?
-    puts "SKIP RETAINING WALL CORBEL: zero-length (check mapper coords)"
+    puts "SKIP RB16A: zero-length (check mapper coords)"
   else
     _grp = ents.add_group
     _ge  = _grp.entities
     _t   = Geom::Transformation.new(_sp, _vec)
-    _raw = [[-150, -75], [150, -75], [150, 75], [-150, 75]]
+    _raw = [[-25, 0], [25, 0], [25, 16], [-25, 16]]
     _face = _ge.add_face(_raw.map { |p| _t * Geom::Point3d.new(p[0].mm, p[1].mm, 0) })
     _face.pushpull(_len) if _face
-    _grp.layer = get_or_create_layer(layers, "STR-Beams")
-    _grp.material = _concrete_mat
-    _grp.set_attribute("IFC", "Mark",    "RETAINING WALL CORBEL")
-    _grp.set_attribute("IFC", "Section", "CORBEL")
-    _grp.set_attribute("IFC", "Type",    "beam")
-    _grp.name = "RETAINING WALL CORBEL"
+    _grp.layer = get_or_create_layer(layers, "LOD300_UNMAPPED_NEEDS_REVIEW")
+    _grp.material = _steel_mat
+    _grp.set_attribute("IFC", "Mark",    "RB16A")
+    _grp.set_attribute("IFC", "Section", "RB16A")
+    _grp.set_attribute("IFC", "Type",    "brace")
+    _grp.name = "RB16A"
   end
 rescue => e
-  puts "SKIP RETAINING WALL CORBEL: #{e.message}"
+  puts "SKIP RB16A: #{e.message}"
 end
 
 
