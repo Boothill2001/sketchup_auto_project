@@ -244,7 +244,7 @@ def _run(pdf_path: str) -> dict:
     # Phase 3 — Spatial Parser
     _phase_gap()
     _phase("PHASE 3 — SPATIAL PARSER: Grid & Level Extraction")
-    parse_spatial_pages(str(pdf), roles["plan"], roles["elevation"])
+    parse_spatial_pages(str(pdf))
 
     # Phase 4 — Mapper
     _phase_gap()
